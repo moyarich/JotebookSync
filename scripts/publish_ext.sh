@@ -21,8 +21,8 @@ fi
 
 cd "${project_directory}"
 
-printf '%s\n' "Recording demos and generating README GIFs..."
-npm run demo:gif
+printf '%s\n' "Generating README GIFs from validated demo recordings..."
+npm run demo:gif -- --no-record
 
 printf '%s\n' "Running release checks..."
 npm test

@@ -11,10 +11,11 @@ This guide is for extension maintainers.
 npm run publish:extension
 ```
 
-The script records every demo and regenerates the README GIFs first, runs the
-complete test suite, verifies the packaged extension contents, and publishes
-through `@vscode/vsce`. An Inquirer confirmation defaults to **No** and must
-be accepted before the Marketplace publish command runs.
+Run `npm run demo:all` when the scenarios need to be re-recorded. The publish
+script regenerates every README GIF from those validated recordings first,
+runs the complete test suite, verifies the packaged extension contents, and
+publishes through `@vscode/vsce`. An Inquirer confirmation defaults to
+**No** and must be accepted before the Marketplace publish command runs.
 
 Arguments after `--` are forwarded to the publisher:
 
