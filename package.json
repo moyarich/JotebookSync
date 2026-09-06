@@ -6,6 +6,15 @@
   "publisher": "moyarich",
   "author": "Moya Richards",
   "license": "MIT",
+  "icon": "media/jotebooksync-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moyarich/JotebookSync.git"
+  },
+  "homepage": "https://github.com/moyarich/JotebookSync#readme",
+  "bugs": {
+    "url": "https://github.com/moyarich/JotebookSync/issues"
+  },
   "engines": {
     "vscode": "^1.125.0"
   },
@@ -391,6 +400,8 @@
     "demo": "node ./demo/extension.smoke.mjs --demo",
     "demo:all": "npm run demo -- --scenario=all",
     "demo:freshness": "npm run demo -- --scenario=review-pair-freshness",
+    "demo:round-trip": "npm run demo -- --scenario=test-round-trip-conversion",
+    "demo:formats": "npm run demo -- --scenario=show-available-formats",
     "demo:gif": "node ./demo/create-readme-gif.mjs",
     "pretest": "npm run compile && npm run compile:tests && npm run lint",
     "lint": "eslint src test demo",
@@ -398,6 +409,7 @@
     "test:webviews": "tsc -p tsconfig.webview-tests.json && vitest run test/webviews",
     "zip": "npm run compile && vite build --mode zip",
     "package": "npm run compile && npx vsce package --allow-missing-repository --no-rewrite-relative-links",
+    "publish:extension": "./scripts/publish_ext.sh",
     "package:ls": "npm run compile && npx @vscode/vsce ls --tree"
   },
   "dependencies": {
@@ -405,6 +417,7 @@
     "mustache": "^4.2.0"
   },
   "devDependencies": {
+    "@inquirer/prompts": "^8.7.1",
     "@types/archiver": "^8.0.0",
     "@types/mocha": "^10.0.10",
     "@types/mustache": "^4.2.6",

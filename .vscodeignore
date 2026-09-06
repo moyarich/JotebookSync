@@ -28,3 +28,6 @@ out/test/**
 out-test/**
 scripts/**
 readme-dev.md
+.env
+.env.example
+PUBLISHING.md

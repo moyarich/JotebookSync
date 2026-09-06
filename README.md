@@ -1,147 +1,140 @@
 # JotebookSync
 
-Keep Jupyter notebooks and readable text files in sync—without leaving VS Code.
+**Make Jupyter notebooks as easy to review, edit, and version as ordinary source files.**
 
-**JotebookSync** is a visual companion for [Jupytext](https://jupytext.readthedocs.io/). Pair an `.ipynb` notebook with Python, Markdown, MyST, Quarto, R Markdown, Julia, or another Jupytext format. Edit whichever representation suits the task, then let the extension keep the pair together.
+JotebookSync brings [Jupytext](https://jupytext.readthedocs.io/) workflows into VS Code. Pair a notebook with Python, Markdown, MyST, Quarto, R Markdown, Julia, or any format supported by your Jupytext installation. Work in the representation that fits the moment; JotebookSync keeps the files together.
 
-![Set up a Jupytext notebook pair with JotebookSync](media/setup-paired-files.gif)
+![Choose notebook representations in the guided pair setup](media/setup-paired-files.gif)
 
-## Why use JotebookSync?
+## Why it matters
 
-Notebook JSON is excellent for execution and rich output, but awkward to review in source control. A paired text file gives you clean diffs, normal editor tools, and code that is easier to search, refactor, reuse, and share.
+An `.ipynb` file is ideal for running cells and keeping rich output, but its JSON is difficult to review in pull requests and awkward to edit with normal development tools. A paired text notebook gives you both:
 
-- Set up and update pairings through a guided interface.
-- Sync paired files automatically whenever you save.
-- See which paired file is newest before anything is overwritten.
-- Compare equivalent text representations in VS Code's diff editor.
-- Convert files without creating a permanent pair.
-- Update an existing notebook while preserving its outputs.
-- Use Python, Markdown, MyST, Quarto, R Markdown, Julia, and custom Jupytext formats.
-- Execute notebooks, set kernels, update metadata, and configure format options.
-- Run external `--pipe` and `--check` tools or Jupytext pre-commit workflows.
-- Get guided dependency installation when Jupytext or an optional format tool is missing.
+- rich notebook output for exploration and presentation;
+- clean, meaningful diffs for code review;
+- ordinary search, refactoring, formatting, and source-control tools;
+- scripts and Markdown that are easier to reuse and share.
 
-## Getting started
+JotebookSync removes the command-line bookkeeping. Pairing, synchronization, safety checks, conversion, and project setup are available where you already work—in the editor and Explorer.
 
-1. Open a notebook or supported text file in VS Code.
-2. Right-click the file in Explorer and open **JotebookSync**.
-3. Choose **Set Up or Update Paired Files…**.
-4. Select the representations you want to keep together, then create the pair.
+## Start in less than a minute
 
-For example, pairing `analysis.ipynb` with `py:percent` creates `analysis.py`. The notebook retains rich outputs while the Python file provides a readable, version-control-friendly representation.
+1. Open a notebook or supported text file.
+2. Right-click it in Explorer and choose **JotebookSync**.
+3. Select **Set Up or Update Paired Files…**.
+4. Choose the file types you want and select **Create paired files**.
 
-Pair-only actions appear after the extension has identified the file as part of a pair. The same actions are available from the Command Palette by searching for **JotebookSync**.
+For example, pairing `analysis.ipynb` with `py:percent` creates `analysis.py`. Keep outputs in the notebook and review readable Python in Git.
 
-![Open the notebook associated with a paired text file](media/open-paired-notebook.gif)
+Pair-specific commands only appear when the selected file belongs to a pair. Every action is also available from the Command Palette by searching for **JotebookSync**.
 
-## Main workflows
+## Save once. Keep every representation current.
 
-### Keep paired files synchronized
+Automatic sync on save is enabled by default. Edit a paired notebook, script, or Markdown file and save it; Jupytext updates the other members of the pair.
 
-Automatic synchronization is enabled by default. When you save any member of a pair, Jupytext uses the most recently modified member as the source and updates the rest.
+Need to move deliberately instead? **Sync All from Newest Paired File…** follows timestamps, while **Overwrite Paired Files from This File…** makes the file you selected the explicit source of truth.
 
-Before a manual overwrite, **Review Pair Freshness…** shows timestamps and lets you open files or compare normalized content. Use **Overwrite Paired Files from This File…** only when the selected file should explicitly win.
+![Synchronize every representation from the newest paired file](media/sync-newest-paired-file.gif)
 
-![Review the freshness of every file in a Jupytext pair](media/review-pair-freshness.gif)
+![Explicitly replace paired files from the selected source](media/overwrite-from-current-file.gif)
 
-![Synchronize all representations from the newest paired file](media/sync-newest-paired-file.gif)
+## Know what will change before you sync
 
-![Explicitly overwrite paired files from the selected source](media/overwrite-from-current-file.gif)
+**Review Pair Freshness…** explains which copy is newer, identifies files that need attention, and lets you inspect timestamps, open either file, or compare equivalent text in VS Code. You can review multiple cards without losing your place.
 
-### Use a text notebook without pairing
+![Review and compare the files in a pair before overwriting anything](media/review-pair-freshness.gif)
 
-Choose **Create Notebook from Text File…** to make an independent `.ipynb` copy. This does not create a lasting Jupytext pair.
+For extra confidence, test whether a representation survives conversion to another format and back before adopting it in your workflow.
 
-Choose **Update Existing Notebook from Text File…** when an `.ipynb` already exists. Inputs and metadata come from the text notebook while existing notebook outputs are preserved.
+![Test a round-trip conversion from inside VS Code](media/test-round-trip-conversion.gif)
 
-![Create an independent notebook from a Jupytext text notebook](media/create-notebook-from-text.gif)
+## Use the format that fits your team
 
-![Update an existing notebook while preserving its outputs](media/update-existing-notebook.gif)
+Choose common formats in the setup page or enter any Jupytext format code, including `py:percent`, `jl:percent`, `Rmd`, and `md:myst`. JotebookSync discovers formats from the active Python environment, so it is not restricted to a hard-coded language list.
 
-### Configure an entire project
+![See formats supported by the active Jupytext environment](media/show-available-formats.gif)
 
-Right-click a folder and choose **Create Project Pairing Configuration…** to create `jupytext.toml`. Choose **Apply to Notebooks** when prompted, or run **JotebookSync: Apply Project Pairing Configuration…** later, to create or synchronize paired files for every existing notebook under that folder. Future Jupytext operations automatically discover the configuration. Choose the folder-mapping option to keep notebooks and paired text files in separate project directories.
-
-![Create a project-wide Jupytext pairing configuration](media/project-pairing-configuration.gif)
-
-### Inspect or remove a pairing
-
-Choose **Show Paired Files** to inspect every file in the current pair. Choose **Remove Pairing…** to stop synchronization without deleting any of the files.
-
-![Inspect and remove a Jupytext pairing](media/inspect-and-remove-pairing.gif)
-
-### Use another language or format
-
-The setup screen includes common formats and an advanced section. Enter any format supported by your installed Jupytext version, such as `py:percent`, `jl:percent`, `Rmd`, or `md:myst`. Available choices are discovered from the active Python environment instead of being limited to a fixed built-in list.
+Need a one-time copy instead of an ongoing pair? **Convert File to Another Format…** creates the chosen representation without changing pairing metadata.
 
 ![Convert a notebook to another Jupytext format](media/convert-file-format.gif)
 
+## Keep notebook output while updating code
+
+Use **Create Notebook from Text File…** to make an independent `.ipynb`. Use **Update Existing Notebook from Text File…** to bring updated inputs and metadata into an existing notebook while preserving its saved outputs.
+
+![Create an independent notebook from a text notebook](media/create-notebook-from-text.gif)
+
+![Update notebook inputs while preserving existing outputs](media/update-existing-notebook.gif)
+
+## Standardize an entire project
+
+Right-click a folder and choose **Create Project Pairing Configuration…** to create `jupytext.toml`. Apply it immediately or run **Apply Project Pairing Configuration…** later to create or synchronize pairs for existing notebooks. Folder mappings can keep notebooks and text files in separate directories.
+
+![Create and apply a project-wide Jupytext configuration](media/project-pairing-configuration.gif)
+
+## Navigate and manage pairs
+
+Open the `.ipynb` associated with a text notebook in one action. Use **Show Paired Files** to inspect the full group, or **Remove Pairing…** to stop synchronization without deleting your files.
+
+![Open the notebook associated with a paired text file](media/open-paired-notebook.gif)
+
+![Inspect a pair and remove its pairing metadata](media/inspect-and-remove-pairing.gif)
+
+## More Jupytext tools, without leaving VS Code
+
+JotebookSync also exposes advanced Jupytext workflows through guided prompts:
+
+- format with Black;
+- set a notebook kernel;
+- execute all notebook cells;
+- update notebook metadata and format options;
+- pipe content through an external command or validate it with `--check`;
+- run round-trip and strict round-trip tests;
+- run pre-commit workflows;
+- pass an advanced JSON argument list to the Jupytext CLI.
+
+External commands and notebook execution can run arbitrary code, so JotebookSync asks for confirmation by default.
+
 ## Requirements
 
-- VS Code with the Microsoft Python and Jupyter extensions. They are installed as extension dependencies.
+- VS Code. The Microsoft Python and Jupyter extensions are installed as extension dependencies.
 - Python and [Jupytext](https://jupytext.readthedocs.io/en/latest/install.html).
 
-If Jupytext is unavailable, the extension offers to install it into the selected Python environment. Some formats need additional tools:
+If Jupytext is missing, JotebookSync offers to install it in the selected Python environment. It also gives targeted guidance when an optional tool is required:
 
-- Quarto files require the Quarto command-line tool.
-- Marimo files require the `marimo` Python package.
+- Quarto output requires the Quarto command-line tool.
+- Marimo output requires the `marimo` Python package.
 - **Format with Black** requires the `black` Python package.
 
 The extension asks before installing a Python package or opening installation instructions.
 
-## Advanced Jupytext workflows
-
-Search for **JotebookSync** in the Command Palette or use the Explorer submenu:
-
-- **Pipe Through External Command…** exposes `--pipe` and optional `--pipe-fmt`.
-- **Check with External Command…** exposes `--check` and optional `--pipe-fmt`.
-- **Set Notebook Kernel…** accepts a kernelspec or `-` for the current environment.
-- **Execute Notebook…** runs all cells and supports a custom working directory.
-- **Update Notebook Metadata…** accepts the JSON object used by `--update-metadata`.
-- **Set Format Options…** accepts one or more `--opt key=value` entries.
-- **Run Pre-commit Workflow…** supports both `--pre-commit` modes and `--from`.
-- **Run Advanced Jupytext Command…** accepts a JSON array of CLI arguments for
-  options such as `--diff`, `--show-changes`, `--warn-only`, or
-  `--use-source-timestamp`.
-
-External commands and notebook execution can run arbitrary code. They use a
-modal confirmation by default and follow `jotebooksync.confirmDestructiveActions`.
-
 ## Settings
 
-| Setting                                  | Default            | Purpose                                                                                                                                           |
-| ---------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `jotebooksync.autoSyncOnSave`            | `true`             | Synchronize paired files when one is saved.                                                                                                       |
-| `jotebooksync.confirmDestructiveActions` | `true`             | Ask before removing pairing metadata or replacing notebook, paired-file, or project configuration content. Disable to auto-confirm these actions. |
-| `jotebooksync.pythonPath`                | `python`           | Python executable used to run Jupytext. The active Python interpreter is used as a fallback.                                                      |
-| `jotebooksync.notebookEditorViewType`    | `jupyter-notebook` | VS Code editor used to open `.ipynb` files.                                                                                                       |
-| `jotebooksync.supportedTextExtensions`   | `[]`               | Optional extension override. Empty means use formats reported by Jupytext.                                                                        |
-| `jotebooksync.syncArgs`                  | `[]`               | Advanced arguments appended to Jupytext sync commands.                                                                                            |
-| `jotebooksync.setFormatsArgs`            | `[]`               | Advanced arguments passed when changing pair formats.                                                                                             |
+| Setting | Default | What it controls |
+| --- | --- | --- |
+| `jotebooksync.autoSyncOnSave` | `true` | Synchronize a pair whenever one member is saved. |
+| `jotebooksync.confirmDestructiveActions` | `true` | Confirm before replacing content or removing pairing metadata. |
+| `jotebooksync.pythonPath` | `python` | Python executable used for Jupytext; the active Python interpreter is a fallback. |
+| `jotebooksync.notebookEditorViewType` | `jupyter-notebook` | VS Code editor used to open `.ipynb` files. |
+| `jotebooksync.supportedTextExtensions` | `[]` | Optional extension override; empty uses formats reported by Jupytext. |
+| `jotebooksync.syncArgs` | `[]` | Extra arguments appended to sync commands. |
+| `jotebooksync.setFormatsArgs` | `[]` | Extra arguments used when changing pair formats. |
 
 ## Troubleshooting
 
-### The expected format is missing
+**A format is missing:** Run **JotebookSync: Refresh Available Formats** after changing Python environments or installing a dependency.
 
-Run **JotebookSync: Refresh Available Formats** after changing Python environments or installing a format dependency.
+**Save did not synchronize the pair:** Confirm that **Auto Sync On Save** is enabled and that the selected environment can run `python -m jupytext --version`.
 
-### A save did not synchronize the pair
+**Quarto or Marimo is unavailable:** Follow the targeted installation action in the error message, then retry.
 
-Confirm **Auto Sync On Save** is enabled and that the selected Python environment can run `python -m jupytext --version`.
+**You are unsure which file should win:** Open **Review Pair Freshness…** and compare the files before forcing an overwrite.
 
-### Jupytext reports that Quarto or Marimo is missing
+## Privacy
 
-Install the named tool, then retry the operation. The extension keeps the actionable part of the error visible and places detailed command output in VS Code when it is useful.
+Pairing, conversion, comparison, and synchronization run locally through the selected Python environment. JotebookSync does not upload notebook contents.
 
-### I am unsure which file should win
-
-Use **Review Pair Freshness…** before synchronizing. Do not force an overwrite until you have reviewed newer or equal-timestamp files.
-
-## Privacy and scope
-
-Pairing, conversion, comparison, and synchronization run locally through the selected Python environment. The extension does not upload notebook contents.
-
-This project integrates with Jupytext but is not affiliated with or endorsed by the Jupytext project.
+This project integrates with Jupytext but is not affiliated with or currently endorsed by the Jupytext project.
 
 ## License
 

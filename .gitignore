@@ -11,3 +11,5 @@ webviews-ui/src/**/*.js
 webviews-ui/src/**/*.js.map
 zip/**
 demo/artifacts/**
+.env
+!.env.example

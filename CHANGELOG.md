@@ -10,7 +10,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Added safe notebook updates that preserve existing cell outputs.
 - Added project-wide pairing configuration through `jupytext.toml`.
 - Added a command to apply project pairing configuration to existing notebooks.
-- Split Jupytext process execution, dependency checks, embedded inspection scripts, format helpers, and shared contracts out of the pairing service.
 - Enabled paired-file synchronization on save by default.
 - Added a setting to auto-confirm destructive commands during normal extension use.
 - Added extension-host integration tests for pairing, synchronization, removal,
