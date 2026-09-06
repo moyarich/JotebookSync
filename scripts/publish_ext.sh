@@ -33,4 +33,4 @@ npm run package:ls
 node ./scripts/confirm-publish.mjs
 
 printf '%s\n' "Publishing JotebookSync to the VS Code Marketplace..."
-npx @vscode/vsce publish --no-rewrite-relative-links "$@"
+npx @vscode/vsce publish "$@"
