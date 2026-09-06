@@ -16,6 +16,19 @@ import { fileURLToPath } from "node:url";
 import { downloadAndUnzipVSCode, runTests } from "@vscode/test-electron";
 import { chromium } from "playwright-core";
 
+import setupPairedFilesScenario from "./scenarios/setup-paired-files.mjs";
+import reviewPairFreshnessScenario from "./scenarios/review-pair-freshness.mjs";
+import syncNewestPairedFileScenario from "./scenarios/sync-newest-paired-file.mjs";
+import createNotebookFromTextScenario from "./scenarios/create-notebook-from-text.mjs";
+import projectPairingConfigurationScenario from "./scenarios/project-pairing-configuration.mjs";
+import openPairedNotebookScenario from "./scenarios/open-paired-notebook.mjs";
+import overwriteFromCurrentFileScenario from "./scenarios/overwrite-from-current-file.mjs";
+import convertFileFormatScenario from "./scenarios/convert-file-format.mjs";
+import testRoundTripConversionScenario from "./scenarios/test-round-trip-conversion.mjs";
+import showAvailableFormatsScenario from "./scenarios/show-available-formats.mjs";
+import updateExistingNotebookScenario from "./scenarios/update-existing-notebook.mjs";
+import inspectAndRemovePairingScenario from "./scenarios/inspect-and-remove-pairing.mjs";
+
 // -----------------------------------------------------------------------------
 // Paths
 // -----------------------------------------------------------------------------
@@ -704,515 +717,48 @@ async function resizeVSCodeWindow(page, { width, height }) {
 // Scenarios
 // -----------------------------------------------------------------------------
 
+const scenarioDependencies = {
+  assertFileContains,
+  assertFileExists,
+  chooseVisibleQuickPickItem,
+  confirmQuickInput,
+  createAnalysisMarkdown,
+  createPairedAnalysis,
+  createPlainMarkdown,
+  fillVisibleQuickInput,
+  findFrameByHeading,
+  openWorkspaceFile,
+  path,
+  pause,
+  readFile,
+  readdir,
+  runProcess,
+  runVSCodeCommand,
+  scrollThroughWebview,
+  updatePairedPythonInput,
+  writeFile,
+};
+
 const demoScenarios = {
-  // ---------------------------------------------------------------------------
-  // Set Up or Update Paired Files
-  // ---------------------------------------------------------------------------
-
-  "setup-paired-files": {
-    recordingFile: "setup-paired-files.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      return createPlainMarkdown(workspaceDirectory);
-    },
-
-    async run({ page }) {
-      // Show initial editor.
-      await pause(1_500);
-
-      // -----------------------------------------------------------------------
-      // Open setup command
-      // -----------------------------------------------------------------------
-
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Set Up or Update Paired Files",
-      );
-
-      // -----------------------------------------------------------------------
-      // Wait for setup webview
-      // -----------------------------------------------------------------------
-
-      const setupFrame = await findFrameByHeading(
-        page,
-        /(?:Set up|Update) paired files/i,
-      );
-
-      await pause(1_500);
-
-      // -----------------------------------------------------------------------
-      // Advanced options
-      // -----------------------------------------------------------------------
-
-      const advancedOptions = setupFrame.getByText("Advanced options", {
-        exact: true,
-      });
-
-      await advancedOptions.waitFor({
-        timeout: 10_000,
-      });
-
-      await advancedOptions.click();
-
-      await pause(1_200);
-
-      // -----------------------------------------------------------------------
-      // Python percent script
-      // -----------------------------------------------------------------------
-
-      const percentOption = setupFrame.getByText("Python percent script", {
-        exact: true,
-      });
-
-      if (await percentOption.count()) {
-        await percentOption.click();
-
-        await pause(1_500);
-      }
-
-      // Tour every section, including all advanced formats and the custom
-      // format controls, before submitting from the page footer.
-      await scrollThroughWebview(setupFrame);
-
-      // -----------------------------------------------------------------------
-      // Submit
-      // -----------------------------------------------------------------------
-
-      const submit = setupFrame.getByRole("button", {
-        name: /Create paired files|Save changes/i,
-      });
-
-      await submit.waitFor({
-        timeout: 10_000,
-      });
-
-      await submit.click();
-
-      await pause(2_500);
-
-      // End on the real payoff: the executable notebook beside its readable
-      // paired source file.
-      await openWorkspaceFile(page, "analysis.ipynb");
-      await page
-        .locator(".notebook-editor")
-        .first()
-        .waitFor({ timeout: 15_000 });
-      await runVSCodeCommand(page, "View: Split Editor Right");
-      await pause(700);
-      await openWorkspaceFile(page, "analysis.py");
-      await page
-        .locator(".editor-group-container")
-        .nth(1)
-        .waitFor({ timeout: 10_000 });
-      await pause(4_000);
-    },
-
-    async verify({ page, workspaceDirectory }) {
-      await assertFileExists(path.join(workspaceDirectory, "analysis.ipynb"));
-      const files = await readdir(workspaceDirectory);
-      if (!files.some((file) => file.endsWith(".py"))) {
-        throw new Error("Pair setup did not create the selected Python format.");
-      }
-      const visibleGroups = await page
-        .locator(".editor-group-container:visible")
-        .count();
-      if (visibleGroups < 2) {
-        throw new Error("Pair setup demo did not finish in a side-by-side view.");
-      }
-    },
-  },
-
-  "review-pair-freshness": {
-    recordingFile: "review-pair-freshness.webm",
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
-      await pause(1_100);
-      await writeFile(
-        pair.markdownFile,
-        `${await readFile(pair.markdownFile, "utf8")}\nUpdated in the Markdown notebook.\n`,
-        "utf8",
-      );
-      return pair.pythonFile;
-    },
-
-    async run({ page }) {
-      await pause(4_000);
-      await runVSCodeCommand(page, "JotebookSync: Review Pair Freshness");
-      const reportFrame = await findFrameByHeading(
-        page,
-        /Review paired files/i,
-      );
-
-      // Demonstrate the report toolbar rather than merely opening the page.
-      await reportFrame
-        .getByLabel("Filter destination files")
-        .selectOption("review");
-      await pause(900);
-      await reportFrame
-        .getByLabel("Sort destination files")
-        .selectOption("name-asc");
-      await pause(900);
-
-      const destinationCard = reportFrame
-        .locator("#destinationList jotebook-pair-card")
-        .first();
-      await destinationCard.waitFor({ timeout: 10_000 });
-
-      // Expand the timestamp and content-comparison evidence.
-      const detailsButton = destinationCard.getByRole("button", {
-        name: /^(?:Show|Hide) details$/,
-        exact: true,
-      });
-      if ((await detailsButton.getAttribute("aria-expanded")) !== "true") {
-        await detailsButton.click();
-      }
-      await destinationCard
-        .getByRole("region", { name: "File details" })
-        .waitFor({ timeout: 10_000 });
-      await pause(1_500);
-
-      // Show the complete source and destination report before acting on it.
-      await scrollThroughWebview(reportFrame);
-
-      // Show the destructive-action explanation, then cancel without changing
-      // the prepared pair used by the rest of this scenario.
-      await destinationCard
-        .getByRole("button", { name: /^Update .* from selected source$/ })
-        .click();
-      const confirmation = reportFrame.getByRole("dialog");
-      await confirmation.waitFor({ timeout: 10_000 });
-      await pause(1_500);
-      await confirmation.getByRole("button", { name: "Cancel" }).click();
-      await pause(950);
-
-      // Refresh exercises the webview-to-extension request and report update.
-      await reportFrame.getByRole("button", { name: "Refresh" }).click();
-      await pause(1_500);
-      const refreshedReportFrame = await findFrameByHeading(
-        page,
-        /Review paired files/i,
-      );
-
-      // Finish on the apples-to-apples normalized VS Code comparison.
-      const refreshedCard = refreshedReportFrame
-        .locator("#destinationList jotebook-pair-card")
-        .first();
-      const refreshedDetailsButton = refreshedCard.getByRole("button", {
-        name: /^(?:Show|Hide) details$/,
-        exact: true,
-      });
-      if (
-        (await refreshedDetailsButton.getAttribute("aria-expanded")) !== "true"
-      ) {
-        await refreshedDetailsButton.click();
-      }
-      await refreshedCard
-        .getByRole("button", { name: "Compare content" })
-        .click();
-      await pause(4_000);
-    },
-
-    async verify({ page }) {
-      await page
-        .locator(".monaco-diff-editor, .diff-editor")
-        .first()
-        .waitFor({ timeout: 10_000 });
-    },
-  },
-
-  "sync-newest-paired-file": {
-    recordingFile: "sync-newest-paired-file.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
-      await pause(1_100);
-      await updatePairedPythonInput(pair.pythonFile);
-      return pair.pythonFile;
-    },
-
-    async run({ page }) {
-      await pause(4_000);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Sync All from Newest Paired File",
-      );
-      await pause(3_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.md"),
-        "190, 220",
-      );
-    },
-  },
-
-  "create-notebook-from-text": {
-    recordingFile: "create-notebook-from-text.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      return createAnalysisMarkdown(workspaceDirectory);
-    },
-
-    async run({ page }) {
-      await pause(2_000);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Create Notebook from Text File",
-      );
-      await pause(4_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      await assertFileExists(path.join(workspaceDirectory, "analysis.ipynb"));
-    },
-  },
-
-  "project-pairing-configuration": {
-    recordingFile: "project-pairing-configuration.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      return createAnalysisMarkdown(workspaceDirectory);
-    },
-
-    async run({ page }) {
-      await pause(2_000);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Create Project Pairing Configuration",
-      );
-      await confirmQuickInput(page);
-      await pause(3_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      await assertFileExists(path.join(workspaceDirectory, "jupytext.toml"));
-    },
-  },
-
-  "open-paired-notebook": {
-    recordingFile: "open-paired-notebook.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
-      return pair.pythonFile;
-    },
-
-    async run({ page }) {
-      await pause(4_000);
-      await runVSCodeCommand(page, "JotebookSync: Open Paired Notebook");
-      await pause(5_000);
-    },
-
-    async verify({ page }) {
-      await page.locator(".notebook-editor").first().waitFor({ timeout: 10_000 });
-    },
-  },
-
-  "overwrite-from-current-file": {
-    recordingFile: "overwrite-from-current-file.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
-      await pause(1_100);
-      await updatePairedPythonInput(pair.pythonFile);
-      return pair.pythonFile;
-    },
-
-    async run({ page }) {
-      await pause(4_000);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Overwrite Paired Files from This File",
-      );
-      await pause(4_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.md"),
-        "190, 220",
-      );
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.ipynb"),
-        "220",
-      );
-    },
-  },
-
-  "convert-file-format": {
-    recordingFile: "convert-file-format.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      const markdownFile = await createAnalysisMarkdown(workspaceDirectory);
-      const notebookFile = path.join(workspaceDirectory, "analysis.ipynb");
-      await runProcess(
-        process.env.JOTEBOOKSYNC_PYTHON ?? "python",
-        [
-          "-m",
-          "jupytext",
-          "--to",
-          "ipynb",
-          "--output",
-          notebookFile,
-          markdownFile,
-        ],
-        { cwd: workspaceDirectory },
-      );
-      return notebookFile;
-    },
-
-    async run({ page }) {
-      await pause(2_500);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Convert File to Another Format",
-      );
-      await chooseVisibleQuickPickItem(page, "Choose output format");
-      await chooseVisibleQuickPickItem(page, "Enter custom --to format...");
-      await fillVisibleQuickInput(page, "py:percent");
-      await confirmQuickInput(page);
-      await chooseVisibleQuickPickItem(page, "Use default output filename");
-      await pause(4_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.py"),
-        "revenue",
-      );
-    },
-  },
-
-  "test-round-trip-conversion": {
-    recordingFile: "test-round-trip-conversion.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      return createAnalysisMarkdown(workspaceDirectory);
-    },
-
-    async run({ page }) {
-      await pause(2_500);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Test Round-Trip Conversion",
-      );
-      await chooseVisibleQuickPickItem(page, "Enter custom --to format...");
-      await fillVisibleQuickInput(page, "py:percent");
-      await confirmQuickInput(page);
-      await pause(4_000);
-    },
-  },
-
-  "show-available-formats": {
-    recordingFile: "show-available-formats.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      return createAnalysisMarkdown(workspaceDirectory);
-    },
-
-    async run({ page }) {
-      await pause(2_500);
-      await runVSCodeCommand(page, "JotebookSync: Show Available Formats");
-      await pause(5_000);
-    },
-
-    async verify({ page }) {
-      await page
-        .locator(".output-view .view-lines")
-        .first()
-        .waitFor({ timeout: 10_000 });
-    },
-  },
-
-  "update-existing-notebook": {
-    recordingFile: "update-existing-notebook.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
-      await writeFile(
-        pair.markdownFile,
-        `${await readFile(pair.markdownFile, "utf8")}\nUpdated from the text notebook.\n`,
-        "utf8",
-      );
-      return pair.markdownFile;
-    },
-
-    async run({ page }) {
-      await pause(2_500);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Update Existing Notebook from Text File",
-      );
-      await confirmQuickInput(page);
-      await pause(5_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.ipynb"),
-        "Updated from the text notebook.",
-      );
-    },
-  },
-
-  "inspect-and-remove-pairing": {
-    recordingFile: "inspect-and-remove-pairing.webm",
-
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
-      return pair.pythonFile;
-    },
-
-    async run({ page }) {
-      await pause(4_000);
-      await runVSCodeCommand(page, "JotebookSync: Show Paired Files");
-      await pause(2_000);
-      await runVSCodeCommand(page, "JotebookSync: Remove Pairing");
-      await pause(3_000);
-    },
-
-    async verify({ workspaceDirectory }) {
-      const markdown = await readFile(
-        path.join(workspaceDirectory, "analysis.md"),
-        "utf8",
-      );
-      if (/formats:/i.test(markdown)) {
-        throw new Error("Remove Pairing left pairing metadata in analysis.md.");
-      }
-    },
-  },
-
-  // ---------------------------------------------------------------------------
-  // Additional developer-oriented commands can be recorded on demand.
-  // ---------------------------------------------------------------------------
-
-  /*
-  "sync-paired-files": {
-    recordingFile:
-      "sync-paired-files.webm",
-
-    async prepareWorkspace({
-      workspaceDirectory,
-    }) {
-      return createAnalysisMarkdown(
-        workspaceDirectory,
-      );
-    },
-
-    async run({ page }) {
-      await pause(1_500);
-
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Sync Paired Files",
-      );
-
-      await pause(2_000);
-    },
-  },
-  */
-
+  "setup-paired-files": setupPairedFilesScenario(scenarioDependencies),
+  "review-pair-freshness": reviewPairFreshnessScenario(scenarioDependencies),
+  "sync-newest-paired-file": syncNewestPairedFileScenario(scenarioDependencies),
+  "create-notebook-from-text":
+    createNotebookFromTextScenario(scenarioDependencies),
+  "project-pairing-configuration":
+    projectPairingConfigurationScenario(scenarioDependencies),
+  "open-paired-notebook": openPairedNotebookScenario(scenarioDependencies),
+  "overwrite-from-current-file":
+    overwriteFromCurrentFileScenario(scenarioDependencies),
+  "convert-file-format": convertFileFormatScenario(scenarioDependencies),
+  "test-round-trip-conversion":
+    testRoundTripConversionScenario(scenarioDependencies),
+  "show-available-formats":
+    showAvailableFormatsScenario(scenarioDependencies),
+  "update-existing-notebook":
+    updateExistingNotebookScenario(scenarioDependencies),
+  "inspect-and-remove-pairing":
+    inspectAndRemovePairingScenario(scenarioDependencies),
 };
 
 // -----------------------------------------------------------------------------
