@@ -82,8 +82,8 @@ const config = {
 
   workspace: {
     settings: {
-      "workbench.colorTheme": "Dark+",
-      "workbench.preferredDarkColorTheme": "Dark+",
+      "workbench.colorTheme": "Default Dark Modern",
+      "workbench.preferredDarkColorTheme": "Default Dark Modern",
       "window.autoDetectColorScheme": false,
       "window.systemColorTheme": "dark",
       "workbench.secondarySideBar.defaultVisibility": "hidden",
@@ -651,6 +651,9 @@ async function createPairedAnalysis(workspaceDirectory) {
 }
 
 async function confirmQuickInput(page) {
+  await page
+    .locator(".quick-input-widget:visible")
+    .waitFor({ timeout: 10_000 });
   await pause(700);
   await page.keyboard.press("Enter");
 }
@@ -925,7 +928,6 @@ const demoScenarios = {
         page,
         "JotebookSync: Create Notebook from Text File",
       );
-      await confirmQuickInput(page);
       await pause(4_000);
     },
 
@@ -1179,42 +1181,6 @@ const demoScenarios = {
   },
   */
 
-  // ---------------------------------------------------------------------------
-  // Example scenario-specific settings
-  // ---------------------------------------------------------------------------
-
-  /*
-  "light-theme-demo": {
-    recordingFile:
-      "light-theme-demo.webm",
-
-    workspace: {
-      settings: {
-        "workbench.colorTheme":
-          "Default Light Modern",
-      },
-    },
-
-    async prepareWorkspace({
-      workspaceDirectory,
-    }) {
-      return createAnalysisMarkdown(
-        workspaceDirectory,
-      );
-    },
-
-    async run({ page }) {
-      await pause(1_500);
-
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Set Up or Update Paired Files",
-      );
-
-      await pause(2_000);
-    },
-  },
-  */
 };
 
 // -----------------------------------------------------------------------------

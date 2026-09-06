@@ -33,6 +33,13 @@ function shouldAutoConfirm(
   );
 }
 
+function isDemoAutoConfirm(context: vscode.ExtensionContext): boolean {
+  return (
+    context.extensionMode === vscode.ExtensionMode.Test &&
+    process.env.JOTEBOOKSYNC_DEMO_AUTO_CONFIRM === "1"
+  );
+}
+
 function getWorkspaceCwd(uri?: vscode.Uri): string {
   if (uri?.fsPath) {
     return fs.statSync(uri.fsPath).isDirectory()
@@ -813,11 +820,16 @@ export function activate(context: vscode.ExtensionContext): void {
             return;
           }
 
-          const outputUri = await vscode.window.showSaveDialog({
-            defaultUri: getDefaultNotebookUri(fileUri),
-            filters: { "Jupyter Notebook": ["ipynb"] },
-            title: formatExtensionMessage(context, "Create notebook from text file"),
-          });
+          const outputUri = isDemoAutoConfirm(context)
+            ? getDefaultNotebookUri(fileUri)
+            : await vscode.window.showSaveDialog({
+                defaultUri: getDefaultNotebookUri(fileUri),
+                filters: { "Jupyter Notebook": ["ipynb"] },
+                title: formatExtensionMessage(
+                  context,
+                  "Create notebook from text file",
+                ),
+              });
           if (!outputUri) {
             return;
           }
