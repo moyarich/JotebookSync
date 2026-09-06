@@ -101,22 +101,40 @@ export default function createScenario({
 
       await pause(2_500);
 
-      // End on the real payoff: the executable notebook beside its readable
-      // paired source file.
+      // End on the real payoff: all three representations visible together.
+      await openWorkspaceFile(page, "analysis.md");
+      await page.keyboard.press(
+        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
+      );
+      await pause(500);
       await openWorkspaceFile(page, "analysis.ipynb");
       await page
         .locator(".notebook-editor")
         .first()
         .waitFor({ timeout: 15_000 });
-      await page.keyboard.press(
-        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
-      );
-      await pause(700);
-      await openWorkspaceFile(page, "analysis.py");
       await page
         .locator(".editor-group-container")
         .nth(1)
+        .locator(".tab")
+        .filter({ hasText: "analysis.md" })
+        .getByLabel("Close")
+        .click();
+      await page.keyboard.press(
+        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
+      );
+      await pause(500);
+      await openWorkspaceFile(page, "analysis.py");
+      await page
+        .locator(".editor-group-container")
+        .nth(2)
         .waitFor({ timeout: 10_000 });
+      await page
+        .locator(".editor-group-container")
+        .nth(2)
+        .locator(".tab")
+        .filter({ hasText: "analysis.ipynb" })
+        .getByLabel("Close")
+        .click();
       await pause(4_000);
     },
 
@@ -129,8 +147,10 @@ export default function createScenario({
       const visibleGroups = await page
         .locator(".editor-group-container:visible")
         .count();
-      if (visibleGroups < 2) {
-        throw new Error("Pair setup demo did not finish in a side-by-side view.");
+      if (visibleGroups < 3) {
+        throw new Error(
+          "Pair setup demo did not show Markdown, notebook, and Python side by side.",
+        );
       }
     },
   };

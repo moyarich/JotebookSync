@@ -391,11 +391,11 @@ function getQuickOpenShortcut() {
   return process.platform === "darwin" ? "Meta+P" : "Control+P";
 }
 
-async function openWorkspaceFile(page, fileName) {
+async function openWorkspaceFile(page, fileName, { openToSide = false } = {}) {
   await page.keyboard.press(getQuickOpenShortcut());
   await fillVisibleQuickInput(page, fileName);
   await pause(700);
-  await page.keyboard.press("Enter");
+  await page.keyboard.press(openToSide ? "Control+Enter" : "Enter");
 }
 
 async function runVSCodeCommand(
