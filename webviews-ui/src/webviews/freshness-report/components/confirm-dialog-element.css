@@ -1,0 +1,176 @@
+:host {
+  display: contents;
+  font-family: var(--sans);
+  color: var(--foreground);
+}
+
+dialog {
+  width: min(31rem, 100%);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 20px 60px var(--widget-shadow);
+}
+
+dialog::backdrop {
+  background: color-mix(in srgb, var(--foreground) 38%, transparent);
+}
+dialog .inner-content {
+  padding: 15px;
+}
+
+.header {
+  padding: 1rem 1.1rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+}
+
+button {
+  min-height: 2.1rem;
+  padding: 0 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
+  background: var(--button-background);
+  color: var(--button-foreground);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 720;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.primary {
+  border-color: var(--action-background);
+  background: var(--action-background);
+  color: var(--primary-foreground);
+}
+
+.primary:hover {
+  border-color: var(--action-hover-background);
+  background: var(--action-hover-background);
+}
+
+.danger {
+  border-color: var(--vscode-inputValidation-errorBorder, var(--warning));
+  background: var(
+    --vscode-inputValidation-errorBackground,
+    color-mix(in srgb, var(--warning) 18%, var(--card))
+  );
+  color: var(--vscode-inputValidation-errorForeground, var(--foreground));
+}
+
+@media (max-width: 680px) {
+  .confirm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/*----------*/
+
+.confirm-message {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+  color: var(--foreground);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.confirm-callout {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--warning) 28%, var(--border));
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--warning) 9%, var(--card));
+  color: color-mix(in srgb, var(--warning) 72%, var(--foreground));
+  font-weight: 720;
+}
+
+.confirm-section {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.confirm-section-title {
+  color: var(--muted-foreground);
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.confirm-code {
+  display: block;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--muted);
+  color: var(--foreground);
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.confirm-details {
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--muted) 44%, var(--card));
+}
+
+.confirm-details summary {
+  cursor: pointer;
+  padding: 0.65rem 0.75rem;
+  color: var(--foreground);
+  font-weight: 760;
+}
+
+.confirm-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0 0.75rem 0.75rem;
+}
+
+.confirm-meta-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--card);
+}
+
+.confirm-meta-title {
+  font-weight: 820;
+}
+
+.confirm-meta-line {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
+.confirm-meta-label {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.confirm-meta-value {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}

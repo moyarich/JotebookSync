@@ -1,0 +1,426 @@
+{
+  "name": "jotebooksync",
+  "displayName": "JotebookSync",
+  "description": "Pair Jupyter notebooks with readable scripts and Markdown using Jupytext. Sync on save, review changes, preserve outputs, and convert formats in VS Code.",
+  "version": "0.0.1",
+  "publisher": "moyarich",
+  "author": "Moya Richards",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "keywords": [
+    "jupyter",
+    "notebook",
+    "jupytext",
+    "ipynb",
+    "markdown",
+    "python",
+    "data-science",
+    "converter",
+    "sync"
+  ],
+  "categories": [
+    "Other",
+    "Data Science",
+    "Machine Learning",
+    "Notebooks",
+    "Formatters"
+  ],
+  "extensionDependencies": [
+    "ms-toolsai.jupyter",
+    "ms-python.python"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "type": "module",
+  "contributes": {
+    "commands": [
+      {
+        "command": "jotebooksync.openPairedNotebook",
+        "title": "Open Paired Notebook",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.createNotebookFromText",
+        "title": "Create Notebook from Text File…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.updateNotebookFromText",
+        "title": "Update Existing Notebook from Text File…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.createProjectConfig",
+        "title": "Create Project Pairing Configuration…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.applyProjectConfig",
+        "title": "Apply Project Pairing Configuration…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.setupPairing",
+        "title": "Set Up or Update Paired Files…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.removePairing",
+        "title": "Remove Pairing…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.syncPairedFilesFromCurrentFile",
+        "title": "Overwrite Paired Files from This File…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.syncPairedFilesFromNewestPair",
+        "title": "Sync All from Newest Paired File…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.checkSourceIsNewer",
+        "title": "Review Pair Freshness…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.outputPairedFiles",
+        "title": "Show Paired Files",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.convert",
+        "title": "Convert File to Another Format…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.formatWithBlack",
+        "title": "Format with Black",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.testRoundtrip",
+        "title": "Test Round-Trip Conversion…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.testStrictRoundtrip",
+        "title": "Test Strict Round-Trip Conversion…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.showOptions",
+        "title": "Show Available Formats",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.refreshOptions",
+        "title": "Refresh Available Formats",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.pipe",
+        "title": "Pipe Through External Command…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.check",
+        "title": "Check with External Command…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.setKernel",
+        "title": "Set Notebook Kernel…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.execute",
+        "title": "Execute Notebook…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.updateMetadata",
+        "title": "Update Notebook Metadata…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.setFormatOptions",
+        "title": "Set Format Options…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.runPreCommit",
+        "title": "Run Pre-commit Workflow…",
+        "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.runAdvanced",
+        "title": "Run Advanced Jupytext Command…",
+        "category": "JotebookSync"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "jotebooksync.explorerSubmenu",
+        "label": "JotebookSync"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "submenu": "jotebooksync.explorerSubmenu",
+          "when": "resourceScheme == file",
+          "group": "navigation@10"
+        }
+      ],
+      "jotebooksync.explorerSubmenu": [
+        {
+          "command": "jotebooksync.openPairedNotebook",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "1_navigation@10"
+        },
+        {
+          "command": "jotebooksync.createNotebookFromText",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourceExtname != .ipynb",
+          "group": "1_navigation@20"
+        },
+        {
+          "command": "jotebooksync.updateNotebookFromText",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourceExtname != .ipynb",
+          "group": "1_navigation@30"
+        },
+        {
+          "command": "jotebooksync.setupPairing",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "2_pair@10"
+        },
+        {
+          "command": "jotebooksync.removePairing",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
+          "group": "2_pair@20"
+        },
+        {
+          "command": "jotebooksync.checkSourceIsNewer",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
+          "group": "3_sync@05"
+        },
+        {
+          "command": "jotebooksync.syncPairedFilesFromCurrentFile",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
+          "group": "3_sync@10"
+        },
+        {
+          "command": "jotebooksync.syncPairedFilesFromNewestPair",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
+          "group": "3_sync@20"
+        },
+        {
+          "command": "jotebooksync.formatWithBlack",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "4_tools@20"
+        },
+        {
+          "command": "jotebooksync.convert",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "5_test@05"
+        },
+        {
+          "command": "jotebooksync.testRoundtrip",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "5_test@10"
+        },
+        {
+          "command": "jotebooksync.testStrictRoundtrip",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "5_test@20"
+        },
+        {
+          "command": "jotebooksync.outputPairedFiles",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
+          "group": "3_sync@30"
+        },
+        {
+          "command": "jotebooksync.showOptions",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "6_formats@10"
+        },
+        {
+          "command": "jotebooksync.refreshOptions",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "6_formats@20"
+        },
+        {
+          "command": "jotebooksync.createProjectConfig",
+          "when": "resourceScheme == file && explorerResourceIsFolder",
+          "group": "6_formats@30"
+        },
+        {
+          "command": "jotebooksync.applyProjectConfig",
+          "when": "resourceScheme == file && (explorerResourceIsFolder || resourceFilename == jupytext.toml || resourceFilename == pyproject.toml)",
+          "group": "6_formats@40"
+        },
+        {
+          "command": "jotebooksync.pipe",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "7_advanced@10"
+        },
+        {
+          "command": "jotebooksync.check",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "7_advanced@20"
+        },
+        {
+          "command": "jotebooksync.setKernel",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "7_advanced@30"
+        },
+        {
+          "command": "jotebooksync.execute",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "7_advanced@40"
+        },
+        {
+          "command": "jotebooksync.updateMetadata",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "7_advanced@50"
+        },
+        {
+          "command": "jotebooksync.setFormatOptions",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "7_advanced@60"
+        },
+        {
+          "command": "jotebooksync.runPreCommit",
+          "when": "resourceScheme == file",
+          "group": "7_advanced@70"
+        },
+        {
+          "command": "jotebooksync.runAdvanced",
+          "when": "resourceScheme == file",
+          "group": "7_advanced@80"
+        }
+      ],
+      "notebook/toolbar": [
+        {
+          "command": "jotebooksync.setupPairing",
+          "when": "notebookType == jupyter-notebook",
+          "group": "navigation/execute@8"
+        },
+        {
+          "command": "jotebooksync.removePairing",
+          "when": "notebookType == jupyter-notebook && jotebooksync.activeFileIsPaired",
+          "group": "navigation/execute@9"
+        },
+        {
+          "command": "jotebooksync.syncPairedFilesFromCurrentFile",
+          "when": "notebookType == jupyter-notebook && jotebooksync.activeFileIsPaired",
+          "group": "navigation/execute@6"
+        },
+        {
+          "command": "jotebooksync.checkSourceIsNewer",
+          "when": "notebookType == jupyter-notebook && jotebooksync.activeFileIsPaired",
+          "group": "navigation/execute@7"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "JotebookSync",
+      "properties": {
+        "jotebooksync.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python executable used to run Jupytext. If unset or left as python, the extension can fall back to the active Python extension interpreter."
+        },
+        "jotebooksync.autoSyncOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep paired files synchronized whenever a paired text file or notebook is saved."
+        },
+        "jotebooksync.confirmDestructiveActions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ask for confirmation before removing pairing metadata or replacing notebook, paired-file, or project configuration content. Disable to perform these actions immediately."
+        },
+        "jotebooksync.supportedTextExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Optional override for file extensions this extension handles. Leave empty to use extensions reported by installed Jupytext."
+        },
+        "jotebooksync.notebookEditorViewType": {
+          "type": "string",
+          "default": "jupyter-notebook",
+          "description": "VS Code editor view type used to open the notebook."
+        },
+        "jotebooksync.syncArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments passed to jupytext --sync."
+        },
+        "jotebooksync.setFormatsArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments passed before --set-formats."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "dev": "npm --prefix webviews-ui run dev --",
+    "vscode:prepublish": "npm run compile",
+    "compile": "npm run build:webviews && npm run clean:extension && tsc -p ./",
+    "build": "npm run compile",
+    "build:webviews": "npm --prefix webviews-ui run build",
+    "clean:extension": "node -e \"require('node:fs').rmSync('out', { recursive: true, force: true })\"",
+    "compile:tests": "node -e \"require('node:fs').rmSync('out-test', { recursive: true, force: true })\" && tsc -p tsconfig.tests.json && node -e \"require('node:fs').cpSync('resources', 'out-test/resources', { recursive: true })\"",
+    "watch": "concurrently -k -n webviews,extension \"npm --prefix webviews-ui run build -- --watch\" \"tsc -watch -p ./\"",
+    "watch:extension": "tsc -watch -p ./",
+    "watch:webviews": "npm --prefix webviews-ui run build -- --watch",
+    "dev:extension": "./scripts/run-extension-dev.sh",
+    "demo": "node ./demo/extension.smoke.mjs --demo",
+    "demo:all": "npm run demo -- --scenario=all",
+    "demo:freshness": "npm run demo -- --scenario=review-pair-freshness",
+    "demo:gif": "node ./demo/create-readme-gif.mjs",
+    "pretest": "npm run compile && npm run compile:tests && npm run lint",
+    "lint": "eslint src test demo",
+    "test": "npm run test:webviews && vscode-test",
+    "test:webviews": "tsc -p tsconfig.webview-tests.json && vitest run test/webviews",
+    "zip": "npm run compile && vite build --mode zip",
+    "package": "npm run compile && npx vsce package --allow-missing-repository --no-rewrite-relative-links",
+    "package:ls": "npm run compile && npx @vscode/vsce ls --tree"
+  },
+  "dependencies": {
+    "date-fns": "^4.4.0",
+    "mustache": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^8.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/mustache": "^4.2.6",
+    "@types/node": "^26.0.1",
+    "@types/vscode": "^1.125.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "archiver": "^8.0.0",
+    "colors": "^1.4.0",
+    "concurrently": "^10.0.3",
+    "eslint": "^10.5.0",
+    "happy-dom": "^20.14.0",
+    "playwright-core": "^1.62.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.0",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
+  }
+}

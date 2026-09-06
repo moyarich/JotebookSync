@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; script-src {{cspSource}} 'nonce-{{nonce}}';"
+    />
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{{cssUri}}" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="shell" aria-label="Source freshness report">
+        <header class="hero">
+          <span class="hero-icon" aria-hidden="true">↻</span>
+          <div>
+            <h1 class="hero-title">Review paired files</h1>
+            <p class="hero-description">
+              See which file changed most recently before you synchronize or
+              overwrite anything.
+            </p>
+          </div>
+          <button class="hero-refresh" id="refreshButton" type="button">
+            Refresh
+          </button>
+        </header>
+
+        <div class="content">
+          <section class="review-summary" id="reviewSummary" aria-live="polite">
+            <span class="review-summary-icon" aria-hidden="true"></span>
+            <div>
+              <strong id="reviewSummaryTitle"></strong>
+              <p id="reviewSummaryDescription"></p>
+            </div>
+          </section>
+
+          <section class="section" aria-labelledby="sourceGroupTitle">
+            <header class="section-header">
+              <div class="section-title-row">
+                <span class="section-icon" aria-hidden="true">▧</span>
+                <h2 class="section-label" id="sourceGroupTitle">
+                  Selected source
+                </h2>
+              </div>
+            </header>
+            <div class="card-list" id="sourceList"></div>
+          </section>
+
+          <section class="section" aria-labelledby="destinationGroupTitle">
+            <header class="section-header">
+              <div class="section-title-row">
+                <span class="section-icon" aria-hidden="true">▧</span>
+                <h2 class="section-label" id="destinationGroupTitle">
+                  Paired destinations
+                </h2>
+              </div>
+              <div class="section-actions">
+                <button
+                  class="count-pill"
+                  id="destinationCountButton"
+                  type="button"
+                  aria-label="Clear destination filter"
+                  title="Show all paired files"
+                >
+                  <span id="destinationVisibleCount">0</span>
+                </button>
+                <label class="toolbar-field">
+                  <span>Show</span>
+                  <select
+                    class="toolbar-select"
+                    id="destinationFilter"
+                    aria-label="Filter destination files"
+                  >
+                    <option value="all">All files</option>
+                    <option value="newer">Newer than source</option>
+                    <option value="review">Needs review</option>
+                    <option value="ok">Safe to update</option>
+                    <option value="newest">Most recent destination</option>
+                  </select>
+                </label>
+                <label class="toolbar-field">
+                  <span>Sort</span>
+                  <select
+                    class="toolbar-select"
+                    id="destinationSort"
+                    aria-label="Sort destination files"
+                  >
+                    <option value="date-desc">Newest first</option>
+                    <option value="date-asc">Oldest first</option>
+                    <option value="name-asc">Name A to Z</option>
+                    <option value="name-desc">Name Z to A</option>
+                  </select>
+                </label>
+              </div>
+            </header>
+            <div class="destination-list" id="destinationList"></div>
+            <div class="empty-state" id="destinationEmpty" hidden>
+              <strong>No paired files match this filter</strong>
+              <button id="clearFilterButton" type="button">Show all files</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <jotebook-confirm-dialog id="confirmDialog"></jotebook-confirm-dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite">Ready</div>
+
+    <script id="pairData" type="application/json" nonce="{{nonce}}">
+      {{{webviewData}}}
+    </script>
+    <script type="module" src="{{jsUri}}" nonce="{{nonce}}"></script>
+  </body>
+</html>

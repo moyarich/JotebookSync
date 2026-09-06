@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; script-src {{cspSource}} 'nonce-{{nonce}}';"
+    />
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{{cssUri}}" />
+  </head>
+  <body>
+    <main class="shell">
+      <form id="pairSetupForm" novalidate>
+      <header>
+        <h1>{{heading}}</h1>
+        <p class="description">{{description}}</p>
+        <div class="path" title="{{selectedPath}}">
+          <span class="path-label">Selected file</span>
+          <code>{{selectedPath}}</code>
+        </div>
+      </header>
+      <fieldset class="body" id="options">
+        <legend>Files in this pair</legend>
+      </fieldset>
+      <details class="custom-panel">
+        <summary>
+          <span>Advanced options</span>
+          <span class="summary-description">Add another language or pairing format</span>
+        </summary>
+        <div class="custom-content">
+          <fieldset class="advanced-list" id="advancedOptions">
+            <legend>Additional file types</legend>
+          </fieldset>
+          <div class="custom-header">
+            <p class="custom-description">
+              Use a preset below, or add any Jupytext format code such as
+              <code>py:percent</code>, <code>jl:percent</code>, or <code>Rmd</code>.
+            </p>
+            <button type="button" id="addCustomFormatButton">Add custom format</button>
+          </div>
+          <div class="custom-list" id="customFormats"></div>
+        </div>
+      </details>
+      <div class="error" id="error" role="alert" aria-live="polite"></div>
+      <footer class="actions">
+        <button type="button" id="cancelButton">Cancel</button>
+        <button type="submit" class="primary" id="submitButton">
+          {{submitLabel}}
+        </button>
+      </footer>
+      </form>
+    </main>
+    <script id="setupData" type="application/json" nonce="{{nonce}}">
+      {{{setupData}}}
+    </script>
+    <script type="module" src="{{jsUri}}" nonce="{{nonce}}"></script>
+  </body>
+</html>

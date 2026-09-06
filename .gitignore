@@ -1,0 +1,13 @@
+out
+out-test
+dist
+node_modules
+.vscode-test/
+*.vsix
+*.venv
+.mypy_cache
+.DS_Store
+webviews-ui/src/**/*.js
+webviews-ui/src/**/*.js.map
+zip/**
+demo/artifacts/**
