@@ -374,6 +374,17 @@ function getCommandPaletteShortcut() {
   return process.platform === "darwin" ? "Meta+Shift+P" : "Control+Shift+P";
 }
 
+function getQuickOpenShortcut() {
+  return process.platform === "darwin" ? "Meta+P" : "Control+P";
+}
+
+async function openWorkspaceFile(page, fileName) {
+  await page.keyboard.press(getQuickOpenShortcut());
+  await fillVisibleQuickInput(page, fileName);
+  await pause(700);
+  await page.keyboard.press("Enter");
+}
+
 async function runVSCodeCommand(
   page,
   command,
@@ -777,15 +788,36 @@ const demoScenarios = {
 
       await submit.click();
 
-      // Keep final state visible.
-      await pause(3_000);
+      await pause(2_500);
+
+      // End on the real payoff: the executable notebook beside its readable
+      // paired source file.
+      await openWorkspaceFile(page, "analysis.ipynb");
+      await page
+        .locator(".notebook-editor")
+        .first()
+        .waitFor({ timeout: 15_000 });
+      await runVSCodeCommand(page, "View: Split Editor Right");
+      await pause(700);
+      await openWorkspaceFile(page, "analysis.py");
+      await page
+        .locator(".editor-group-container")
+        .nth(1)
+        .waitFor({ timeout: 10_000 });
+      await pause(4_000);
     },
 
-    async verify({ workspaceDirectory }) {
+    async verify({ page, workspaceDirectory }) {
       await assertFileExists(path.join(workspaceDirectory, "analysis.ipynb"));
       const files = await readdir(workspaceDirectory);
       if (!files.some((file) => file.endsWith(".py"))) {
         throw new Error("Pair setup did not create the selected Python format.");
+      }
+      const visibleGroups = await page
+        .locator(".editor-group-container:visible")
+        .count();
+      if (visibleGroups < 2) {
+        throw new Error("Pair setup demo did not finish in a side-by-side view.");
       }
     },
   },
