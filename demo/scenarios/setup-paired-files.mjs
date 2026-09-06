@@ -108,7 +108,9 @@ export default function createScenario({
         .locator(".notebook-editor")
         .first()
         .waitFor({ timeout: 15_000 });
-      await runVSCodeCommand(page, "View: Split Editor Right");
+      await page.keyboard.press(
+        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
+      );
       await pause(700);
       await openWorkspaceFile(page, "analysis.py");
       await page
