@@ -162,6 +162,55 @@ export class JupytextPairingService {
     );
   }
 
+  private updatePairFormats(
+    filePath: string,
+    formats: string,
+  ): Promise<CommandResult> {
+    return this.runJupytext(
+      [
+        "--update-metadata",
+        JSON.stringify({ jupytext: { formats } }),
+        filePath,
+      ],
+      path.dirname(filePath),
+    );
+  }
+
+  private getPairBaseName(paths: readonly PairedPathAndFormat[]): string {
+    const names = paths.map(([filePath]) => path.basename(filePath));
+    let prefix = names[0] ?? "";
+
+    for (const name of names.slice(1)) {
+      while (prefix && !name.startsWith(prefix)) {
+        prefix = prefix.slice(0, -1);
+      }
+    }
+
+    return prefix.replace(/[._-]+$/, "");
+  }
+
+  private getFormatForPairedPath(
+    entry: PairedPathAndFormat,
+    pairBaseName: string,
+  ): string {
+    const [filePath, format] = entry;
+    const extension = format.extension?.startsWith(".")
+      ? format.extension
+      : `.${format.extension ?? ""}`;
+    const actualSuffix = path.basename(filePath).slice(pairBaseName.length);
+
+    if (
+      !actualSuffix ||
+      actualSuffix.toLowerCase() === extension.toLowerCase()
+    ) {
+      return pairedFormatToJupytextFormat(format);
+    }
+
+    return format.format_name
+      ? `${actualSuffix}:${format.format_name}`
+      : actualSuffix.replace(/^\./, "");
+  }
+
   public async checkPairSourceIsNewer(
     uri: vscode.Uri,
   ): Promise<SourceNewerCheckResult[]> {
@@ -556,6 +605,59 @@ export class JupytextPairingService {
     );
   }
 
+  /** Detaches one existing representation without deleting it or unpairing the rest. */
+  public async removeFileFromPair(uri: vscode.Uri): Promise<void> {
+    const pairInfo = await this.getPairInfo(uri);
+    const selectedPath = path.resolve(uri.fsPath);
+    const selectedEntry = pairInfo.paths.find(
+      ([filePath]) => path.resolve(filePath) === selectedPath,
+    );
+
+    if (!pairInfo.isPaired || !selectedEntry) {
+      throw new Error(
+        formatExtensionMessage(
+          this.context,
+          `${path.basename(uri.fsPath)} is not an existing member of a Jupytext pair.`,
+        ),
+      );
+    }
+
+    const remainingEntries = pairInfo.paths.filter(
+      ([filePath]) =>
+        path.resolve(filePath) !== selectedPath && fs.existsSync(filePath),
+    );
+
+    if (remainingEntries.length < 2) {
+      throw new Error(
+        formatExtensionMessage(
+          this.context,
+          "This pair has only two existing files. Use Remove Pairing to detach both files.",
+        ),
+      );
+    }
+
+    const pairBaseName = this.getPairBaseName(pairInfo.paths);
+    const remainingFormats = [
+      ...new Set(
+        remainingEntries.map((entry) =>
+          this.getFormatForPairedPath(entry, pairBaseName),
+        ),
+      ),
+    ].join(",");
+
+    for (const [filePath] of remainingEntries) {
+      await this.updatePairFormats(filePath, remainingFormats);
+    }
+    await this.unpair(uri.fsPath, path.dirname(uri.fsPath));
+
+    vscode.window.showInformationMessage(
+      formatExtensionMessage(
+        this.context,
+        `${path.basename(uri.fsPath)} was removed from the pair. The file was not deleted.`,
+      ),
+    );
+  }
+
   public async syncPairedFilesFromNewestPair(
     uri: vscode.Uri,
     showMessage = true,
@@ -694,10 +796,13 @@ function getWorkspaceCwd(uri?: vscode.Uri): string {
 }
 
 async function getUriFromCommand(
-  uri?: vscode.Uri,
+  resource?: vscode.Uri | { uri: vscode.Uri },
 ): Promise<vscode.Uri | undefined> {
-  if (uri instanceof vscode.Uri) {
-    return uri;
+  if (resource instanceof vscode.Uri) {
+    return resource;
+  }
+  if (resource?.uri instanceof vscode.Uri) {
+    return resource.uri;
   }
   if (vscode.window.activeNotebookEditor) {
     return vscode.window.activeNotebookEditor.notebook.uri;
@@ -707,7 +812,7 @@ async function getUriFromCommand(
 
 export async function withJupytext(
   jupytext: JupytextPairingService,
-  uri: vscode.Uri | undefined,
+  uri: vscode.Uri | { uri: vscode.Uri } | undefined,
   action: (fileUri: vscode.Uri) => Promise<void>,
 ): Promise<void> {
   const fileUri = await getUriFromCommand(uri);
@@ -733,7 +838,7 @@ export async function withJupytext(
 
 export async function withJupytextAndBlack(
   jupytext: JupytextPairingService,
-  uri: vscode.Uri | undefined,
+  uri: vscode.Uri | { uri: vscode.Uri } | undefined,
   action: (fileUri: vscode.Uri) => Promise<void>,
 ): Promise<void> {
   await withJupytext(jupytext, uri, async (fileUri) => {

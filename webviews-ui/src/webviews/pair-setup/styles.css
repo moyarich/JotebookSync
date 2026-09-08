@@ -293,11 +293,25 @@ input:disabled {
 }
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
   padding: 16px 18px;
   border-top: 1px solid var(--border);
   background: var(--card);
+}
+.destructive-actions,
+.primary-actions {
+  display: flex;
+  gap: 10px;
+}
+button.danger {
+  border-color: color-mix(in srgb, var(--vscode-errorForeground) 55%, var(--border));
+  color: var(--vscode-errorForeground);
+  background: color-mix(in srgb, var(--vscode-errorForeground) 8%, var(--button-secondary));
+}
+button.danger:hover {
+  border-color: var(--vscode-errorForeground);
+  background: color-mix(in srgb, var(--vscode-errorForeground) 16%, var(--button-secondary-hover));
 }
 button {
   min-height: 36px;
@@ -378,6 +392,11 @@ button.primary:hover {
   .custom-header button,
   .actions button {
     width: 100%;
+  }
+
+  .destructive-actions,
+  .primary-actions {
+    display: contents;
   }
 
   .custom-row {

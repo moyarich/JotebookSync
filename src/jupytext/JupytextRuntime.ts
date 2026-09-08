@@ -1,7 +1,11 @@
 import * as vscode from "vscode";
 import { execFile } from "node:child_process";
 
-import { EXTENSION } from "../constants.js";
+import {
+  CONFIG,
+  EXTENSION,
+  getExtensionConfigurationKey,
+} from "../constants.js";
 import { ExtensionConfig } from "../ExtensionConfig/index.js";
 import { formatExtensionMessage } from "../lib/utils.js";
 import type { CommandResult } from "./types.js";
@@ -158,7 +162,10 @@ export class JupytextRuntime {
     }
 
     try {
-      return await this.runPython(["-m", "jupytext", ...args], cwd);
+      return await this.runPython(
+        ["-m", JUPYTEXT_PYTHON_PACKAGE_NAME, ...args],
+        cwd,
+      );
     } catch (error) {
       if (error instanceof CommandExecutionError) {
         const output = error.stderr.trim() || error.stdout.trim();
@@ -305,7 +312,7 @@ export class JupytextRuntime {
     } else if (choice === "Choose Python") {
       await vscode.commands.executeCommand(
         "workbench.action.openSettings",
-        "jotebooksync.pythonPath",
+        getExtensionConfigurationKey(CONFIG.pythonPath),
       );
     }
   }

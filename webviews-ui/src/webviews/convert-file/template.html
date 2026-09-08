@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; script-src {{cspSource}} 'nonce-{{nonce}}';" />
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{{cssUri}}" />
+  </head>
+  <body>
+    <main class="shell">
+      <form id="convertForm" novalidate>
+        <header>
+          <h1>Convert file to another format</h1>
+          <p>Create a separate representation without adding it to a synchronized pair.</p>
+          <div class="path"><span>Source file</span><code id="sourcePath"></code></div>
+        </header>
+        <section class="body">
+          <label for="format">Output format</label>
+          <select id="format"></select>
+          <div id="formatDetail" class="help"></div>
+          <div id="customFormatGroup" hidden>
+            <label for="customFormat">Jupytext format code</label>
+            <input id="customFormat" placeholder="py:percent" autocomplete="off" />
+            <p class="help">Examples: <code>py:percent</code>, <code>md:myst</code>, <code>qmd</code>, or <code>Rmd</code>.</p>
+          </div>
+          <label for="outputPath">Destination filename</label>
+          <div class="destination"><input id="outputPath" /><button type="button" id="chooseOutput">Choose…</button></div>
+          <p class="help">The source file is left unchanged. An existing destination may be replaced.</p>
+        </section>
+        <div id="error" class="error" role="alert" aria-live="polite"></div>
+        <footer><button type="button" id="cancel">Cancel</button><button type="submit" class="primary" id="convert">Convert file</button></footer>
+      </form>
+    </main>
+    <script id="convertData" type="application/json" nonce="{{nonce}}">{{{convertData}}}</script>
+    <script type="module" src="{{jsUri}}" nonce="{{nonce}}"></script>
+  </body>
+</html>

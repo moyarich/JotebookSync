@@ -4,11 +4,11 @@ import pairSetupScriptUrl from "../../webviews/pair-setup/index.ts?url";
 import type { PageDefinition } from "../types";
 
 const pairSetupData = {
-  title: "Set Up Paired Files",
-  heading: "Set up paired files",
+  title: "Configure Paired Files",
+  heading: "Configure paired files",
   description: "Choose the file types you want to keep in sync.",
   selectedPath: "/example/README.md",
-  submitLabel: "Create paired files",
+  submitLabel: "Create pair",
   sourceFormat: "md",
   options: [
     {

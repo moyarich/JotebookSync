@@ -1,23 +1,11 @@
 
 export default function createScenario({
-  assertFileContains,
-  assertFileExists,
-  chooseVisibleQuickPickItem,
-  confirmQuickInput,
-  createAnalysisMarkdown,
   createPairedAnalysis,
-  createPlainMarkdown,
-  fillVisibleQuickInput,
   findFrameByHeading,
-  openWorkspaceFile,
-  path,
   pause,
   readFile,
-  readdir,
-  runProcess,
   runVSCodeCommand,
   scrollThroughWebview,
-  updatePairedPythonInput,
   writeFile,
 }) {
   return {

@@ -28,4 +28,29 @@ suite("pair lifecycle", () => {
     await context.service.removePairing(uri);
     assert.equal((await context.service.getPairInfo(uri)).isPaired, false);
   });
+
+  test("removes one file while keeping the remaining files paired", async function () {
+    this.timeout(60_000);
+    const markdownPath = path.join(context.directory, "detached.md");
+    const notebookPath = path.join(context.directory, "detached.ipynb");
+    const scriptPath = path.join(context.directory, "detached.percent.py");
+    await fs.writeFile(markdownPath, "# Detach this representation\n", "utf8");
+
+    await context.service.createPair(
+      vscode.Uri.file(markdownPath),
+      "ipynb,md,.percent.py:percent",
+    );
+    await context.service.removeFileFromPair(vscode.Uri.file(markdownPath));
+
+    const remaining = await context.service.getPairInfo(
+      vscode.Uri.file(notebookPath),
+    );
+    assert.equal(remaining.isPaired, true);
+    assert.deepEqual(new Set(remaining.formats), new Set(["ipynb", ".percent.py:percent"]));
+    assert.equal(
+      (await context.service.getPairInfo(vscode.Uri.file(markdownPath))).isPaired,
+      false,
+    );
+    await fs.stat(scriptPath);
+  });
 });

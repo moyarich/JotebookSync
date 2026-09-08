@@ -1,24 +1,11 @@
 
 export default function createScenario({
   assertFileContains,
-  assertFileExists,
-  chooseVisibleQuickPickItem,
-  confirmQuickInput,
-  createAnalysisMarkdown,
   createPairedAnalysis,
-  createPlainMarkdown,
-  fillVisibleQuickInput,
-  findFrameByHeading,
-  openWorkspaceFile,
   path,
   pause,
-  readFile,
-  readdir,
-  runProcess,
   runVSCodeCommand,
-  scrollThroughWebview,
   updatePairedPythonInput,
-  writeFile,
 }) {
   return {
     recordingFile: "sync-newest-paired-file.webm",
@@ -40,10 +27,10 @@ export default function createScenario({
     },
 
     async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.md"),
-        "190, 220",
-      );
+      await assertFileContains({
+        filePath: path.join(workspaceDirectory, "analysis.md"),
+        expectedText: "190, 220",
+      });
     },
   };
 }

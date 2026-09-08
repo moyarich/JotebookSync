@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 
 import { downloadAndUnzipVSCode, runTests } from "@vscode/test-electron";
 import { chromium } from "playwright-core";
+import colors from "colors/safe.js";
 
 import setupPairedFilesScenario from "./scenarios/setup-paired-files.mjs";
 import reviewPairFreshnessScenario from "./scenarios/review-pair-freshness.mjs";
@@ -226,7 +227,7 @@ async function assertFileExists(filePath) {
   }
 }
 
-async function assertFileContains(filePath, expectedText) {
+async function assertFileContains({ filePath, expectedText }) {
   await assertFileExists(filePath);
   const content = await readFile(filePath, "utf8");
   if (!content.includes(expectedText)) {
@@ -391,9 +392,9 @@ function getQuickOpenShortcut() {
   return process.platform === "darwin" ? "Meta+P" : "Control+P";
 }
 
-async function openWorkspaceFile(page, fileName, { openToSide = false } = {}) {
+async function openWorkspaceFile({ page, fileName, openToSide = false }) {
   await page.keyboard.press(getQuickOpenShortcut());
-  await fillVisibleQuickInput(page, fileName);
+  await fillVisibleQuickInput({ page, value: fileName });
   await pause(700);
   await page.keyboard.press(openToSide ? "Control+Enter" : "Enter");
 }
@@ -682,14 +683,14 @@ async function confirmQuickInput(page) {
   await page.keyboard.press("Enter");
 }
 
-async function fillVisibleQuickInput(page, value) {
+async function fillVisibleQuickInput({ page, value }) {
   const input = page.locator(".quick-input-widget input:visible").last();
   await input.waitFor({ timeout: 10_000 });
   await input.click();
   await input.fill(value);
 }
 
-async function chooseVisibleQuickPickItem(page, name) {
+async function chooseVisibleQuickPickItem({ page, name }) {
   const widget = page.locator(".quick-input-widget:visible");
   await widget.waitFor({ timeout: 10_000 });
   const item = widget.getByText(name, { exact: true });
@@ -709,7 +710,7 @@ async function updatePairedPythonInput(pythonFile) {
   );
 }
 
-async function resizeVSCodeWindow(page, { width, height }) {
+async function resizeVSCodeWindow({ page, width, height }) {
   await page.setViewportSize({ width, height });
 }
 
@@ -765,7 +766,7 @@ const demoScenarios = {
 // Scenario selection
 // -----------------------------------------------------------------------------
 
-function resolveScenarioNames(selection, scenarios) {
+function resolveScenarioNames({ selection, scenarios }) {
   const availableNames = Object.keys(scenarios);
 
   if (selection === "all") {
@@ -928,7 +929,7 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
 
     const page = await findVSCodeWorkbenchPage(browser);
 
-    await resizeVSCodeWindow(page, config.windowSize);
+    await resizeVSCodeWindow({ page, ...config.windowSize });
     // Apply stable recording preferences once. Passing `animations: "disabled"`
     // to every screenshot repeatedly injects and removes animation overrides,
     // which makes transition-heavy webviews visibly flash while recording.
@@ -1041,7 +1042,10 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
 // -----------------------------------------------------------------------------
 
 async function runDemo(config) {
-  const scenarioNames = resolveScenarioNames(config.scenarios, demoScenarios);
+  const scenarioNames = resolveScenarioNames({
+    selection: config.scenarios,
+    scenarios: demoScenarios,
+  });
 
   console.log(
     [
@@ -1059,56 +1063,87 @@ async function runDemo(config) {
     ].join("\n"),
   );
 
-  // ---------------------------------------------------------------------------
-  // Compile once
-  // ---------------------------------------------------------------------------
-
-  await runProcess("npm", ["run", "compile"], {
-    cwd: config.projectDirectory,
-  });
-
-  // ---------------------------------------------------------------------------
-  // Resolve VS Code once
-  // ---------------------------------------------------------------------------
-
-  const vscodeExecutable = await resolveVSCodeExecutable();
-
-  // ---------------------------------------------------------------------------
-  // Run scenarios sequentially
-  // ---------------------------------------------------------------------------
-
   const recordings = [];
+  let activeScenario;
+  let setupCompleted = false;
 
-  for (const name of scenarioNames) {
-    const result = await runScenario({
-      name,
-      scenario: demoScenarios[name],
-      config,
-      vscodeExecutable,
+  try {
+    // -------------------------------------------------------------------------
+    // Compile once
+    // -------------------------------------------------------------------------
+
+    await runProcess("npm", ["run", "compile"], {
+      cwd: config.projectDirectory,
     });
 
-    recordings.push(result);
+    // -------------------------------------------------------------------------
+    // Resolve VS Code once
+    // -------------------------------------------------------------------------
+
+    const vscodeExecutable = await resolveVSCodeExecutable();
+    setupCompleted = true;
+
+    // -------------------------------------------------------------------------
+    // Run scenarios sequentially
+    // -------------------------------------------------------------------------
+
+    for (const name of scenarioNames) {
+      activeScenario = name;
+      const result = await runScenario({
+        name,
+        scenario: demoScenarios[name],
+        config,
+        vscodeExecutable,
+      });
+
+      recordings.push(result);
+      activeScenario = undefined;
+    }
+
+    return recordings;
+  } finally {
+    // -------------------------------------------------------------------------
+    // Summary — also runs before a setup or scenario error is rethrown
+    // -------------------------------------------------------------------------
+
+    const completedNames = new Set(recordings.map(({ name }) => name));
+    const notRun = scenarioNames.filter(
+      (name) => name !== activeScenario && !completedNames.has(name),
+    );
+    const completedLines =
+      recordings.length > 0
+        ? recordings.map(
+            ({ name, recordingPath }) =>
+              `${colors.green(`  ✓ ${name}`)}\n${colors.dim(`    ${recordingPath}`)}`,
+          )
+        : ["  None"];
+    const failedLines = activeScenario
+      ? [colors.red(`  ✗ ${activeScenario}`)]
+      : setupCompleted
+        ? ["  None"]
+        : [colors.red("  Demo setup failed before any scenario ran.")];
+    const notRunLines =
+      notRun.length > 0
+        ? notRun.map((name) => colors.yellow(`  - ${name}`))
+        : ["  None"];
+
+    console.log(
+      [
+        "",
+        colors.bold("Demo scenario summary"),
+        "",
+        colors.green(`Completed (${recordings.length}/${scenarioNames.length}):`),
+        ...completedLines,
+        "",
+        colors.red("Failed:"),
+        ...failedLines,
+        "",
+        colors.yellow(`Not run (${notRun.length}):`),
+        ...notRunLines,
+        "",
+      ].join("\n"),
+    );
   }
-
-  // ---------------------------------------------------------------------------
-  // Summary
-  // ---------------------------------------------------------------------------
-
-  console.log(
-    [
-      "",
-      `Completed ${recordings.length} demo scenario${
-        recordings.length === 1 ? "" : "s"
-      }:`,
-      "",
-      ...recordings.map(
-        ({ name, recordingPath }) => `  ${name}\n    ${recordingPath}`,
-      ),
-      "",
-    ].join("\n"),
-  );
-
-  return recordings;
 }
 
 // -----------------------------------------------------------------------------

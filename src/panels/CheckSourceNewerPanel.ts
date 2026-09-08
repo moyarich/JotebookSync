@@ -4,7 +4,7 @@ import * as fs from "fs";
 import Mustache from "mustache";
 import { formatDuration, intervalToDuration } from "date-fns";
 
-import { EXTENSION_COMMANDS, EXTENSION_NAMESPACE } from "../constants.js";
+import { EXTENSION_COMMANDS, EXTENSION_WEBVIEWS } from "../constants.js";
 import { JupytextPairingService } from "../jupytext/JupytextPairingService.js";
 import type { SourceNewerCheckResult } from "../jupytext/types.js";
 import {
@@ -99,7 +99,6 @@ export class CheckSourceNewerPanel {
       syncPairedFilesFromNewestPair:
         EXTENSION_COMMANDS.syncPairedFilesFromNewestPair,
     },
-    private readonly extensionNamespace = EXTENSION_NAMESPACE,
   ) {}
 
   public showCheckSourceIsNewerResult(
@@ -107,7 +106,7 @@ export class CheckSourceNewerPanel {
     checks: SourceNewerCheckResult[],
   ): void {
     const panel = vscode.window.createWebviewPanel(
-      `${this.extensionNamespace}.checkSourceIsNewerResult`,
+      EXTENSION_WEBVIEWS.sourceFreshness,
       "Source Freshness",
       vscode.ViewColumn.Active,
       {

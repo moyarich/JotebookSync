@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { EXTENSION_NAMESPACE } from "../constants.js";
+import { EXTENSION_WEBVIEWS } from "../constants.js";
 import { JupytextPairingService } from "../jupytext/JupytextPairingService.js";
 import type { PairedFormat, PairInfo } from "../jupytext/types.js";
 import { formatExtensionMessage } from "../lib/utils.js";
@@ -87,7 +87,9 @@ export class PairSetupPanel {
     private readonly onPairingChanged: (
       uri: vscode.Uri,
     ) => void | Promise<void> = () => undefined,
-    private readonly extensionNamespace = EXTENSION_NAMESPACE,
+    private readonly onRemovePairing: (
+      uri: vscode.Uri,
+    ) => boolean | Promise<boolean> = () => false,
   ) {}
 
   public async setupPairing(uri: vscode.Uri): Promise<void> {
@@ -150,6 +152,13 @@ export class PairSetupPanel {
             return;
           }
 
+          if (command === "removePairing") {
+            if (await this.onRemovePairing(uri)) {
+              this.closePanel();
+            }
+            return;
+          }
+
           if (command === "submitSetupPairing") {
             const formats = this.buildSetFormatsFromSetupPayload(
               sourceFormat,
@@ -198,8 +207,8 @@ export class PairSetupPanel {
     }
 
     this.panel = vscode.window.createWebviewPanel(
-      `${this.extensionNamespace}.setupPairing`,
-      "Set Up Paired Files",
+      EXTENSION_WEBVIEWS.pairSetup,
+      "Configure Paired Files",
       vscode.ViewColumn.Active,
       {
         enableScripts: true,
@@ -220,9 +229,7 @@ export class PairSetupPanel {
     options: PairSetupOption[],
     isExistingPair: boolean,
   ): Promise<void> {
-    panel.title = isExistingPair
-      ? "Update Paired Files"
-      : "Set Up Paired Files";
+    panel.title = "Configure Paired Files";
 
     panel.webview.html = await this.renderSetupPairingHtml(
       panel.webview,
@@ -340,6 +347,30 @@ export class PairSetupPanel {
       });
     }
 
+    // The notebook is the anchor of a Jupytext pair. Format discovery can
+    // return only text-language suggestions, so do not rely on those results
+    // to supply the required ipynb option.
+    if (
+      !source.isNotebook &&
+      !options.some(({ rawFormat }) =>
+        this.parsePairFormat(rawFormat).isNotebook,
+      )
+    ) {
+      options.unshift({
+        suggestion: {
+          label: "Jupyter Notebook",
+          format: "ipynb",
+          pair_formats: "ipynb",
+          extension: ".ipynb",
+          format_name: "ipynb",
+          language: "notebook",
+          kind: "notebook",
+          rank: -1,
+        },
+        rawFormat: "ipynb",
+      });
+    }
+
     const usedSuffixes = new Set([
       ".ipynb",
       ...[...existingFormats].map(
@@ -428,7 +459,10 @@ export class PairSetupPanel {
           isSourceFormat,
           isNotebook: parsed.isNotebook,
           isExisting,
-          isSelected: isSourceFormat || parsed.isNotebook || isExisting,
+          isSelected:
+            isSourceFormat ||
+            isExisting ||
+            (parsed.isNotebook && !pairInfo?.isPaired),
           isAdvanced:
             !isSourceFormat &&
             !parsed.isNotebook &&
@@ -455,7 +489,7 @@ export class PairSetupPanel {
     }
 
     const selectedFormats = (payload.selected ?? [])
-      .filter((item) => !item.isSourceFormat && !item.isNotebook)
+      .filter((item) => !item.isSourceFormat)
       .map((item) => {
         const customSuffix =
           item.isExisting && !item.customSuffixChanged
@@ -489,11 +523,20 @@ export class PairSetupPanel {
 
     const formats = [
       ...new Set(
-        ["ipynb", source.pairFormat, ...selectedFormats, ...customFormats]
+        [source.pairFormat, ...selectedFormats, ...customFormats]
           .map((format) => format.trim())
           .filter(Boolean),
       ),
     ];
+
+    if (formats.length < 2) {
+      throw new Error(
+        formatExtensionMessage(
+          this.context,
+          "Select at least one additional file format to create a pair.",
+        ),
+      );
+    }
 
     const formatBySuffix = new Map<string, string>();
     for (const format of formats) {
@@ -680,8 +723,8 @@ export class PairSetupPanel {
     );
 
     const templateData: PairSetupTemplateData = {
-      title: isExistingPair ? "Update Paired Files" : "Set Up Paired Files",
-      heading: isExistingPair ? "Update paired files" : "Set up paired files",
+      title: "Configure Paired Files",
+      heading: "Configure paired files",
       description: isExistingPair
         ? "Choose which file types should stay connected."
         : "Choose the file types you want to keep in sync.",
@@ -689,7 +732,7 @@ export class PairSetupPanel {
       sourceFormat,
       options,
       isExistingPair,
-      submitLabel: isExistingPair ? "Save changes" : "Create paired files",
+      submitLabel: isExistingPair ? "Save changes" : "Create pair",
       cssUri: cssUri.toString(),
       jsUri: jsUri.toString(),
       cspSource: webview.cspSource,

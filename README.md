@@ -21,8 +21,8 @@ JotebookSync removes the command-line bookkeeping. Pairing, synchronization, saf
 
 1. Open a notebook or supported text file.
 2. Right-click it in Explorer and choose **JotebookSync**.
-3. Select **Set Up or Update Paired Files…**.
-4. Choose the file types you want and select **Create paired files**.
+3. Select **Configure Paired Files…**.
+4. Choose the file types you want and select **Create pair**.
 
 For example, pairing `analysis.ipynb` with `py:percent` creates `analysis.py`. Keep outputs in the notebook and review readable Python in Git.
 
@@ -54,7 +54,7 @@ Choose common formats in the setup page or enter any Jupytext format code, inclu
 
 ![See formats supported by the active Jupytext environment](media/show-available-formats.gif)
 
-Need a one-time copy instead of an ongoing pair? **Convert File to Another Format…** creates the chosen representation without changing pairing metadata.
+Need a one-time copy instead of an ongoing pair? **Convert File to Another Format…** opens a guided page where you can choose a discovered format—or enter any Jupytext format code—review the destination filename, and create the representation without changing pairing metadata.
 
 ![Convert a notebook to another Jupytext format](media/convert-file-format.gif)
 
@@ -72,9 +72,11 @@ Right-click a folder and choose **Create Project Pairing Configuration…** to c
 
 ![Create and apply a project-wide Jupytext configuration](media/project-pairing-configuration.gif)
 
-## Navigate and manage pairs
+## See and manage every pair in your workspace
 
-Open the `.ipynb` associated with a text notebook in one action. Use **Show Paired Files** to inspect the full group, or **Remove Pairing…** to stop synchronization without deleting your files.
+The **JotebookSync: Paired Files** Explorer view groups every existing pair in the workspace and lists only files that actually exist. Its contextual actions let you open a representation, review freshness, synchronize, configure the pair, remove one file from the pair, or remove the complete pairing. Refresh is manual and visibility-aware, so large workspaces are not continuously rescanned in the background.
+
+Open the `.ipynb` associated with a text notebook in one action. Use **Show Paired Files** for a simple path listing, **Remove File from Pair…** to detach one representation while keeping the others connected, or **Remove Pairing…** to stop synchronization without deleting any files.
 
 ![Open the notebook associated with a paired text file](media/open-paired-notebook.gif)
 

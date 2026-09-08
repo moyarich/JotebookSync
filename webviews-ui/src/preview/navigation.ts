@@ -18,6 +18,10 @@ export function renderNav(): string {
             <span class="nav-icon" aria-hidden="true">↻</span>
             <span class="nav-link-copy"><strong>Freshness</strong><small>Review sync status</small></span>
           </a></li>
+          <li><a class="nav-link" data-page="convert-file" href="#convert-file">
+            <span class="nav-icon" aria-hidden="true">⇄</span>
+            <span class="nav-link-copy"><strong>Convert</strong><small>Create another format</small></span>
+          </a></li>
         </ul>
         <span class="preview-badge" title="Interactions are logged in preview mode">Preview</span>
       </nav>

@@ -2,7 +2,7 @@
   "name": "jotebooksync",
   "displayName": "JotebookSync",
   "description": "Pair Jupyter notebooks with readable scripts and Markdown using Jupytext. Sync on save, review changes, preserve outputs, and convert formats in VS Code.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "moyarich",
   "author": "Moya Richards",
   "license": "MIT",
@@ -44,6 +44,55 @@
   "main": "./out/extension.js",
   "type": "module",
   "contributes": {
+    "configuration": {
+      "title": "JotebookSync",
+      "properties": {
+        "jotebooksync.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Python executable used to run Jupytext. If unset or left as python, the extension can fall back to the active Python extension interpreter."
+        },
+        "jotebooksync.autoSyncOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep paired files synchronized whenever a paired text file or notebook is saved."
+        },
+        "jotebooksync.confirmDestructiveActions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ask for confirmation before removing pairing metadata or replacing notebook, paired-file, or project configuration content. Disable to perform these actions immediately."
+        },
+        "jotebooksync.supportedTextExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Optional override for file extensions this extension handles. Leave empty to use extensions reported by installed Jupytext."
+        },
+        "jotebooksync.notebookEditorViewType": {
+          "type": "string",
+          "default": "jupyter-notebook",
+          "description": "VS Code editor view type used to open the notebook."
+        },
+        "jotebooksync.syncArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments passed to jupytext --sync."
+        },
+        "jotebooksync.setFormatsArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra arguments passed before --set-formats."
+        }
+      }
+    },
     "commands": [
       {
         "command": "jotebooksync.openPairedNotebook",
@@ -72,28 +121,38 @@
       },
       {
         "command": "jotebooksync.setupPairing",
-        "title": "Set Up or Update Paired Files…",
+        "title": "Configure Paired Files…",
         "category": "JotebookSync"
       },
       {
         "command": "jotebooksync.removePairing",
         "title": "Remove Pairing…",
-        "category": "JotebookSync"
+        "category": "JotebookSync",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "jotebooksync.removeFileFromPair",
+        "title": "Remove File from Pair…",
+        "category": "JotebookSync",
+        "icon": "$(remove)"
       },
       {
         "command": "jotebooksync.syncPairedFilesFromCurrentFile",
         "title": "Overwrite Paired Files from This File…",
-        "category": "JotebookSync"
+        "category": "JotebookSync",
+        "icon": "$(replace-all)"
       },
       {
         "command": "jotebooksync.syncPairedFilesFromNewestPair",
         "title": "Sync All from Newest Paired File…",
-        "category": "JotebookSync"
+        "category": "JotebookSync",
+        "icon": "$(sync)"
       },
       {
         "command": "jotebooksync.checkSourceIsNewer",
         "title": "Review Pair Freshness…",
-        "category": "JotebookSync"
+        "category": "JotebookSync",
+        "icon": "$(history)"
       },
       {
         "command": "jotebooksync.outputPairedFiles",
@@ -169,6 +228,28 @@
         "command": "jotebooksync.runAdvanced",
         "title": "Run Advanced Jupytext Command…",
         "category": "JotebookSync"
+      },
+      {
+        "command": "jotebooksync.refreshPairedFilesView",
+        "title": "Refresh Paired Files",
+        "category": "JotebookSync",
+        "icon": "media/jotebooksync-view-icon.svg"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "jotebooksync.viewPairedFiles",
+          "name": "JotebookSync: Paired Files",
+          "when": "workspaceFolderCount != 0",
+          "icon": "media/jotebooksync-view-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "jotebooksync.viewPairedFiles",
+        "contents": "No paired files were found in this workspace.\n[Set up pairing for the active file](command:jotebooksync.setupPairing)"
       }
     ],
     "submenus": [
@@ -178,6 +259,45 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "jotebooksync.refreshPairedFilesView",
+          "when": "view == jotebooksync.viewPairedFiles",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "jotebooksync.checkSourceIsNewer",
+          "when": "view == jotebooksync.viewPairedFiles && (viewItem == jotebooksync.pairGroup || viewItem == jotebooksync.pairFile)",
+          "group": "inline@10"
+        },
+        {
+          "command": "jotebooksync.syncPairedFilesFromNewestPair",
+          "when": "view == jotebooksync.viewPairedFiles && viewItem == jotebooksync.pairGroup",
+          "group": "inline@20"
+        },
+        {
+          "command": "jotebooksync.syncPairedFilesFromCurrentFile",
+          "when": "view == jotebooksync.viewPairedFiles && viewItem == jotebooksync.pairFile",
+          "group": "inline@20"
+        },
+        {
+          "command": "jotebooksync.setupPairing",
+          "when": "view == jotebooksync.viewPairedFiles && viewItem == jotebooksync.pairGroup",
+          "group": "1_pair@10"
+        },
+        {
+          "command": "jotebooksync.removeFileFromPair",
+          "when": "view == jotebooksync.viewPairedFiles && viewItem == jotebooksync.pairFile",
+          "group": "inline@30"
+        },
+        {
+          "command": "jotebooksync.removePairing",
+          "when": "view == jotebooksync.viewPairedFiles && (viewItem == jotebooksync.pairGroup || viewItem == jotebooksync.pairFile)",
+          "group": "inline@40"
+        }
+      ],
       "explorer/context": [
         {
           "submenu": "jotebooksync.explorerSubmenu",
@@ -207,9 +327,14 @@
           "group": "2_pair@10"
         },
         {
-          "command": "jotebooksync.removePairing",
+          "command": "jotebooksync.removeFileFromPair",
           "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
           "group": "2_pair@20"
+        },
+        {
+          "command": "jotebooksync.removePairing",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in jotebooksync.pairedResourcePaths",
+          "group": "2_pair@30"
         },
         {
           "command": "jotebooksync.checkSourceIsNewer",
@@ -334,55 +459,6 @@
           "group": "navigation/execute@7"
         }
       ]
-    },
-    "configuration": {
-      "title": "JotebookSync",
-      "properties": {
-        "jotebooksync.pythonPath": {
-          "type": "string",
-          "default": "python",
-          "description": "Python executable used to run Jupytext. If unset or left as python, the extension can fall back to the active Python extension interpreter."
-        },
-        "jotebooksync.autoSyncOnSave": {
-          "type": "boolean",
-          "default": true,
-          "description": "Keep paired files synchronized whenever a paired text file or notebook is saved."
-        },
-        "jotebooksync.confirmDestructiveActions": {
-          "type": "boolean",
-          "default": true,
-          "description": "Ask for confirmation before removing pairing metadata or replacing notebook, paired-file, or project configuration content. Disable to perform these actions immediately."
-        },
-        "jotebooksync.supportedTextExtensions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "description": "Optional override for file extensions this extension handles. Leave empty to use extensions reported by installed Jupytext."
-        },
-        "jotebooksync.notebookEditorViewType": {
-          "type": "string",
-          "default": "jupyter-notebook",
-          "description": "VS Code editor view type used to open the notebook."
-        },
-        "jotebooksync.syncArgs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "description": "Extra arguments passed to jupytext --sync."
-        },
-        "jotebooksync.setFormatsArgs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "description": "Extra arguments passed before --set-formats."
-        }
-      }
     }
   },
   "scripts": {

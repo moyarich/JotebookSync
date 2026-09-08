@@ -1,24 +1,11 @@
 
 export default function createScenario({
-  assertFileContains,
-  assertFileExists,
   chooseVisibleQuickPickItem,
   confirmQuickInput,
   createAnalysisMarkdown,
-  createPairedAnalysis,
-  createPlainMarkdown,
   fillVisibleQuickInput,
-  findFrameByHeading,
-  openWorkspaceFile,
-  path,
   pause,
-  readFile,
-  readdir,
-  runProcess,
   runVSCodeCommand,
-  scrollThroughWebview,
-  updatePairedPythonInput,
-  writeFile,
 }) {
   return {
     recordingFile: "test-round-trip-conversion.webm",
@@ -33,8 +20,11 @@ export default function createScenario({
         page,
         "JotebookSync: Test Round-Trip Conversion",
       );
-      await chooseVisibleQuickPickItem(page, "Enter custom --to format...");
-      await fillVisibleQuickInput(page, "py:percent");
+      await chooseVisibleQuickPickItem({
+        page,
+        name: "Enter custom --to format...",
+      });
+      await fillVisibleQuickInput({ page, value: "py:percent" });
       await confirmQuickInput(page);
       await pause(4_000);
     },

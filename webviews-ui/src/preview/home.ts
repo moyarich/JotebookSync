@@ -12,6 +12,7 @@ export function getHomePage(): PageDefinition {
         <div class="preview-actions">
           <a href="#pair-setup">Open pair setup</a>
           <a href="#freshness-report">Open freshness report</a>
+          <a href="#convert-file">Open file converter</a>
         </div>
       </section>
     `,

@@ -1,24 +1,14 @@
 
 export default function createScenario({
-  assertFileContains,
   assertFileExists,
-  chooseVisibleQuickPickItem,
-  confirmQuickInput,
-  createAnalysisMarkdown,
-  createPairedAnalysis,
   createPlainMarkdown,
-  fillVisibleQuickInput,
   findFrameByHeading,
   openWorkspaceFile,
   path,
   pause,
-  readFile,
   readdir,
-  runProcess,
   runVSCodeCommand,
   scrollThroughWebview,
-  updatePairedPythonInput,
-  writeFile,
 }) {
   return {
     recordingFile: "setup-paired-files.webm",
@@ -37,7 +27,7 @@ export default function createScenario({
 
       await runVSCodeCommand(
         page,
-        "JotebookSync: Set Up or Update Paired Files",
+        "JotebookSync: Configure Paired Files",
       );
 
       // -----------------------------------------------------------------------
@@ -46,7 +36,7 @@ export default function createScenario({
 
       const setupFrame = await findFrameByHeading(
         page,
-        /(?:Set up|Update) paired files/i,
+        /Configure paired files/i,
       );
 
       await pause(1_500);
@@ -90,7 +80,7 @@ export default function createScenario({
       // -----------------------------------------------------------------------
 
       const submit = setupFrame.getByRole("button", {
-        name: /Create paired files|Save changes/i,
+        name: /Create pair|Save changes/i,
       });
 
       await submit.waitFor({
@@ -102,12 +92,12 @@ export default function createScenario({
       await pause(2_500);
 
       // End on the real payoff: all three representations visible together.
-      await openWorkspaceFile(page, "analysis.md");
+      await openWorkspaceFile({ page, fileName: "analysis.md" });
       await page.keyboard.press(
         process.platform === "darwin" ? "Meta+\\" : "Control+\\",
       );
       await pause(500);
-      await openWorkspaceFile(page, "analysis.ipynb");
+      await openWorkspaceFile({ page, fileName: "analysis.ipynb" });
       await page
         .locator(".notebook-editor")
         .first()
@@ -123,7 +113,7 @@ export default function createScenario({
         process.platform === "darwin" ? "Meta+\\" : "Control+\\",
       );
       await pause(500);
-      await openWorkspaceFile(page, "analysis.py");
+      await openWorkspaceFile({ page, fileName: "analysis.py" });
       await page
         .locator(".editor-group-container")
         .nth(2)

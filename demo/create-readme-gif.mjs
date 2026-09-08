@@ -9,23 +9,31 @@ const demoDirectory = path.join(projectDirectory, "demo", "artifacts");
 const readmeMediaDirectory = path.join(projectDirectory, "media");
 const smokeDemo = path.join(currentDirectory, "extension.smoke.mjs");
 
-function positiveNumber(value, fallback, minimum) {
+function positiveNumber({ value, fallback, minimum }) {
   const parsed = Number(value ?? fallback);
   return Number.isFinite(parsed) ? Math.max(minimum, parsed) : fallback;
 }
 
-const fps = positiveNumber(process.env.JOTEBOOKSYNC_GIF_FPS, 12, 1);
-const width = positiveNumber(process.env.JOTEBOOKSYNC_GIF_WIDTH, 960, 320);
-const trimStart = positiveNumber(
-  process.env.JOTEBOOKSYNC_GIF_TRIM_START,
-  1,
-  0,
-);
+const fps = positiveNumber({
+  value: process.env.JOTEBOOKSYNC_GIF_FPS,
+  fallback: 12,
+  minimum: 1,
+});
+const width = positiveNumber({
+  value: process.env.JOTEBOOKSYNC_GIF_WIDTH,
+  fallback: 960,
+  minimum: 320,
+});
+const trimStart = positiveNumber({
+  value: process.env.JOTEBOOKSYNC_GIF_TRIM_START,
+  fallback: 1,
+  minimum: 0,
+});
 const selectedScenario = process.argv
   .find((argument) => argument.startsWith("--scenario="))
   ?.slice("--scenario=".length);
 
-function run(command, args) {
+function run({ command, args }) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: projectDirectory,
@@ -60,7 +68,10 @@ if (!process.argv.includes("--no-record") && (await exists(smokeDemo))) {
   const recorderArguments = process.argv
     .slice(2)
     .filter((argument) => argument !== "--no-record");
-  await run(process.execPath, [smokeDemo, "--demo", ...recorderArguments]);
+  await run({
+    command: process.execPath,
+    args: [smokeDemo, "--demo", ...recorderArguments],
+  });
 }
 
 const filter = [
@@ -102,17 +113,20 @@ for (const scenario of scenarios) {
     readmeMediaDirectory,
     `${scenario.name}.gif`,
   );
-  await run("ffmpeg", [
-    "-y",
-    "-i",
-    source,
-    "-filter_complex",
-    filter,
-    "-gifflags",
-    "+transdiff",
-    "-loop",
-    "0",
-    destination,
-  ]);
+  await run({
+    command: "ffmpeg",
+    args: [
+      "-y",
+      "-i",
+      source,
+      "-filter_complex",
+      filter,
+      "-gifflags",
+      "+transdiff",
+      "-loop",
+      "0",
+      destination,
+    ],
+  });
   console.log(`README GIF created: ${destination}`);
 }

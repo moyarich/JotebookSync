@@ -1,24 +1,12 @@
 
 export default function createScenario({
   assertFileContains,
-  assertFileExists,
-  chooseVisibleQuickPickItem,
-  confirmQuickInput,
   createAnalysisMarkdown,
-  createPairedAnalysis,
-  createPlainMarkdown,
-  fillVisibleQuickInput,
   findFrameByHeading,
-  openWorkspaceFile,
   path,
   pause,
-  readFile,
-  readdir,
   runProcess,
   runVSCodeCommand,
-  scrollThroughWebview,
-  updatePairedPythonInput,
-  writeFile,
 }) {
   return {
     recordingFile: "convert-file-format.webm",
@@ -48,19 +36,21 @@ export default function createScenario({
         page,
         "JotebookSync: Convert File to Another Format",
       );
-      await chooseVisibleQuickPickItem(page, "Choose output format");
-      await chooseVisibleQuickPickItem(page, "Enter custom --to format...");
-      await fillVisibleQuickInput(page, "py:percent");
-      await confirmQuickInput(page);
-      await chooseVisibleQuickPickItem(page, "Use default output filename");
+      const convertFrame = await findFrameByHeading(
+        page,
+        /Convert file to another format/i,
+      );
+      await convertFrame.locator("#format").selectOption("py:percent");
+      await pause(1_200);
+      await convertFrame.getByRole("button", { name: "Convert file" }).click();
       await pause(4_000);
     },
 
     async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.py"),
-        "revenue",
-      );
+      await assertFileContains({
+        filePath: path.join(workspaceDirectory, "analysis.py"),
+        expectedText: "revenue",
+      });
     },
   };
 }

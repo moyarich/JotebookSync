@@ -3,6 +3,7 @@ import type * as vscode from "vscode";
 
 import { formatExtensionMessage } from "../lib/utils.js";
 import {
+  BLACK_PYTHON_PACKAGE_NAME,
   JUPYTER_CLIENT_PYTHON_PACKAGE_NAME,
   JupytextRuntime,
 } from "./JupytextRuntime.js";
@@ -59,7 +60,10 @@ export class JupytextCommands {
       );
     }
 
-    return this.runtime.runJupytext([filePath, "--pipe", "black"], cwd);
+    return this.runtime.runJupytext(
+      [filePath, "--pipe", BLACK_PYTHON_PACKAGE_NAME],
+      cwd,
+    );
   }
 
   public testRoundtrip(

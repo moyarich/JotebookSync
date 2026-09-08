@@ -1,23 +1,11 @@
 
 export default function createScenario({
   assertFileContains,
-  assertFileExists,
-  chooseVisibleQuickPickItem,
-  confirmQuickInput,
-  createAnalysisMarkdown,
   createPairedAnalysis,
-  createPlainMarkdown,
-  fillVisibleQuickInput,
-  findFrameByHeading,
-  openWorkspaceFile,
   path,
   pause,
   readFile,
-  readdir,
-  runProcess,
   runVSCodeCommand,
-  scrollThroughWebview,
-  updatePairedPythonInput,
   writeFile,
 }) {
   return {
@@ -39,15 +27,14 @@ export default function createScenario({
         page,
         "JotebookSync: Update Existing Notebook from Text File",
       );
-      await confirmQuickInput(page);
       await pause(5_000);
     },
 
     async verify({ workspaceDirectory }) {
-      await assertFileContains(
-        path.join(workspaceDirectory, "analysis.ipynb"),
-        "Updated from the text notebook.",
-      );
+      await assertFileContains({
+        filePath: path.join(workspaceDirectory, "analysis.ipynb"),
+        expectedText: "Updated from the text notebook.",
+      });
     },
   };
 }

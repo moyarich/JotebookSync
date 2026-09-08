@@ -19,6 +19,11 @@ import { formatExtensionMessage } from "./lib/utils.js";
 
 import { PairSetupPanel } from "./panels/PairSetupPanel.js";
 import { CheckSourceNewerPanel } from "./panels/CheckSourceNewerPanel.js";
+import { ConvertFilePanel } from "./panels/ConvertFilePanel.js";
+import {
+  PAIRED_FILES_TREE_VIEW_ID,
+  PairedFilesTreeProvider,
+} from "./views/PairedFilesTreeProvider.js";
 
 type ExistingNotebookChoice = "syncNewest" | "openExistingOutOfSync" | "cancel";
 
@@ -489,21 +494,27 @@ async function pickProjectFormats(
         "Project-relative folder containing .ipynb files.",
         "notebooks/",
       );
-      if (!notebookFolder) {return undefined;}
+      if (!notebookFolder) {
+        return undefined;
+      }
       const textFolder = await promptForRequiredInput(
         context,
         "Paired text folder",
         "Project-relative folder for generated text notebooks.",
         "scripts/",
       );
-      if (!textFolder) {return undefined;}
+      if (!textFolder) {
+        return undefined;
+      }
       const textFormat = await promptForRequiredInput(
         context,
         "Paired text format",
         "Any Jupytext format, such as py:percent, md:myst, or jl:percent.",
         "py:percent",
       );
-      if (!textFormat) {return undefined;}
+      if (!textFormat) {
+        return undefined;
+      }
       return [
         "[[formats]]",
         `${JSON.stringify(notebookFolder.trim())} = "ipynb"`,
@@ -515,10 +526,14 @@ async function pickProjectFormats(
 
   return vscode.window.showInputBox({
     title: formatExtensionMessage(context, "Custom project pairing formats"),
-    prompt: "Enter comma-separated Jupytext formats, for example ipynb,py:percent.",
+    prompt:
+      "Enter comma-separated Jupytext formats, for example ipynb,py:percent.",
     value: "ipynb,py:percent",
     validateInput: (value) => {
-      const formats = value.split(",").map((item) => item.trim()).filter(Boolean);
+      const formats = value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
       if (formats.length < 2) {
         return "Enter at least two comma-separated formats.";
       }
@@ -538,7 +553,8 @@ async function promptForRequiredInput(
     prompt,
     value,
     ignoreFocusOut: true,
-    validateInput: (input) => input.trim() ? undefined : "A value is required.",
+    validateInput: (input) =>
+      input.trim() ? undefined : "A value is required.",
   });
 }
 
@@ -548,7 +564,9 @@ async function confirmExternalExecution(
   detail: string,
   action: string,
 ): Promise<boolean> {
-  if (shouldAutoConfirm(context, settings)) {return true;}
+  if (shouldAutoConfirm(context, settings)) {
+    return true;
+  }
   const choice = await vscode.window.showWarningMessage(
     formatExtensionMessage(context, detail),
     { modal: true },
@@ -569,6 +587,41 @@ export function activate(context: vscode.ExtensionContext): void {
   );
   const settings = new ExtensionConfig();
   const knownPairedResourcePaths = new Set<string>();
+  const pairedFilesTree = new PairedFilesTreeProvider(jupytext, settings);
+  const convertFilePanel = new ConvertFilePanel(
+    context,
+    async (fileUri, choice) => {
+      const result = await jupytextCommands.convert(
+        fileUri.fsPath,
+        choice.toFormat,
+        choice.outputPath,
+        path.dirname(fileUri.fsPath),
+      );
+      showCommandResult(extensionId, "Convert", result);
+      pairedFilesTree.refresh();
+    },
+  );
+  const pairedFilesTreeView = vscode.window.createTreeView(
+    PAIRED_FILES_TREE_VIEW_ID,
+    {
+      treeDataProvider: pairedFilesTree,
+      showCollapseAll: true,
+    },
+  );
+  pairedFilesTree.setVisible(pairedFilesTreeView.visible);
+
+  context.subscriptions.push(
+    pairedFilesTree,
+    convertFilePanel,
+    pairedFilesTreeView,
+    pairedFilesTreeView.onDidChangeVisibility(({ visible }) =>
+      pairedFilesTree.setVisible(visible),
+    ),
+    vscode.commands.registerCommand(
+      EXTENSION_COMMANDS.refreshPairedFilesView,
+      () => pairedFilesTree.refresh(true),
+    ),
+  );
 
   const handleSavedResource = async (uri: vscode.Uri): Promise<void> => {
     const [syncResult] = await Promise.allSettled([
@@ -583,6 +636,8 @@ export function activate(context: vscode.ExtensionContext): void {
           : formatExtensionMessage(context, String(syncResult.reason)),
       );
     }
+
+    pairedFilesTree.refresh();
   };
 
   const getActiveResource = (): vscode.Uri | undefined =>
@@ -594,7 +649,8 @@ export function activate(context: vscode.ExtensionContext): void {
   ): Promise<void> => {
     const activeResource = getActiveResource();
     const isActiveResource =
-      Boolean(uri && activeResource) && uri?.toString() === activeResource?.toString();
+      Boolean(uri && activeResource) &&
+      uri?.toString() === activeResource?.toString();
 
     if (!uri || uri.scheme !== "file") {
       await vscode.commands.executeCommand(
@@ -609,11 +665,7 @@ export function activate(context: vscode.ExtensionContext): void {
     try {
       const cwd = getWorkspaceCwd(uri);
       if (
-        await jupytext.ensurePackage(
-          JUPYTEXT_PYTHON_PACKAGE_NAME,
-          cwd,
-          false,
-        )
+        await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd, false)
       ) {
         const pairInfo = await jupytext.getPairInfo(uri);
         isPaired = pairInfo.isPaired;
@@ -653,7 +705,11 @@ export function activate(context: vscode.ExtensionContext): void {
     context,
     jupytext,
     pairFormatPicker,
-    refreshPairingContext,
+    async (uri) => {
+      await refreshPairingContext(uri);
+      pairedFilesTree.refresh();
+    },
+    async (uri) => removeCompletePairing(uri),
   );
   const webviewCheckSourceNewer = new CheckSourceNewerPanel(context, jupytext);
 
@@ -678,26 +734,34 @@ export function activate(context: vscode.ExtensionContext): void {
 
     if (!projectUri) {
       const folders = vscode.workspace.workspaceFolders ?? [];
-      projectUri = folders.length === 1
-        ? folders[0].uri
-        : await vscode.window.showWorkspaceFolderPick({
-            placeHolder: "Choose the project whose Jupytext configuration should be applied",
-          }).then((folder) => folder?.uri);
+      projectUri =
+        folders.length === 1
+          ? folders[0].uri
+          : await vscode.window
+              .showWorkspaceFolderPick({
+                placeHolder:
+                  "Choose the project whose Jupytext configuration should be applied",
+              })
+              .then((folder) => folder?.uri);
     }
 
     if (!projectUri) {
       vscode.window.showErrorMessage(
-        formatExtensionMessage(context, "Open or choose a project folder first."),
+        formatExtensionMessage(
+          context,
+          "Open or choose a project folder first.",
+        ),
       );
       return;
     }
 
-    const configCandidates = selectedIsConfig && uri
-      ? [uri]
-      : [
-          vscode.Uri.joinPath(projectUri, "jupytext.toml"),
-          vscode.Uri.joinPath(projectUri, "pyproject.toml"),
-        ];
+    const configCandidates =
+      selectedIsConfig && uri
+        ? [uri]
+        : [
+            vscode.Uri.joinPath(projectUri, "jupytext.toml"),
+            vscode.Uri.joinPath(projectUri, "pyproject.toml"),
+          ];
     const configUri = (
       await Promise.all(
         configCandidates.map(async (candidate) => ({
@@ -724,7 +788,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
     if (notebookUris.length === 0) {
       vscode.window.showInformationMessage(
-        formatExtensionMessage(context, "No Jupyter notebooks were found in this project."),
+        formatExtensionMessage(
+          context,
+          "No Jupyter notebooks were found in this project.",
+        ),
       );
       return;
     }
@@ -743,7 +810,12 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }
 
-    if (!(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, projectUri.fsPath))) {
+    if (
+      !(await jupytext.ensurePackage(
+        JUPYTEXT_PYTHON_PACKAGE_NAME,
+        projectUri.fsPath,
+      ))
+    ) {
       return;
     }
 
@@ -751,12 +823,18 @@ export function activate(context: vscode.ExtensionContext): void {
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: formatExtensionMessage(context, "Applying project pairing configuration…"),
+          title: formatExtensionMessage(
+            context,
+            "Applying project pairing configuration…",
+          ),
           cancellable: false,
         },
         () => jupytext.applyProjectConfig(projectUri.fsPath, notebookUris),
       );
-      await Promise.all(notebookUris.map((notebookUri) => refreshPairingContext(notebookUri)));
+      await Promise.all(
+        notebookUris.map((notebookUri) => refreshPairingContext(notebookUri)),
+      );
+      pairedFilesTree.refresh();
       vscode.window.showInformationMessage(
         formatExtensionMessage(
           context,
@@ -787,6 +865,23 @@ export function activate(context: vscode.ExtensionContext): void {
     return confirm === "Remove Pair";
   };
 
+  async function removeCompletePairing(fileUri: vscode.Uri): Promise<boolean> {
+    if (!(await confirmRemovePairing())) {
+      return false;
+    }
+
+    const pairInfo = await jupytext.getPairInfo(fileUri);
+    await jupytext.removePairing(fileUri);
+
+    knownPairedResourcePaths.delete(fileUri.path);
+    pairInfo.paths.forEach(([pairedPath]) => {
+      knownPairedResourcePaths.delete(vscode.Uri.file(pairedPath).path);
+    });
+    await refreshPairingContext(fileUri);
+    pairedFilesTree.refresh();
+    return true;
+  }
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.setupPairing,
@@ -799,16 +894,16 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.openPairedNotebook,
       (uri?: vscode.Uri) =>
-        withJupytext(jupytext, uri, (fileUri) =>
-          handleCommandOpenPairedNotebook(
+        withJupytext(jupytext, uri, (fileUri) => {
+          return handleCommandOpenPairedNotebook(
             context,
             settings,
             jupytext,
             pairFormatPicker,
             fileUri,
             settings.notebookEditorViewType,
-          ),
-        ),
+          );
+        }),
     ),
 
     vscode.commands.registerCommand(
@@ -857,6 +952,7 @@ export function activate(context: vscode.ExtensionContext): void {
             outputUri.fsPath,
             path.dirname(fileUri.fsPath),
           );
+          pairedFilesTree.refresh();
           await openNotebook(outputUri, settings.notebookEditorViewType);
         }),
     ),
@@ -867,20 +963,32 @@ export function activate(context: vscode.ExtensionContext): void {
         withJupytext(jupytext, uri, async (fileUri) => {
           if (jupytext.isNotebookUri(fileUri)) {
             vscode.window.showInformationMessage(
-              formatExtensionMessage(context, "Select a Jupytext text notebook to update an existing .ipynb file."),
+              formatExtensionMessage(
+                context,
+                "Select a Jupytext text notebook to update an existing .ipynb file.",
+              ),
             );
             return;
           }
 
-          const selected = await vscode.window.showOpenDialog({
-            defaultUri: getDefaultNotebookUri(fileUri),
-            canSelectFiles: true,
-            canSelectFolders: false,
-            canSelectMany: false,
-            filters: { "Jupyter Notebook": ["ipynb"] },
-            title: formatExtensionMessage(context, "Choose notebook whose outputs should be preserved"),
-          });
-          const notebookUri = selected?.[0];
+          const defaultNotebookUri = getDefaultNotebookUri(fileUri);
+          const notebookUri =
+            shouldAutoConfirm(context, settings) &&
+            (await pathExists(defaultNotebookUri))
+              ? defaultNotebookUri
+              : (
+                  await vscode.window.showOpenDialog({
+                    defaultUri: defaultNotebookUri,
+                    canSelectFiles: true,
+                    canSelectFolders: false,
+                    canSelectMany: false,
+                    filters: { "Jupyter Notebook": ["ipynb"] },
+                    title: formatExtensionMessage(
+                      context,
+                      "Choose notebook whose outputs should be preserved",
+                    ),
+                  })
+                )?.[0];
           if (!notebookUri) {
             return;
           }
@@ -906,6 +1014,7 @@ export function activate(context: vscode.ExtensionContext): void {
             path.dirname(fileUri.fsPath),
             true,
           );
+          pairedFilesTree.refresh();
           await openNotebook(notebookUri, settings.notebookEditorViewType);
         }),
     ),
@@ -914,22 +1023,32 @@ export function activate(context: vscode.ExtensionContext): void {
       EXTENSION_COMMANDS.createProjectConfig,
       async (uri?: vscode.Uri) => {
         const folders = vscode.workspace.workspaceFolders ?? [];
-        const explorerFolderUri = uri?.scheme === "file" && fs.existsSync(uri.fsPath) && fs.statSync(uri.fsPath).isDirectory()
-          ? uri
-          : undefined;
+        const explorerFolderUri =
+          uri?.scheme === "file" &&
+          fs.existsSync(uri.fsPath) &&
+          fs.statSync(uri.fsPath).isDirectory()
+            ? uri
+            : undefined;
 
         if (!explorerFolderUri && folders.length === 0) {
           vscode.window.showErrorMessage(
-            formatExtensionMessage(context, "Open a folder before creating a project pairing configuration."),
+            formatExtensionMessage(
+              context,
+              "Open a folder before creating a project pairing configuration.",
+            ),
           );
           return;
         }
 
-        const folderUri = explorerFolderUri ?? (folders.length === 1
-          ? folders[0].uri
-          : await vscode.window.showWorkspaceFolderPick({
-              placeHolder: "Choose the project folder for jupytext.toml",
-            }).then((folder) => folder?.uri));
+        const folderUri =
+          explorerFolderUri ??
+          (folders.length === 1
+            ? folders[0].uri
+            : await vscode.window
+                .showWorkspaceFolderPick({
+                  placeHolder: "Choose the project folder for jupytext.toml",
+                })
+                .then((folder) => folder?.uri));
         if (!folderUri) {
           return;
         }
@@ -945,7 +1064,10 @@ export function activate(context: vscode.ExtensionContext): void {
           !shouldAutoConfirm(context, settings)
         ) {
           const choice = await vscode.window.showWarningMessage(
-            formatExtensionMessage(context, "jupytext.toml already exists. Replace it?"),
+            formatExtensionMessage(
+              context,
+              "jupytext.toml already exists. Replace it?",
+            ),
             { modal: true },
             "Replace Configuration",
             "Open Existing",
@@ -962,7 +1084,10 @@ export function activate(context: vscode.ExtensionContext): void {
         const content = formats.startsWith("[[formats]]")
           ? `${formats}\n`
           : `formats = ${JSON.stringify(formats.trim())}\n`;
-        await vscode.workspace.fs.writeFile(configUri, new TextEncoder().encode(content));
+        await vscode.workspace.fs.writeFile(
+          configUri,
+          new TextEncoder().encode(content),
+        );
         await vscode.window.showTextDocument(configUri);
         const action = await vscode.window.showInformationMessage(
           formatExtensionMessage(
@@ -990,6 +1115,7 @@ export function activate(context: vscode.ExtensionContext): void {
       (uri?: vscode.Uri) =>
         withJupytext(jupytext, uri, async (fileUri) => {
           await jupytext.syncPairedFilesFromNewestPair(fileUri);
+          pairedFilesTree.refresh();
         }),
     ),
 
@@ -1023,6 +1149,33 @@ export function activate(context: vscode.ExtensionContext): void {
               "Paired files replaced from selected file.",
             ),
           );
+          pairedFilesTree.refresh();
+        }),
+    ),
+
+    vscode.commands.registerCommand(
+      EXTENSION_COMMANDS.removeFileFromPair,
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          const confirmed = shouldAutoConfirm(context, settings)
+            ? true
+            : (await vscode.window.showWarningMessage(
+                formatExtensionMessage(
+                  context,
+                  `Remove ${path.basename(fileUri.fsPath)} from this pair?\n\nThe file will not be deleted. The other files will remain paired.`,
+                ),
+                { modal: true },
+                "Remove File from Pair",
+              )) === "Remove File from Pair";
+
+          if (!confirmed) {
+            return;
+          }
+
+          await jupytext.removeFileFromPair(fileUri);
+          knownPairedResourcePaths.delete(fileUri.path);
+          await refreshPairingContext(fileUri);
+          pairedFilesTree.refresh();
         }),
     ),
 
@@ -1030,18 +1183,7 @@ export function activate(context: vscode.ExtensionContext): void {
       EXTENSION_COMMANDS.removePairing,
       (uri?: vscode.Uri) =>
         withJupytext(jupytext, uri, async (fileUri) => {
-          if (!(await confirmRemovePairing())) {
-            return;
-          }
-
-          const pairInfo = await jupytext.getPairInfo(fileUri);
-          await jupytext.removePairing(fileUri);
-
-          knownPairedResourcePaths.delete(fileUri.path);
-          pairInfo.paths.forEach(([pairedPath]) => {
-            knownPairedResourcePaths.delete(vscode.Uri.file(pairedPath).path);
-          });
-          await refreshPairingContext(fileUri);
+          await removeCompletePairing(fileUri);
         }),
     ),
 
@@ -1140,24 +1282,14 @@ export function activate(context: vscode.ExtensionContext): void {
             path.dirname(fileUri.fsPath),
           );
 
-          const choice = await convertPicker.pickConvertChoice(
+          const formats = convertPicker.getConvertFormatOptions(
             fileUri,
             pairSuggestions,
             options,
           );
-
-          if (!choice) {
-            return;
-          }
-
-          const result = await jupytextCommands.convert(
-            fileUri.fsPath,
-            choice.toFormat,
-            choice.outputPath,
-            path.dirname(fileUri.fsPath),
+          await convertFilePanel.show(fileUri, formats, (format) =>
+            convertPicker.getDefaultConvertOutputUri(fileUri, format).fsPath,
           );
-
-          showCommandResult(extensionId, "Convert", result);
         }),
     ),
 
@@ -1234,99 +1366,247 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.pipe,
-      (uri?: vscode.Uri) => withJupytext(jupytext, uri, async (fileUri) => {
-        const command = await promptForRequiredInput(context, "Pipe notebook through a command", "Enter the external command. Use {} where the temporary filename belongs.", "black {}");
-        if (!command || !(await confirmExternalExecution(context, settings, `Run this external command through Jupytext?\n\n${command}`, "Run Command"))) {return;}
-        const pipeFormat = await vscode.window.showInputBox({ title: formatExtensionMessage(context, "Pipe format (optional)"), prompt: "For example py:percent. Leave empty to use auto:percent." });
-        const pipeMode = await vscode.window.showQuickPick(
-          [
-            { label: "Current file only", sync: false },
-            { label: "Pipe and synchronize the pair", sync: true },
-          ],
-          { title: formatExtensionMessage(context, "Pipe result") },
-        );
-        if (!pipeMode) {return;}
-        const result = await jupytextCommands.pipe(fileUri.fsPath, command, path.dirname(fileUri.fsPath), pipeFormat?.trim() || undefined, pipeMode.sync);
-        showCommandResult(extensionId, "Pipe", result);
-      }),
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          const command = await promptForRequiredInput(
+            context,
+            "Pipe notebook through a command",
+            "Enter the external command. Use {} where the temporary filename belongs.",
+            "black {}",
+          );
+          if (
+            !command ||
+            !(await confirmExternalExecution(
+              context,
+              settings,
+              `Run this external command through Jupytext?\n\n${command}`,
+              "Run Command",
+            ))
+          ) {
+            return;
+          }
+          const pipeFormat = await vscode.window.showInputBox({
+            title: formatExtensionMessage(context, "Pipe format (optional)"),
+            prompt: "For example py:percent. Leave empty to use auto:percent.",
+          });
+          const pipeMode = await vscode.window.showQuickPick(
+            [
+              { label: "Current file only", sync: false },
+              { label: "Pipe and synchronize the pair", sync: true },
+            ],
+            { title: formatExtensionMessage(context, "Pipe result") },
+          );
+          if (!pipeMode) {
+            return;
+          }
+          const result = await jupytextCommands.pipe(
+            fileUri.fsPath,
+            command,
+            path.dirname(fileUri.fsPath),
+            pipeFormat?.trim() || undefined,
+            pipeMode.sync,
+          );
+          showCommandResult(extensionId, "Pipe", result);
+          pairedFilesTree.refresh();
+        }),
     ),
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.check,
-      (uri?: vscode.Uri) => withJupytext(jupytext, uri, async (fileUri) => {
-        const command = await promptForRequiredInput(context, "Check notebook with a command", "Enter a command such as pytest {} or flake8 {}.", "pytest {}");
-        if (!command || !(await confirmExternalExecution(context, settings, `Run this external check command through Jupytext?\n\n${command}`, "Run Check"))) {return;}
-        const pipeFormat = await vscode.window.showInputBox({ title: formatExtensionMessage(context, "Check format (optional)"), prompt: "For example py:percent. Leave empty to use auto:percent." });
-        const result = await jupytextCommands.check(fileUri.fsPath, command, path.dirname(fileUri.fsPath), pipeFormat?.trim() || undefined);
-        showCommandResult(extensionId, "Check", result);
-      }),
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          const command = await promptForRequiredInput(
+            context,
+            "Check notebook with a command",
+            "Enter a command such as pytest {} or flake8 {}.",
+            "pytest {}",
+          );
+          if (
+            !command ||
+            !(await confirmExternalExecution(
+              context,
+              settings,
+              `Run this external check command through Jupytext?\n\n${command}`,
+              "Run Check",
+            ))
+          ) {
+            return;
+          }
+          const pipeFormat = await vscode.window.showInputBox({
+            title: formatExtensionMessage(context, "Check format (optional)"),
+            prompt: "For example py:percent. Leave empty to use auto:percent.",
+          });
+          const result = await jupytextCommands.check(
+            fileUri.fsPath,
+            command,
+            path.dirname(fileUri.fsPath),
+            pipeFormat?.trim() || undefined,
+          );
+          showCommandResult(extensionId, "Check", result);
+        }),
     ),
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.setKernel,
-      (uri?: vscode.Uri) => withJupytext(jupytext, uri, async (fileUri) => {
-        const kernel = await promptForRequiredInput(context, "Set notebook kernel", "Enter a kernel name, or - to use the current environment.", "-");
-        if (!kernel) {return;}
-        const result = await jupytextCommands.setKernel(fileUri.fsPath, kernel.trim(), path.dirname(fileUri.fsPath));
-        showCommandResult(extensionId, "Set Kernel", result);
-      }),
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          const kernel = await promptForRequiredInput(
+            context,
+            "Set notebook kernel",
+            "Enter a kernel name, or - to use the current environment.",
+            "-",
+          );
+          if (!kernel) {
+            return;
+          }
+          const result = await jupytextCommands.setKernel(
+            fileUri.fsPath,
+            kernel.trim(),
+            path.dirname(fileUri.fsPath),
+          );
+          showCommandResult(extensionId, "Set Kernel", result);
+        }),
     ),
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.execute,
-      (uri?: vscode.Uri) => withJupytext(jupytext, uri, async (fileUri) => {
-        if (!(await confirmExternalExecution(context, settings, `Execute all notebook cells in ${path.basename(fileUri.fsPath)}? Notebook code can modify files or access external services.`, "Execute Notebook"))) {return;}
-        const runPath = await vscode.window.showInputBox({ title: formatExtensionMessage(context, "Notebook working directory (optional)"), prompt: "Leave empty to use the notebook's folder." });
-        const result = await jupytextCommands.execute(fileUri.fsPath, path.dirname(fileUri.fsPath), undefined, runPath?.trim() || undefined);
-        showCommandResult(extensionId, "Execute", result);
-      }),
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          if (
+            !(await confirmExternalExecution(
+              context,
+              settings,
+              `Execute all notebook cells in ${path.basename(fileUri.fsPath)}? Notebook code can modify files or access external services.`,
+              "Execute Notebook",
+            ))
+          ) {
+            return;
+          }
+          const runPath = await vscode.window.showInputBox({
+            title: formatExtensionMessage(
+              context,
+              "Notebook working directory (optional)",
+            ),
+            prompt: "Leave empty to use the notebook's folder.",
+          });
+          const result = await jupytextCommands.execute(
+            fileUri.fsPath,
+            path.dirname(fileUri.fsPath),
+            undefined,
+            runPath?.trim() || undefined,
+          );
+          showCommandResult(extensionId, "Execute", result);
+        }),
     ),
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.updateMetadata,
-      (uri?: vscode.Uri) => withJupytext(jupytext, uri, async (fileUri) => {
-        const metadata = await vscode.window.showInputBox({
-          title: formatExtensionMessage(context, "Update notebook metadata"),
-          prompt: "Enter a JSON object. Existing keys are updated; null removes a key.",
-          value: "{}",
-          ignoreFocusOut: true,
-          validateInput: (value) => {
-            try {
-              const parsed = JSON.parse(value) as unknown;
-              return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? undefined : "Enter a JSON object.";
-            } catch { return "Enter valid JSON."; }
-          },
-        });
-        if (!metadata) {return;}
-        const result = await jupytextCommands.updateMetadata(fileUri.fsPath, metadata, path.dirname(fileUri.fsPath));
-        showCommandResult(extensionId, "Update Metadata", result);
-      }),
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          const metadata = await vscode.window.showInputBox({
+            title: formatExtensionMessage(context, "Update notebook metadata"),
+            prompt:
+              "Enter a JSON object. Existing keys are updated; null removes a key.",
+            value: "{}",
+            ignoreFocusOut: true,
+            validateInput: (value) => {
+              try {
+                const parsed = JSON.parse(value) as unknown;
+                return parsed &&
+                  typeof parsed === "object" &&
+                  !Array.isArray(parsed)
+                  ? undefined
+                  : "Enter a JSON object.";
+              } catch {
+                return "Enter valid JSON.";
+              }
+            },
+          });
+          if (!metadata) {
+            return;
+          }
+          const result = await jupytextCommands.updateMetadata(
+            fileUri.fsPath,
+            metadata,
+            path.dirname(fileUri.fsPath),
+          );
+          showCommandResult(extensionId, "Update Metadata", result);
+        }),
     ),
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.setFormatOptions,
-      (uri?: vscode.Uri) => withJupytext(jupytext, uri, async (fileUri) => {
-        const input = await promptForRequiredInput(context, "Set Jupytext format options", "Enter comma-separated key=value options, such as comment_magics=true,notebook_metadata_filter=-kernelspec.");
-        if (!input) {return;}
-        const options = input.split(",").map((item) => item.trim()).filter(Boolean);
-        const result = await jupytextCommands.setFormatOptions(fileUri.fsPath, options, path.dirname(fileUri.fsPath));
-        showCommandResult(extensionId, "Format Options", result);
-      }),
+      (uri?: vscode.Uri) =>
+        withJupytext(jupytext, uri, async (fileUri) => {
+          const input = await promptForRequiredInput(
+            context,
+            "Set Jupytext format options",
+            "Enter comma-separated key=value options, such as comment_magics=true,notebook_metadata_filter=-kernelspec.",
+          );
+          if (!input) {
+            return;
+          }
+          const options = input
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+          const result = await jupytextCommands.setFormatOptions(
+            fileUri.fsPath,
+            options,
+            path.dirname(fileUri.fsPath),
+          );
+          showCommandResult(extensionId, "Format Options", result);
+        }),
     ),
 
     vscode.commands.registerCommand(
       EXTENSION_COMMANDS.runPreCommit,
       async (uri?: vscode.Uri) => {
         const cwd = getWorkspaceCwd(uri);
-        if (!(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))) {return;}
-        const mode = await vscode.window.showQuickPick([
-          { label: "Git index pre-commit", value: true, description: "Use Jupytext's pre-commit-aware synchronization mode" },
-          { label: "All matching staged notebooks", value: false, description: "Run the standard Jupytext pre-commit operation" },
-        ], { title: formatExtensionMessage(context, "Run Jupytext pre-commit") });
-        if (!mode || !(await confirmExternalExecution(context, settings, "Run Jupytext against files currently staged in Git?", "Run Pre-commit"))) {return;}
-        const fromFormat = await vscode.window.showInputBox({ title: formatExtensionMessage(context, "Source format (optional)"), prompt: "For example ipynb or py:percent. Leave empty for all matching formats." });
-        const result = await jupytextCommands.runPreCommit(cwd, fromFormat?.trim() || undefined, mode.value);
+        if (
+          !(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))
+        ) {
+          return;
+        }
+        const mode = await vscode.window.showQuickPick(
+          [
+            {
+              label: "Git index pre-commit",
+              value: true,
+              description:
+                "Use Jupytext's pre-commit-aware synchronization mode",
+            },
+            {
+              label: "All matching staged notebooks",
+              value: false,
+              description: "Run the standard Jupytext pre-commit operation",
+            },
+          ],
+          { title: formatExtensionMessage(context, "Run Jupytext pre-commit") },
+        );
+        if (
+          !mode ||
+          !(await confirmExternalExecution(
+            context,
+            settings,
+            "Run Jupytext against files currently staged in Git?",
+            "Run Pre-commit",
+          ))
+        ) {
+          return;
+        }
+        const fromFormat = await vscode.window.showInputBox({
+          title: formatExtensionMessage(context, "Source format (optional)"),
+          prompt:
+            "For example ipynb or py:percent. Leave empty for all matching formats.",
+        });
+        const result = await jupytextCommands.runPreCommit(
+          cwd,
+          fromFormat?.trim() || undefined,
+          mode.value,
+        );
         showCommandResult(extensionId, "Pre-commit", result);
+        pairedFilesTree.refresh();
       },
     ),
 
@@ -1334,24 +1614,48 @@ export function activate(context: vscode.ExtensionContext): void {
       EXTENSION_COMMANDS.runAdvanced,
       async (uri?: vscode.Uri) => {
         const cwd = getWorkspaceCwd(uri);
-        if (!(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))) {return;}
+        if (
+          !(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))
+        ) {
+          return;
+        }
         const input = await vscode.window.showInputBox({
           title: formatExtensionMessage(context, "Advanced Jupytext arguments"),
-          prompt: "Enter a JSON array of arguments. Python and -m jupytext are added automatically.",
-          value: uri?.fsPath ? JSON.stringify(["--show-changes", uri.fsPath]) : "[]",
+          prompt:
+            "Enter a JSON array of arguments. Python and -m jupytext are added automatically.",
+          value: uri?.fsPath
+            ? JSON.stringify(["--show-changes", uri.fsPath])
+            : "[]",
           ignoreFocusOut: true,
           validateInput: (value) => {
             try {
               const parsed = JSON.parse(value) as unknown;
-              return Array.isArray(parsed) && parsed.every((item) => typeof item === "string") ? undefined : "Enter a JSON array containing only strings.";
-            } catch { return "Enter a valid JSON array."; }
+              return Array.isArray(parsed) &&
+                parsed.every((item) => typeof item === "string")
+                ? undefined
+                : "Enter a JSON array containing only strings.";
+            } catch {
+              return "Enter a valid JSON array.";
+            }
           },
         });
-        if (!input) {return;}
+        if (!input) {
+          return;
+        }
         const args = JSON.parse(input) as string[];
-        if (!(await confirmExternalExecution(context, settings, `Run Jupytext with these arguments?\n\n${args.join(" ")}`, "Run Jupytext"))) {return;}
+        if (
+          !(await confirmExternalExecution(
+            context,
+            settings,
+            `Run Jupytext with these arguments?\n\n${args.join(" ")}`,
+            "Run Jupytext",
+          ))
+        ) {
+          return;
+        }
         const result = await jupytextCommands.runAdvanced(args, cwd);
         showCommandResult(extensionId, "Advanced", result);
+        pairedFilesTree.refresh();
       },
     ),
 

@@ -2,6 +2,7 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
+import { EXTENSION } from "../../src/constants.js";
 import { ExtensionConfig } from "../../src/ExtensionConfig/index.js";
 import { JupytextPairingService } from "../../src/jupytext/JupytextPairingService.js";
 
@@ -20,10 +21,11 @@ export function createService(
     globalStorageUri: vscode.Uri.file(storageDirectory),
   } as unknown as vscode.ExtensionContext;
   const settings = {
-    configuredPythonPath: process.env.JOTEBOOKSYNC_TEST_PYTHON || "python",
+    configuredPythonPath:
+      process.env.JOTEBOOKSYNC_TEST_PYTHON || EXTENSION.defaultPythonPath,
     autoSyncOnSave: true,
     confirmDestructiveActions: overrides.confirmDestructiveActions ?? true,
-    notebookEditorViewType: "jupyter-notebook",
+    notebookEditorViewType: EXTENSION.defaultNotebookEditorViewType,
     syncArgs: [],
     setFormatsArgs: [],
     supportedTextExtensionsOverride: overrides.supportedTextExtensionsOverride ?? [],

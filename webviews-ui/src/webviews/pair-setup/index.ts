@@ -24,6 +24,7 @@ type SetupData = {
   selectedPath: string;
   sourceFormat: string;
   options: PairOption[];
+  isExistingPair?: boolean;
 };
 
 type SelectedFormat = {
@@ -38,6 +39,7 @@ type SelectedFormat = {
 
 type OutgoingMessage =
   | { command: "cancelSetupPairing" }
+  | { command: "removePairing" }
   | {
       command: "submitSetupPairing";
       selected: SelectedFormat[];
@@ -157,7 +159,7 @@ const setupForm = required(
 );
 
 let customFormatCounter = 0;
-const stateVersion = 4;
+const stateVersion = 5;
 const optionSignature = data.options
   .map((option) => `${option.rawFormat}:${Boolean(option.isExisting)}`)
   .sort()
@@ -201,7 +203,9 @@ function renderOptions(): void {
       const selectionStatus = option.isSourceFormat
         ? "Selected file · included automatically"
         : option.isNotebook
-          ? "Included automatically"
+          ? option.isExisting
+            ? "Currently paired"
+            : "Recommended · stores outputs"
           : option.isExisting
             ? "Currently paired"
             : "";
@@ -245,7 +249,7 @@ function renderOptions(): void {
             data-option-id="${escapeHtml(option.id)}"
             aria-describedby="pair-option-detail-${escapeHtml(option.id)}"
             ${isSelected ? "checked" : ""}
-            ${option.isSourceFormat || option.isNotebook ? "disabled" : ""}
+            ${option.isSourceFormat ? "disabled" : ""}
           />
           <div>
             <div class="format-heading">
@@ -274,7 +278,7 @@ function renderOptions(): void {
 function getSelected(): SelectedFormat[] {
   return data.options
     .filter((option) => {
-      if (option.isNotebook || option.isSourceFormat) {
+      if (option.isSourceFormat) {
         return true;
       }
 
@@ -316,7 +320,7 @@ function saveState(): void {
     optionSignature,
     selectedFormats: data.options
       .filter((option) => {
-        if (option.isNotebook || option.isSourceFormat) {
+        if (option.isSourceFormat) {
           return true;
         }
         return Boolean(
@@ -387,6 +391,10 @@ function getCustomFormats(): string[] {
 
 // #region Validation
 function validateSelected(selected: SelectedFormat[]): string {
+  if (selected.length < 2) {
+    return "Select at least one additional file format to create a pair.";
+  }
+
   const optionByFormat = new Map(
     data.options.map((option) => [option.rawFormat, option]),
   );
@@ -451,6 +459,12 @@ required(
 ).addEventListener("click", () =>
   bridge.postMessage({ command: "cancelSetupPairing" }),
 );
+
+document
+  .querySelector<HTMLButtonElement>("#removePairingButton")
+  ?.addEventListener("click", () =>
+    bridge.postMessage({ command: "removePairing" }),
+  );
 
 setupForm.addEventListener("submit", (event) => {
   event.preventDefault();

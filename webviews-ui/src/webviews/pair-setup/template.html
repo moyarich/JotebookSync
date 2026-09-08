@@ -45,10 +45,19 @@
       </details>
       <div class="error" id="error" role="alert" aria-live="polite"></div>
       <footer class="actions">
-        <button type="button" id="cancelButton">Cancel</button>
-        <button type="submit" class="primary" id="submitButton">
-          {{submitLabel}}
-        </button>
+        <div class="destructive-actions">
+          {{#isExistingPair}}
+          <button type="button" class="danger" id="removePairingButton">
+            Remove Pairing…
+          </button>
+          {{/isExistingPair}}
+        </div>
+        <div class="primary-actions">
+          <button type="button" id="cancelButton">Cancel</button>
+          <button type="submit" class="primary" id="submitButton">
+            {{submitLabel}}
+          </button>
+        </div>
       </footer>
       </form>
     </main>

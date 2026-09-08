@@ -11,6 +11,12 @@ export type ConvertChoice = {
   outputPath?: string;
 };
 
+export type ConvertFormatOption = {
+  value: string;
+  description: string;
+  detail?: string;
+};
+
 type ConvertActionQuickPickItem = vscode.QuickPickItem & {
   value: "createNotebook" | "chooseFormat";
 };
@@ -147,14 +153,16 @@ export class ConvertPicker {
       isCustomInput: true,
     };
 
-    const formatItems = this.getConvertFormatItems(
+    const formatItems = this.getConvertFormatOptions(
       uri,
       pairSuggestions,
       options,
     ).map(
       (item): ToFormatQuickPickItem => ({
-        ...item,
-        value: item.label,
+        label: item.value,
+        description: item.description,
+        detail: item.detail,
+        value: item.value,
       }),
     );
 
@@ -200,7 +208,7 @@ export class ConvertPicker {
     return customFormat?.trim() || undefined;
   }
 
-  private getDefaultConvertOutputUri(
+  public getDefaultConvertOutputUri(
     uri: vscode.Uri,
     toFormat: string | undefined,
   ): vscode.Uri {
@@ -246,11 +254,11 @@ export class ConvertPicker {
     return vscode.Uri.file(path.join(parsed.dir, outputName));
   }
 
-  private getConvertFormatItems(
+  public getConvertFormatOptions(
     uri: vscode.Uri,
     pairSuggestions: PairFormatSuggestion[],
     options: JupytextOptions,
-  ): vscode.QuickPickItem[] {
+  ): ConvertFormatOption[] {
     const sourceIsNotebook =
       path.extname(uri.fsPath).replace(/^\./, "").toLowerCase() === "ipynb";
 
@@ -259,7 +267,7 @@ export class ConvertPicker {
         options.formats
           .filter((format): format is string => Boolean(format?.trim()))
           .map((format) => ({
-            label: format.trim(),
+            value: format.trim(),
             description: "Jupytext output format",
           })),
       );
@@ -272,7 +280,7 @@ export class ConvertPicker {
           .map((format) => format.trim())
           .filter(Boolean)
           .map((format) => ({
-            label: format,
+            value: format,
             description: suggestion.label,
             detail: `${suggestion.kind} · ${suggestion.format_name}`,
           })),
@@ -280,13 +288,13 @@ export class ConvertPicker {
     );
   }
 
-  private uniqueQuickPickItems<T extends vscode.QuickPickItem>(
+  private uniqueQuickPickItems<T extends { value: string }>(
     items: T[],
   ): T[] {
     const seen = new Set<string>();
 
     return items.filter((item) => {
-      const key = item.label.toLowerCase();
+      const key = item.value.toLowerCase();
 
       if (seen.has(key)) {
         return false;

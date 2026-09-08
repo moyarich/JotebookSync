@@ -24,6 +24,7 @@ export const EXTENSION_COMMANDS = {
   syncPairedFilesFromNewestPair: `${EXTENSION_NAMESPACE}.syncPairedFilesFromNewestPair`,
   syncPairedFilesFromCurrentFile: `${EXTENSION_NAMESPACE}.syncPairedFilesFromCurrentFile`,
   removePairing: `${EXTENSION_NAMESPACE}.removePairing`,
+  removeFileFromPair: `${EXTENSION_NAMESPACE}.removeFileFromPair`,
   showOptions: `${EXTENSION_NAMESPACE}.showOptions`,
   refreshOptions: `${EXTENSION_NAMESPACE}.refreshOptions`,
   outputPairedFiles: `${EXTENSION_NAMESPACE}.outputPairedFiles`,
@@ -40,9 +41,31 @@ export const EXTENSION_COMMANDS = {
   setFormatOptions: `${EXTENSION_NAMESPACE}.setFormatOptions`,
   runPreCommit: `${EXTENSION_NAMESPACE}.runPreCommit`,
   runAdvanced: `${EXTENSION_NAMESPACE}.runAdvanced`,
+  refreshPairedFilesView: `${EXTENSION_NAMESPACE}.refreshPairedFilesView`,
 } as const;
 
 export const EXTENSION_CONTEXT = {
   activeFileIsPaired: `${EXTENSION_NAMESPACE}.activeFileIsPaired`,
   pairedResourcePaths: `${EXTENSION_NAMESPACE}.pairedResourcePaths`,
 } as const;
+
+export const EXTENSION_VIEWS = {
+  pairedFiles: `${EXTENSION_NAMESPACE}.viewPairedFiles`,
+} as const;
+
+export const TREE_ITEM_CONTEXT = {
+  pairGroup: `${EXTENSION_NAMESPACE}.pairGroup`,
+  pairFile: `${EXTENSION_NAMESPACE}.pairFile`,
+} as const;
+
+export const EXTENSION_WEBVIEWS = {
+  pairSetup: EXTENSION_COMMANDS.setupPairing,
+  sourceFreshness: `${EXTENSION_NAMESPACE}.checkSourceIsNewerResult`,
+  convert: EXTENSION_COMMANDS.convert,
+} as const;
+
+export function getExtensionConfigurationKey(
+  key: (typeof CONFIG)[keyof typeof CONFIG],
+): string {
+  return `${EXTENSION_NAMESPACE}.${key}`;
+}

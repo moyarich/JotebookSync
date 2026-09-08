@@ -15,3 +15,27 @@ it("selects a preset, enables its default suffix, and submits it", () => {
   document.querySelector<HTMLFormElement>("#pairSetupForm")!.requestSubmit();
   expect(messages.at(-1)).toMatchObject({ command: "submitSetupPairing", selected: expect.arrayContaining([expect.objectContaining({ rawFormat: "py:percent", customSuffix: ".percent.py" })]) });
 });
+
+it("allows the recommended notebook format to be deselected", () => {
+  const notebook = document.querySelector<HTMLInputElement>(
+    '[data-option-id="ipynb"]',
+  )!;
+  const percent = document.querySelector<HTMLInputElement>(
+    '[data-option-id="percent"]',
+  )!;
+
+  expect(notebook.disabled, notebook.outerHTML).toBe(false);
+  expect(notebook.checked).toBe(true);
+  notebook.click();
+  percent.click();
+  document.querySelector<HTMLFormElement>("#pairSetupForm")!.requestSubmit();
+
+  const selected = messages.at(-1)?.selected as
+    | Array<{ rawFormat: string }>
+    | undefined;
+  expect(selected?.some(({ rawFormat }) => rawFormat === "ipynb")).toBe(false);
+  expect(selected?.some(({ rawFormat }) => rawFormat === "md")).toBe(true);
+  expect(selected?.some(({ rawFormat }) => rawFormat === "py:percent")).toBe(
+    true,
+  );
+});

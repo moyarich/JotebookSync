@@ -1,6 +1,7 @@
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { EXTENSION_COMMANDS } from "../src/constants.js";
 
 suite("pairing menus", () => {
   test("only shows paired-file actions when the selected resource is paired", async () => {
@@ -9,12 +10,14 @@ suite("pairing menus", () => {
     ) as { contributes: { menus: Record<string, Array<{ command: string; when?: string }>> } };
     const menus = Object.values(manifest.contributes.menus).flat();
     const removeEntries = menus.filter(
-      ({ command }) => command === "jotebooksync.removePairing",
+      ({ command }) => command === EXTENSION_COMMANDS.removePairing,
     );
     assert.ok(removeEntries.length > 0);
     assert.ok(
       removeEntries.every(({ when }) =>
-        /jotebooksync\.(?:pairedResourcePaths|activeFileIsPaired)/.test(when ?? ""),
+        /jotebooksync\.(?:pairedResourcePaths|activeFileIsPaired)|viewItem == jotebooksync\.(?:pairGroup|pairFile)/.test(
+          when ?? "",
+        ),
       ),
     );
   });
