@@ -1,3 +1,4 @@
+/** Returns a required DOM element or fails early with its selector. */
 export function requiredElement<T>(
   value: T | null | undefined,
   name: string,
@@ -9,6 +10,7 @@ export function requiredElement<T>(
   return value;
 }
 
+/** Escapes untrusted text before inserting it into an HTML template. */
 export function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -18,6 +20,7 @@ export function escapeHtml(value: unknown): string {
     .replaceAll("'", "&#039;");
 }
 
+/** Parses JSON data embedded in a required script element. */
 export function parseJsonScript<T>(selector: string): T {
   const element = requiredElement(
     document.querySelector<HTMLScriptElement>(selector),

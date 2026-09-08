@@ -19,6 +19,10 @@ function getApi(): VsCodeApi<unknown> | null {
   return cachedApi;
 }
 
+/**
+ * Creates a typed bridge that uses the VS Code API in production and a browser
+ * message shim in the standalone development preview.
+ */
 export function createVsCodeBridge<Outgoing, Incoming, State>() {
   const api = getApi() as VsCodeApi<State> | null;
 

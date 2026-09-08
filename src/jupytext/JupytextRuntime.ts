@@ -15,6 +15,7 @@ export const BLACK_PYTHON_PACKAGE_NAME = "black";
 export const MARIMO_PYTHON_PACKAGE_NAME = "marimo";
 export const JUPYTER_CLIENT_PYTHON_PACKAGE_NAME = "jupyter_client";
 
+/** Error raised when a spawned Python command exits unsuccessfully. */
 export class CommandExecutionError extends Error {
   constructor(
     message: string,
@@ -26,6 +27,10 @@ export class CommandExecutionError extends Error {
   }
 }
 
+/**
+ * Resolves the active Python environment and runs dependency-aware Jupytext
+ * commands on behalf of the extension.
+ */
 export class JupytextRuntime {
   private packageChecks = new Map<string, Promise<boolean>>();
   private availablePackages = new Set<string>();
@@ -128,7 +133,10 @@ export class JupytextRuntime {
       );
     }
 
-    if (this.jupytextArgsRequireQuarto(args) && !(await this.ensureQuarto(cwd))) {
+    if (
+      this.jupytextArgsRequireQuarto(args) &&
+      !(await this.ensureQuarto(cwd))
+    ) {
       throw new Error(
         formatExtensionMessage(
           this.context,
@@ -224,9 +232,7 @@ export class JupytextRuntime {
   }
 
   private jupytextArgsRequireMarimo(args: string[]): boolean {
-    return args.some((argument) =>
-      argument.toLowerCase().includes(":marimo"),
-    );
+    return args.some((argument) => argument.toLowerCase().includes(":marimo"));
   }
 
   private async canRunQuarto(cwd: string): Promise<boolean> {
@@ -259,7 +265,8 @@ export class JupytextRuntime {
       ),
       {
         modal: true,
-        detail: "Install Quarto, then retry this operation. You can also deselect the Quarto file.",
+        detail:
+          "Install Quarto, then retry this operation. You can also deselect the Quarto file.",
       },
       "Install Quarto",
     );
@@ -342,7 +349,7 @@ export class JupytextRuntime {
             ? "Marimo"
             : pkg === JUPYTER_CLIENT_PYTHON_PACKAGE_NAME
               ? "Jupyter Client"
-            : pkg;
+              : pkg;
 
     if (this.availablePackages.has(cacheKey)) {
       return true;
@@ -438,5 +445,4 @@ export class JupytextRuntime {
     this.packageChecks.set(cacheKey, check);
     return check;
   }
-
 }

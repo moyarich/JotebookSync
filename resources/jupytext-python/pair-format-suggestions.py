@@ -1,3 +1,5 @@
+"""Build pairing suggestions for a source extension from Jupytext's registry."""
+
 import json
 import sys
 from typing import TypedDict
@@ -43,7 +45,8 @@ def build_single_format_suggestion(ext: str, fmt, index: int) -> PairFormatSugge
         }
     )
 
-    language = script_info.get("language", format_name) if is_script else format_name
+    language = script_info.get(
+        "language", format_name) if is_script else format_name
     kind = "script" if is_script else "markup"
     label = (
         f"Pair Notebook with - {language.title()} {format_name.title()}"
@@ -64,6 +67,7 @@ def build_single_format_suggestion(ext: str, fmt, index: int) -> PairFormatSugge
 
 
 def get_pair_format_suggestions(extension: str) -> list[PairFormatSuggestion]:
+    """Return ranked, de-duplicated pairing formats for ``extension``."""
     ext, entries = get_format_entries(extension)
     source_format = ext.lstrip(".")
     suggestions = []
@@ -71,12 +75,14 @@ def get_pair_format_suggestions(extension: str) -> list[PairFormatSuggestion]:
 
     for candidate_extension in [extension, ".py", ".Rmd", ".qmd"]:
         try:
-            candidate_ext, candidate_entries = get_format_entries(candidate_extension)
+            candidate_ext, candidate_entries = get_format_entries(
+                candidate_extension)
         except Exception:
             continue
 
         for index, fmt in enumerate(candidate_entries):
-            suggestion = build_single_format_suggestion(candidate_ext, fmt, index)
+            suggestion = build_single_format_suggestion(
+                candidate_ext, fmt, index)
             if suggestion["format"] in seen_formats:
                 continue
             seen_formats.add(suggestion["format"])

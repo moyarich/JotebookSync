@@ -89,6 +89,7 @@ type WebviewMessage = {
   };
 };
 
+/** Presents pair freshness results and forwards user-selected file actions. */
 export class CheckSourceNewerPanel {
   constructor(
     private readonly context: vscode.ExtensionContext,

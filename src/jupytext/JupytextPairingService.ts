@@ -58,6 +58,10 @@ export {
   MARIMO_PYTHON_PACKAGE_NAME,
 } from "./JupytextRuntime.js";
 
+/**
+ * Coordinates pair discovery and lifecycle operations while keeping VS Code
+ * concerns out of the lower-level command builder.
+ */
 export class JupytextPairingService {
   private optionsCache: JupytextOptions | undefined;
   private activeSyncs = new Set<string>();
@@ -810,6 +814,7 @@ async function getUriFromCommand(
   return vscode.window.activeTextEditor?.document.uri;
 }
 
+/** Runs an action after confirming that Jupytext is available. */
 export async function withJupytext(
   jupytext: JupytextPairingService,
   uri: vscode.Uri | { uri: vscode.Uri } | undefined,
@@ -836,6 +841,7 @@ export async function withJupytext(
   }
 }
 
+/** Runs an action after confirming that both Jupytext and Black are available. */
 export async function withJupytextAndBlack(
   jupytext: JupytextPairingService,
   uri: vscode.Uri | { uri: vscode.Uri } | undefined,

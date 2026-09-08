@@ -1,3 +1,5 @@
+"""Inspect a file's effective Jupytext formats and resolve its paired paths."""
+
 import json
 import sys
 from pathlib import Path
@@ -9,6 +11,7 @@ from jupytext.formats import short_form_one_format
 
 
 def get_path_info(fp):
+    """Return pairing metadata for ``fp`` as a JSON-serializable mapping."""
     try:
         source = Path(fp)
         nb = jupytext.read(str(source))
@@ -30,17 +33,20 @@ def get_path_info(fp):
                     fmt
                     for fmt in fmts
                     if file_name.endswith(
-                        (str(fmt.get("suffix") or "") + str(fmt.get("extension") or "")).lower()
+                        (str(fmt.get("suffix") or "") +
+                         str(fmt.get("extension") or "")).lower()
                     )
                 ],
                 key=lambda fmt: len(
-                    str(fmt.get("suffix") or "") + str(fmt.get("extension") or "")
+                    str(fmt.get("suffix") or "") +
+                    str(fmt.get("extension") or "")
                 ),
                 reverse=True,
             )
             if matching_formats:
                 selected_format = matching_formats[0]
-                fmts = [selected_format, *[fmt for fmt in fmts if fmt is not selected_format]]
+                fmts = [selected_format, *
+                        [fmt for fmt in fmts if fmt is not selected_format]]
             paths = paired_paths(str(source), None, fmts) if fmts else []
 
         return {

@@ -17,6 +17,7 @@ export type PairFormatQuickPickItem = vscode.QuickPickItem & {
   isSourceFormat: boolean;
 };
 
+/** Collects pairing formats and optional filename suffixes from quick picks. */
 export class PairFormatPicker {
   constructor(private readonly formatMessage: (message: string) => string) {}
 

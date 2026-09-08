@@ -30,6 +30,7 @@ type ToFormatQuickPickItem = vscode.QuickPickItem & {
   isCustomInput?: boolean;
 };
 
+/** Collects and validates choices for one-off Jupytext conversions. */
 export class ConvertPicker {
   constructor(private readonly formatMessage: (message: string) => string) {}
 
@@ -288,9 +289,7 @@ export class ConvertPicker {
     );
   }
 
-  private uniqueQuickPickItems<T extends { value: string }>(
-    items: T[],
-  ): T[] {
+  private uniqueQuickPickItems<T extends { value: string }>(items: T[]): T[] {
     const seen = new Set<string>();
 
     return items.filter((item) => {

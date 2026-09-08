@@ -1,3 +1,5 @@
+"""Compare timestamps across a Jupytext pair without modifying any files."""
+
 import json
 import os
 import sys
@@ -38,13 +40,16 @@ def build_pair_file_info(file_path):
 
 
 def get_newest_pair(source_path, destinations):
-    pair_paths = unique_paths([source_path] + [item.get("path") for item in destinations])
+    """Return metadata for the newest existing file in a pair, if one exists."""
+    pair_paths = unique_paths(
+        [source_path] + [item.get("path") for item in destinations])
     existing_pairs = [
         build_pair_file_info(file_path)
         for file_path in pair_paths
         if file_path and os.path.exists(file_path)
     ]
-    existing_pairs = [item for item in existing_pairs if item["modifiedAt"] is not None]
+    existing_pairs = [
+        item for item in existing_pairs if item["modifiedAt"] is not None]
 
     return max(
         existing_pairs,
@@ -54,6 +59,7 @@ def get_newest_pair(source_path, destinations):
 
 
 def check_destination(source_path, destination, source_info, newest_pair):
+    """Describe the timestamp relationship between a source and one destination."""
     destination_path = destination.get("path", "")
     destination_info = build_pair_file_info(destination_path)
     source_modified_at = source_info["modifiedAt"]

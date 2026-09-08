@@ -3,7 +3,10 @@ import * as vscode from "vscode";
 import Mustache from "mustache";
 
 import { EXTENSION_WEBVIEWS } from "../constants.js";
-import type { ConvertChoice, ConvertFormatOption } from "../ConvertPicker/ConvertPicker.js";
+import type {
+  ConvertChoice,
+  ConvertFormatOption,
+} from "../ConvertPicker/ConvertPicker.js";
 import { createWebviewNonce, serializeWebviewData } from "../lib/webview.js";
 
 type ConvertMessage = {
@@ -12,6 +15,7 @@ type ConvertMessage = {
   outputPath?: unknown;
 };
 
+/** Owns the one-off format conversion webview and validates its messages. */
 export class ConvertFilePanel implements vscode.Disposable {
   private panel: vscode.WebviewPanel | undefined;
   private listener: vscode.Disposable | undefined;
@@ -45,7 +49,8 @@ export class ConvertFilePanel implements vscode.Disposable {
         const format = String(message.toFormat ?? "").trim();
         const selected = await vscode.window.showSaveDialog({
           defaultUri: vscode.Uri.file(
-            String(message.outputPath ?? "").trim() || defaultOutputPath(format),
+            String(message.outputPath ?? "").trim() ||
+              defaultOutputPath(format),
           ),
           title: "Choose converted file destination",
         });
@@ -66,7 +71,9 @@ export class ConvertFilePanel implements vscode.Disposable {
         const toFormat = String(message.toFormat ?? "").trim();
         const outputPath = String(message.outputPath ?? "").trim();
         if (!toFormat || /\s/.test(toFormat)) {
-          throw new Error("Enter a valid Jupytext output format without spaces.");
+          throw new Error(
+            "Enter a valid Jupytext output format without spaces.",
+          );
         }
         if (!outputPath || !path.isAbsolute(outputPath)) {
           throw new Error("Choose an absolute destination filename.");
@@ -99,7 +106,9 @@ export class ConvertFilePanel implements vscode.Disposable {
       {
         enableScripts: true,
         retainContextWhenHidden: false,
-        localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, "media")],
+        localResourceRoots: [
+          vscode.Uri.joinPath(this.context.extensionUri, "media"),
+        ],
       },
     );
     this.panel = panel;
@@ -115,15 +124,25 @@ export class ConvertFilePanel implements vscode.Disposable {
     webview: vscode.Webview,
     data: Record<string, unknown>,
   ): Promise<string> {
-    const directory = vscode.Uri.joinPath(this.context.extensionUri, "media", "convert-file");
+    const directory = vscode.Uri.joinPath(
+      this.context.extensionUri,
+      "media",
+      "convert-file",
+    );
     const template = Buffer.from(
-      await vscode.workspace.fs.readFile(vscode.Uri.joinPath(directory, "template.html")),
+      await vscode.workspace.fs.readFile(
+        vscode.Uri.joinPath(directory, "template.html"),
+      ),
     ).toString("utf8");
     const nonce = createWebviewNonce();
     return Mustache.render(template, {
       title: "Convert File to Another Format",
-      cssUri: webview.asWebviewUri(vscode.Uri.joinPath(directory, "styles.css")).toString(),
-      jsUri: webview.asWebviewUri(vscode.Uri.joinPath(directory, "index.js")).toString(),
+      cssUri: webview
+        .asWebviewUri(vscode.Uri.joinPath(directory, "styles.css"))
+        .toString(),
+      jsUri: webview
+        .asWebviewUri(vscode.Uri.joinPath(directory, "index.js"))
+        .toString(),
       cspSource: webview.cspSource,
       nonce,
       convertData: serializeWebviewData(data),

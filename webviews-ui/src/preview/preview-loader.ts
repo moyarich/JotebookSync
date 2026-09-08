@@ -1,5 +1,6 @@
 import Mustache from "mustache";
 
+/** Loads a production webview template into the standalone preview shell. */
 export function loadHtmlPage(
   app: HTMLDivElement,
   options: {
@@ -96,6 +97,7 @@ function withPageRunId(src: string): string {
   return url.toString();
 }
 
+/** Applies the small Mustache-style replacement set used by preview fixtures. */
 export function applyTemplateReplacements(
   html: string,
   replacements: Record<string, string>,

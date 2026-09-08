@@ -9,10 +9,7 @@ import {
   PairFormatPicker,
   ParsedPairFormat,
 } from "../PairFormatPicker/PairFormatPicker.js";
-import {
-  createWebviewNonce,
-  serializeWebviewData,
-} from "../lib/webview.js";
+import { createWebviewNonce, serializeWebviewData } from "../lib/webview.js";
 
 export type PairSetupOption = {
   id: string;
@@ -76,6 +73,7 @@ type PairSetupTemplateData = {
   nonce: string;
 };
 
+/** Owns the webview used to create, update, or remove a file pairing. */
 export class PairSetupPanel {
   private panel: vscode.WebviewPanel | undefined;
   private readonly disposables: vscode.Disposable[] = [];
@@ -352,8 +350,8 @@ export class PairSetupPanel {
     // to supply the required ipynb option.
     if (
       !source.isNotebook &&
-      !options.some(({ rawFormat }) =>
-        this.parsePairFormat(rawFormat).isNotebook,
+      !options.some(
+        ({ rawFormat }) => this.parsePairFormat(rawFormat).isNotebook,
       )
     ) {
       options.unshift({
@@ -373,19 +371,19 @@ export class PairSetupPanel {
 
     const usedSuffixes = new Set([
       ".ipynb",
-      ...[...existingFormats].map(
-        (format) => this.parsePairFormat(format).suffix.toLowerCase(),
+      ...[...existingFormats].map((format) =>
+        this.parsePairFormat(format).suffix.toLowerCase(),
       ),
     ]);
 
     const uniqueOptions = options.filter(({ rawFormat }) => {
-        if (seen.has(rawFormat)) {
-          return false;
-        }
+      if (seen.has(rawFormat)) {
+        return false;
+      }
 
-        seen.add(rawFormat);
-        return true;
-      });
+      seen.add(rawFormat);
+      return true;
+    });
     const suffixCounts = new Map<string, number>();
 
     for (const { rawFormat } of uniqueOptions) {
@@ -394,83 +392,80 @@ export class PairSetupPanel {
       suffixCounts.set(suffix, (suffixCounts.get(suffix) ?? 0) + 1);
     }
 
-    return uniqueOptions
-      .map(({ suggestion, rawFormat }, index) => {
-        const parsed = this.parsePairFormat(rawFormat);
-        const isSourceFormat = parsed.pairFormat === source.pairFormat;
-        const isExisting = existingFormats.has(parsed.pairFormat);
-        const requiresCustomSuffix =
-          !parsed.isNotebook &&
-          !isSourceFormat &&
-          !isExisting &&
-          parsed.suffix.toLowerCase() === source.suffix.toLowerCase();
+    return uniqueOptions.map(({ suggestion, rawFormat }, index) => {
+      const parsed = this.parsePairFormat(rawFormat);
+      const isSourceFormat = parsed.pairFormat === source.pairFormat;
+      const isExisting = existingFormats.has(parsed.pairFormat);
+      const requiresCustomSuffix =
+        !parsed.isNotebook &&
+        !isSourceFormat &&
+        !isExisting &&
+        parsed.suffix.toLowerCase() === source.suffix.toLowerCase();
 
-        let customSuffix =
-          isSourceFormat || parsed.isNotebook
-            ? ""
-            : isExisting
-              ? this.getEditableSuffix(parsed, isSourceFormat)
-              : this.getDefaultSuffix(
-                  parsed,
-                  requiresCustomSuffix,
-                  (suffixCounts.get(parsed.suffix.toLowerCase()) ?? 0) > 1,
-                );
+      let customSuffix =
+        isSourceFormat || parsed.isNotebook
+          ? ""
+          : isExisting
+            ? this.getEditableSuffix(parsed, isSourceFormat)
+            : this.getDefaultSuffix(
+                parsed,
+                requiresCustomSuffix,
+                (suffixCounts.get(parsed.suffix.toLowerCase()) ?? 0) > 1,
+              );
 
-        if (
-          customSuffix &&
-          !isSourceFormat &&
-          !parsed.isNotebook &&
-          !isExisting &&
-          usedSuffixes.has(customSuffix.toLowerCase())
-        ) {
-          customSuffix = this.getUniqueSuffix(parsed, usedSuffixes);
-        }
+      if (
+        customSuffix &&
+        !isSourceFormat &&
+        !parsed.isNotebook &&
+        !isExisting &&
+        usedSuffixes.has(customSuffix.toLowerCase())
+      ) {
+        customSuffix = this.getUniqueSuffix(parsed, usedSuffixes);
+      }
 
-        if (customSuffix) {
-          usedSuffixes.add(customSuffix.toLowerCase());
-        }
+      if (customSuffix) {
+        usedSuffixes.add(customSuffix.toLowerCase());
+      }
 
-        const existingPath = pairInfo?.paths.find(
-          ([, format]) =>
-            this.getPairedPathFormat(format) === parsed.pairFormat,
-        )?.[0];
-        const pairedFileName = existingPath
-          ? path.basename(existingPath)
-          : `${pairBaseName}${customSuffix || parsed.suffix}`;
+      const existingPath = pairInfo?.paths.find(
+        ([, format]) => this.getPairedPathFormat(format) === parsed.pairFormat,
+      )?.[0];
+      const pairedFileName = existingPath
+        ? path.basename(existingPath)
+        : `${pairBaseName}${customSuffix || parsed.suffix}`;
 
-        return {
-          id: `format-${index}`,
-          label: parsed.pairFormat,
-          rawFormat: parsed.pairFormat,
-          description: this.getDisplayFormatLabel(
-            parsed,
-            isSourceFormat,
-            suggestion.label,
-            baseExt,
-          ),
-          detail: isSourceFormat
-            ? `Uses ${path.basename(uri.fsPath)} as the ${this.getFormatTypeName(parsed, baseExt)} in this pair. It already exists and is not recreated.`
-            : `${isExisting ? "Uses" : "Creates"} ${pairedFileName}.`,
-          formatName: parsed.formatName,
-          extensionPart: parsed.extensionPart,
-          defaultSuffix: customSuffix,
-          customSuffix,
-          requiresCustomSuffix,
+      return {
+        id: `format-${index}`,
+        label: parsed.pairFormat,
+        rawFormat: parsed.pairFormat,
+        description: this.getDisplayFormatLabel(
+          parsed,
           isSourceFormat,
-          isNotebook: parsed.isNotebook,
-          isExisting,
-          isSelected:
-            isSourceFormat ||
-            isExisting ||
-            (parsed.isNotebook && !pairInfo?.isPaired),
-          isAdvanced:
-            !isSourceFormat &&
-            !parsed.isNotebook &&
-            !isExisting &&
-            path.extname(parsed.suffix).toLowerCase() !==
-              baseExt.toLowerCase(),
-        };
-      });
+          suggestion.label,
+          baseExt,
+        ),
+        detail: isSourceFormat
+          ? `Uses ${path.basename(uri.fsPath)} as the ${this.getFormatTypeName(parsed, baseExt)} in this pair. It already exists and is not recreated.`
+          : `${isExisting ? "Uses" : "Creates"} ${pairedFileName}.`,
+        formatName: parsed.formatName,
+        extensionPart: parsed.extensionPart,
+        defaultSuffix: customSuffix,
+        customSuffix,
+        requiresCustomSuffix,
+        isSourceFormat,
+        isNotebook: parsed.isNotebook,
+        isExisting,
+        isSelected:
+          isSourceFormat ||
+          isExisting ||
+          (parsed.isNotebook && !pairInfo?.isPaired),
+        isAdvanced:
+          !isSourceFormat &&
+          !parsed.isNotebook &&
+          !isExisting &&
+          path.extname(parsed.suffix).toLowerCase() !== baseExt.toLowerCase(),
+      };
+    });
   }
 
   private buildSetFormatsFromSetupPayload(
@@ -602,7 +597,8 @@ export class PairSetupPanel {
     parsed: ParsedPairFormat,
     usedSuffixes: Set<string>,
   ): string {
-    const stem = parsed.formatName || parsed.token.replace(/^\./, "") || "paired";
+    const stem =
+      parsed.formatName || parsed.token.replace(/^\./, "") || "paired";
     const extension = path.extname(parsed.suffix) || parsed.suffix;
     let suffix = `.${stem}${extension}`;
     let index = 2;
@@ -644,10 +640,7 @@ export class PairSetupPanel {
     return `${path.extname(parsed.suffix).toLowerCase()}:${(parsed.formatName ?? "").toLowerCase()}`;
   }
 
-  private getFormatTypeName(
-    parsed: ParsedPairFormat,
-    baseExt: string,
-  ): string {
+  private getFormatTypeName(parsed: ParsedPairFormat, baseExt: string): string {
     if (parsed.formatName) {
       const names: Record<string, string> = {
         myst: "MyST file",

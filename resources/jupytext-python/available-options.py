@@ -1,3 +1,5 @@
+"""Report formats and language mappings exposed by the installed Jupytext."""
+
 import json
 import jupytext
 from jupytext import formats as jf
@@ -13,6 +15,7 @@ def make_json_safe(value):
 
 
 def build_payload():
+    """Build the JSON-safe discovery payload consumed by the extension."""
     descriptions = getattr(jf, "JUPYTEXT_FORMATS", [])
     formats = sorted(
         {

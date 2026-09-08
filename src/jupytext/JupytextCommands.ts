@@ -9,6 +9,7 @@ import {
 } from "./JupytextRuntime.js";
 import type { CommandResult } from "./types.js";
 
+/** Thin, typed command builder for the supported Jupytext CLI workflows. */
 export class JupytextCommands {
   constructor(
     private readonly context: vscode.ExtensionContext,
