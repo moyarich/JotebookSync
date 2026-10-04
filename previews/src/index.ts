@@ -38,7 +38,7 @@ function renderPage(pageDefinition: PageDefinition) {
   document.title = pageDefinition.title;
 
   const page = renderAppLayout();
-  const activePage = resolvePage(window.location.hash);
+  const activePage = resolvePage(window.location.pathname);
   app.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
     const isActive = link.dataset.page === activePage;
     link.classList.toggle("active", isActive);
@@ -62,12 +62,12 @@ function renderPage(pageDefinition: PageDefinition) {
 }
 
 function render() {
-  const page = resolvePage(window.location.hash);
+  const page = resolvePage(window.location.pathname);
   const pageDefinition = getPageDefinition(page);
 
   renderPage(pageDefinition);
 }
 
-window.addEventListener("hashchange", render);
+window.addEventListener("popstate", render);
 
 render();

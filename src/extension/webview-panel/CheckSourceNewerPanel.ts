@@ -114,7 +114,7 @@ export class CheckSourceNewerPanel {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [
-          vscode.Uri.joinPath(this.context.extensionUri, "media"),
+          vscode.Uri.joinPath(this.context.extensionUri, "out", "webview-ui"),
         ],
       },
     );
@@ -312,7 +312,8 @@ export class CheckSourceNewerPanel {
   ): string {
     const templatePath = vscode.Uri.joinPath(
       this.context.extensionUri,
-      "media",
+      "out",
+      "webview-ui",
       "freshness-report",
       "template.html",
     );

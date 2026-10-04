@@ -1,6 +1,6 @@
-import pairSetupHtml from "../../webviews/pair-setup/template.html?raw";
-import pairSetupCssUrl from "../../webviews/pair-setup/styles.css?url";
-import pairSetupScriptUrl from "../../webviews/pair-setup/index.ts?url";
+import pairSetupHtml from "../../../src/webview-ui/pair-setup/template.html?raw";
+import pairSetupCssUrl from "../../../src/webview-ui/pair-setup/styles.css?url";
+import pairSetupScriptUrl from "../../../src/webview-ui/pair-setup/index.ts?url";
 import type { PageDefinition } from "../types";
 
 const pairSetupData = {

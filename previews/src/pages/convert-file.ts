@@ -1,6 +1,6 @@
-import html from "../../webviews/convert-file/template.html?raw";
-import cssUrl from "../../webviews/convert-file/styles.css?url";
-import scriptUrl from "../../webviews/convert-file/index.ts?url";
+import html from "../../../src/webview-ui/convert-file/template.html?raw";
+import cssUrl from "../../../src/webview-ui/convert-file/styles.css?url";
+import scriptUrl from "../../../src/webview-ui/convert-file/index.ts?url";
 import type { PageDefinition } from "../types";
 
 const data = {

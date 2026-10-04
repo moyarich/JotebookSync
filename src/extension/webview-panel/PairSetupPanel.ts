@@ -212,7 +212,7 @@ export class PairSetupPanel {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [
-          vscode.Uri.joinPath(this.context.extensionUri, "media"),
+          vscode.Uri.joinPath(this.context.extensionUri, "out", "webview-ui"),
         ],
       },
     );
@@ -694,7 +694,8 @@ export class PairSetupPanel {
   ): Promise<string> {
     const templatePath = vscode.Uri.joinPath(
       this.context.extensionUri,
-      "media",
+      "out",
+      "webview-ui",
       "pair-setup",
       "template.html",
     );

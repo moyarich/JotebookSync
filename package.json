@@ -41,7 +41,7 @@
     "ms-python.python"
   ],
   "activationEvents": [],
-  "main": "./out/extension.js",
+  "main": "./out/extension/extension.js",
   "type": "module",
   "contributes": {
     "configuration": {
@@ -462,16 +462,13 @@
     }
   },
   "scripts": {
-    "dev": "npm --prefix webviews-ui run dev --",
-    "vscode:prepublish": "npm run compile",
-    "compile": "npm run build:webviews && npm run clean:extension && tsc -p ./",
-    "build": "npm run compile",
-    "build:webviews": "npm --prefix webviews-ui run build",
-    "clean:extension": "node -e \"require('node:fs').rmSync('out', { recursive: true, force: true })\"",
+    "dev": "npm run dev:preview",
+    "vscode:prepublish": "npm run build",
+    "compile": "npm run build",
+    "build": "npm run clean && npm run build:extension && npm run build:webview",
     "compile:tests": "node -e \"require('node:fs').rmSync('out-test', { recursive: true, force: true })\" && tsc -p tsconfig.tests.json && node -e \"require('node:fs').cpSync('resources', 'out-test/resources', { recursive: true })\"",
-    "watch": "concurrently -k -n webviews,extension \"npm --prefix webviews-ui run build -- --watch\" \"tsc -watch -p ./\"",
+    "watch": "concurrently -k -n extension,webview \"npm run watch:extension\" \"npm run watch:webview\"",
     "watch:extension": "tsc -watch -p ./",
-    "watch:webviews": "npm --prefix webviews-ui run build -- --watch",
     "dev:extension": "./scripts/run-extension-dev.sh",
     "demo": "node ./demo/extension.smoke.mjs --demo",
     "demo:all": "npm run demo -- --scenario=all",
@@ -480,13 +477,21 @@
     "demo:formats": "npm run demo -- --scenario=show-available-formats",
     "demo:gif": "node ./demo/create-readme-gif.mjs",
     "pretest": "npm run compile && npm run compile:tests && npm run lint",
-    "lint": "eslint src test demo",
+    "lint": "eslint src/extension src/webview-ui previews/src test demo",
     "test": "npm run test:webviews && vscode-test",
     "test:webviews": "tsc -p tsconfig.webview-tests.json && vitest run test/webviews",
     "zip": "npm run compile && vite build --mode zip",
     "package": "npm run compile && npx vsce package --allow-missing-repository --no-rewrite-relative-links",
     "publish:extension": "./scripts/publish_ext.sh",
-    "package:ls": "npm run compile && npx @vscode/vsce ls --tree"
+    "package:ls": "npm run compile && npx @vscode/vsce ls --tree",
+    "build:extension": "tsc -p ./",
+    "build:webview": "vite build --config vite.webview.config.ts",
+    "clean": "node -e \"require('node:fs').rmSync('out', { recursive: true, force: true })\"",
+    "watch:webview": "vite build --watch --mode development --config vite.webview.config.ts",
+    "dev:preview": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews",
+    "dev:pair-setup": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/pair-setup",
+    "dev:freshness": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/freshness-report",
+    "dev:convert": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/convert-file"
   },
   "dependencies": {
     "date-fns": "^4.4.0",

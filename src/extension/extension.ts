@@ -17,9 +17,9 @@ import { PairFormatPicker } from "./PairFormatPicker/PairFormatPicker.js";
 
 import { formatExtensionMessage } from "./lib/utils.js";
 
-import { PairSetupPanel } from "./panels/PairSetupPanel.js";
-import { CheckSourceNewerPanel } from "./panels/CheckSourceNewerPanel.js";
-import { ConvertFilePanel } from "./panels/ConvertFilePanel.js";
+import { PairSetupPanel } from "./webview-panel/PairSetupPanel.js";
+import { CheckSourceNewerPanel } from "./webview-panel/CheckSourceNewerPanel.js";
+import { ConvertFilePanel } from "./webview-panel/ConvertFilePanel.js";
 import {
   PAIRED_FILES_TREE_VIEW_ID,
   PairedFilesTreeProvider,

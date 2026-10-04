@@ -10,9 +10,9 @@ export function getHomePage(): PageDefinition {
         <h1>JotebookSync webviews</h1>
         <p>Choose a screen above to review its layout and interactions.</p>
         <div class="preview-actions">
-          <a href="#pair-setup">Open pair setup</a>
-          <a href="#freshness-report">Open freshness report</a>
-          <a href="#convert-file">Open file converter</a>
+          <a href="/previews/pair-setup">Open pair setup</a>
+          <a href="/previews/freshness-report">Open freshness report</a>
+          <a href="/previews/convert-file">Open file converter</a>
         </div>
       </section>
     `,

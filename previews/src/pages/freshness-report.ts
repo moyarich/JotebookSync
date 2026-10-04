@@ -1,6 +1,6 @@
-import checkSourceNewerHtml from "../../webviews/freshness-report/template.html?raw";
-import checkSourceNewerCssUrl from "../../webviews/freshness-report/styles.css?url";
-import checkSourceNewerScriptUrl from "../../webviews/freshness-report/index.ts?url";
+import checkSourceNewerHtml from "../../../src/webview-ui/freshness-report/template.html?raw";
+import checkSourceNewerCssUrl from "../../../src/webview-ui/freshness-report/styles.css?url";
+import checkSourceNewerScriptUrl from "../../../src/webview-ui/freshness-report/index.ts?url";
 import type { PageDefinition } from "../types";
 
 const checkSourceNewerData = {

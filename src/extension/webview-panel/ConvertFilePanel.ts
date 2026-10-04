@@ -107,7 +107,7 @@ export class ConvertFilePanel implements vscode.Disposable {
         enableScripts: true,
         retainContextWhenHidden: false,
         localResourceRoots: [
-          vscode.Uri.joinPath(this.context.extensionUri, "media"),
+          vscode.Uri.joinPath(this.context.extensionUri, "out", "webview-ui"),
         ],
       },
     );
@@ -126,7 +126,8 @@ export class ConvertFilePanel implements vscode.Disposable {
   ): Promise<string> {
     const directory = vscode.Uri.joinPath(
       this.context.extensionUri,
-      "media",
+      "out",
+      "webview-ui",
       "convert-file",
     );
     const template = Buffer.from(
