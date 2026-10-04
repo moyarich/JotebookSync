@@ -1,7 +1,7 @@
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { EXTENSION_COMMANDS } from "../src/constants.js";
+import { EXTENSION_COMMANDS } from "../src/extension/constants.js";
 
 suite("pairing menus", () => {
   test("only shows paired-file actions when the selected resource is paired", async () => {

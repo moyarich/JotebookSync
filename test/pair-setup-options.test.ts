@@ -1,14 +1,14 @@
 import * as assert from "node:assert/strict";
 import * as vscode from "vscode";
 
-import { PairFormatPicker } from "../src/PairFormatPicker/PairFormatPicker.js";
+import { PairFormatPicker } from "../src/extension/PairFormatPicker/PairFormatPicker.js";
 import {
   PairSetupPanel,
   type PairSetupFormatSuggestion,
   type PairSetupOption,
   type PairSetupPairingInfo,
-} from "../src/panels/PairSetupPanel.js";
-import type { JupytextPairingService } from "../src/jupytext/JupytextPairingService.js";
+} from "../src/extension/panels/PairSetupPanel.js";
+import type { JupytextPairingService } from "../src/extension/jupytext/JupytextPairingService.js";
 
 type PairSetupOptionsBuilder = {
   buildPairSetupOptions(

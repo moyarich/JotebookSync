@@ -1,6 +1,6 @@
 import * as assert from "node:assert/strict";
 import * as vscode from "vscode";
-import { EXTENSION_COMMANDS } from "../src/constants.js";
+import { EXTENSION_COMMANDS } from "../src/extension/constants.js";
 
 suite("commands", () => {
   test("registers every contributed command", async () => {

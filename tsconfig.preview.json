@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.webview.json",
+  "compilerOptions": {
+    "types": [
+      "vite/client",
+      "react",
+      "react-dom"
+    ],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "previews/src/**/*.ts",
+    "previews/src/**/*.tsx",
+    "src/webview-ui/**/*.ts"
+  ]
+}
