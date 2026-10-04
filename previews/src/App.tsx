@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
 
 import { PreviewLayout } from "./PreviewLayout";
 import { WebviewPreview } from "./WebviewPreview";
@@ -8,10 +8,10 @@ function Overview() {
   return (
     <section className="preview-overview" aria-label="Available webview previews">
       {previewPages.map((page) => (
-        <a className="preview-card" key={page.path} href={page.path}>
+        <Link className="preview-card" key={page.path} to={page.path}>
           <strong>{page.title}</strong>
           <span>{page.description}</span>
-        </a>
+        </Link>
       ))}
     </section>
   );
