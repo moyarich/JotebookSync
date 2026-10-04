@@ -56,7 +56,7 @@ jobs:
 
             baseline="$(
               gh api --paginate "repos/$GH_REPO/commits?sha=main&per_page=100" |
-                jq -s 'add | last | .sha // empty'
+                jq -r -s 'add | last | .sha // empty'
             )"
             baseline_source="root commit"
           fi
