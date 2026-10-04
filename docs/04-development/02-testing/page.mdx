@@ -1,0 +1,69 @@
+# Testing
+
+JotebookSync has separate coverage for the extension runtime and React webviews.
+
+## Run the full test suite
+
+```sh
+npm test
+```
+
+The root test command runs webview tests and the VS Code extension test suite.
+
+## Webview tests
+
+Run the webview tests directly:
+
+```sh
+npm run test:webviews
+```
+
+These tests cover user interactions in flows such as pairing setup, conversion,
+freshness review, filtering, sorting, refresh behavior, validation, actions,
+and error states.
+
+## Extension tests
+
+The VS Code extension tests are compiled as part of the normal test preparation
+and run in a VS Code test environment.
+
+The extension suite should cover behavior such as:
+
+- pairing lifecycle and pair metadata;
+- synchronization from the current or newest representation;
+- automatic sync on save;
+- project configuration;
+- format discovery and refresh;
+- conversion and notebook creation;
+- output-preserving notebook updates;
+- dependency and Python environment behavior;
+- command registration and menus;
+- Paired Files Explorer behavior.
+
+## Lint and compile checks
+
+Run lint independently:
+
+```sh
+npm run lint
+```
+
+Compile the extension and webviews:
+
+```sh
+npm run compile
+```
+
+Before a release or packaging change, also verify package contents:
+
+```sh
+npm run package:ls
+```
+
+## Testing user-facing changes
+
+For changes to pairing, sync, conversion, freshness review, or project
+configuration, combine automated tests with an Extension Development Host check.
+
+When a change affects a workflow shown in the README, update or regenerate the
+corresponding demo media so the documentation remains accurate.
