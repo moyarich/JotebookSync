@@ -9,17 +9,17 @@ JotebookSync uses [Semantic Versioning](https://semver.org/).
 
 No user-facing changes yet.
 
-## [0.1.0] - Initial Release - 2026-09-08
+## [0.1.0] - 2026-09-08
 
 JotebookSync makes Jupyter notebooks easier to manage in real development workflows.
 
-Built around Jupytext, it lets you pair notebooks with readable source files, keep
-representations synchronized automatically, review differences before overwriting
-files, preserve notebook outputs, and manage project-wide notebook workflows
-without leaving VS Code.
+Built around Jupytext, it lets you pair notebooks with readable source files,
+keep representations synchronized automatically, review differences before
+overwriting files, preserve notebook outputs, and manage project-wide notebook
+workflows without leaving VS Code.
 
-The goal is simple: keep the flexibility of notebooks while making them easier to
-review, version, share, and maintain alongside the rest of your codebase.
+The goal is simple: keep the flexibility of notebooks while making them easier
+to review, version, share, and maintain alongside the rest of your codebase.
 
 ### Pairing and synchronization
 
@@ -33,10 +33,12 @@ review, version, share, and maintain alongside the rest of your codebase.
 - Explicitly choose a source of truth with:
   - **Overwrite Paired Files from This File…**
   - **Sync All from Newest Paired File…**
+- Open the notebook associated with a paired text file through
+  **Open Paired Notebook**.
 - Remove one representation without breaking the remaining pair, or remove the
   complete pairing without deleting files.
 
-### Freshness review and safe updates
+### Freshness and safe updates
 
 - Review modification times and pair state through **Review Pair Freshness…**.
 - Open normalized Jupytext diffs so unlike notebook representations can be
@@ -54,30 +56,32 @@ review, version, share, and maintain alongside the rest of your codebase.
 - Manage discovered pairs from the **JotebookSync: Paired Files** Explorer view.
 - Open paired notebooks, review freshness, synchronize, reconfigure, detach
   representations, and remove pairing directly from Explorer.
+- Access JotebookSync actions from the Command Palette, Explorer context menu,
+  notebook toolbar, and Paired Files Explorer view.
 - Create project-wide pairing rules in `jupytext.toml`.
-- Apply project configuration to existing notebooks, including richer folder
-  mappings where notebook and text representations live in different
-  directories.
-- Avoid continuous workspace rescanning by using visibility-aware, on-demand
-  pair discovery that excludes common generated and dependency directories.
+- Apply project configuration to existing notebooks, including folder mappings
+  where notebook and text representations live in different directories.
 
-### Conversion and format support
+### Conversion and notebook updates
 
 - Convert a file to another Jupytext representation without changing pairing
   metadata.
 - Create an independent `.ipynb` notebook from a supported text notebook.
+- Update an existing notebook from text while preserving saved outputs.
+
+### Format and environment support
+
 - Discover formats from the selected Python/Jupytext environment instead of
   relying on a fixed language list.
+- Show and refresh available formats after changing Python environments or
+  installing new integrations.
 - Override supported text extensions when needed with
   `jotebooksync.supportedTextExtensions`.
-- Reuse existing paired filenames unless a suffix is explicitly changed.
-
-### Python and dependency handling
-
 - Resolve the configured Python executable or fall back to the active Microsoft
   Python extension environment.
-- Detect and provide targeted guidance for required or optional tooling,
-  including Jupytext, Black, Marimo, Quarto, and `jupyter_client`.
+- Prompt to install required Python packages such as Jupytext, Black, Marimo,
+  and `jupyter_client` into the selected environment when needed.
+- Provide installation guidance for external tools such as Quarto.
 
 ### Advanced Jupytext tools
 
@@ -88,18 +92,8 @@ review, version, share, and maintain alongside the rest of your codebase.
 - Update notebook metadata and format options.
 - Run pre-commit workflows.
 - Run arbitrary advanced Jupytext argument lists from VS Code.
-
-### Configuration
-
-The initial release includes settings for:
-
-- automatic synchronization on save;
-- destructive-action confirmation;
-- Python executable selection;
-- notebook editor view type;
-- supported text-extension overrides;
-- extra synchronization arguments; and
-- extra set-format arguments.
+- Confirm commands that can execute notebook code or external programs before
+  running them.
 
 [Unreleased]: https://github.com/moyarich/JotebookSync/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/moyarich/JotebookSync/releases/tag/v0.1.0
