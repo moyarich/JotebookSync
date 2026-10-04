@@ -1,0 +1,37 @@
+# Project Pairing Configuration
+
+JotebookSync can create and apply project-wide Jupytext configuration.
+
+## Create a project configuration
+
+Right-click a workspace folder and choose:
+
+**JotebookSync → Create Project Pairing Configuration…**
+
+JotebookSync creates:
+
+```text
+jupytext.toml
+```
+
+The guided flow lets you choose the project formats and can apply the configuration immediately.
+
+## Apply an existing configuration
+
+Run:
+
+**JotebookSync: Apply Project Pairing Configuration…**
+
+from a workspace folder, `jupytext.toml`, or supported project configuration file.
+
+The command applies the project pairing rules to existing notebooks.
+
+## Folder mappings
+
+Jupytext project configuration can keep notebook and text representations in different directories. JotebookSync supports these richer mappings rather than assuming every paired file must sit beside the notebook.
+
+## Replacing configuration
+
+When `jupytext.toml` already exists, JotebookSync asks whether to replace it or open the existing file.
+
+This prompt is controlled by the destructive-action confirmation setting.
