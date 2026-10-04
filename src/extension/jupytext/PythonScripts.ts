@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 function loadPythonScript(fileName: string): string {
   const scriptUrl = new URL(
-    `../../resources/jupytext-python/${fileName}`,
+    `../../../resources/jupytext-python/${fileName}`,
     import.meta.url,
   );
   return readFileSync(fileURLToPath(scriptUrl), "utf8");
