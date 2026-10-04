@@ -1,0 +1,278 @@
+name: Publish
+
+run-name: >-
+  JotebookSync Publish · ${{ inputs.target-branch }} ·
+  ${{ inputs.version || 'package.json' }} · dry-run=${{ inputs.dry-run }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target-branch:
+        description: Publish target branch
+        required: true
+        default: main
+        type: string
+
+      dry-run:
+        description: Publish — preview without publishing
+        required: true
+        default: true
+        type: boolean
+
+      version:
+        description: Version — exact version to verify; empty uses package.json
+        required: false
+        default: ""
+        type: string
+
+      marketplace-mode:
+        description: Marketplace — publish now or confirm this version is already published
+        required: true
+        default: publish
+        type: choice
+        options:
+          - publish
+          - already-published
+
+      node-version:
+        description: Advanced — Node.js version
+        required: true
+        default: "24"
+        type: string
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ inputs.target-branch }}-
+    ${{ inputs.version || 'package-json' }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  publish-approval:
+    name: "job: Publish approval"
+    if: ${{ !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    steps:
+      - name: Record approval
+        shell: bash
+        run: |
+          {
+            echo "# Publish approved"
+            echo
+            echo "A real publish operation was approved through the `release` environment."
+            echo
+            echo "| Environment | `release` |"
+            echo "| Protection | Configure required reviewers/rules in **Settings → Environments → release** |"
+            echo
+            echo "> Dry runs do not require this approval."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: "extension: JotebookSync"
+    needs: publish-approval
+    if: ${{ always() && (inputs.dry-run || needs.publish-approval.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TARGET_BRANCH: ${{ inputs.target-branch }}
+
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve publish version
+        id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          VERSION="${REQUESTED_VERSION:-$PACKAGE_VERSION}"
+
+          if [ -n "$REQUESTED_VERSION" ] && [ "$REQUESTED_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "::error::Requested version $REQUESTED_VERSION does not match package.json version $PACKAGE_VERSION."
+            exit 1
+          fi
+
+          TAG="v$VERSION"
+
+          if ! git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Required release tag $TAG does not exist."
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Verify matching GitHub draft
+        id: draft
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE="$(
+            gh api --paginate "repos/$GH_REPO/releases?per_page=100" |
+              jq -s -c --arg tag "$TAG" '
+                add
+                | map(select(.draft == true and .tag_name == $tag))
+                | first // empty
+              '
+          )"
+
+          if [ -z "$RELEASE" ]; then
+            echo "::error::No matching GitHub draft release exists for $TAG."
+            exit 1
+          fi
+
+          if [ "$(jq -r '.name' <<< "$RELEASE")" != "$TAG" ]; then
+            echo "::error::Draft release name does not match canonical tag $TAG."
+            exit 1
+          fi
+
+          echo "id=$(jq -r '.id' <<< "$RELEASE")" >> "$GITHUB_OUTPUT"
+          echo "url=$(jq -r '.html_url' <<< "$RELEASE")" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: git checkout --detach "$TAG"
+
+      - name: Verify tagged package version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAGGED_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAGGED_VERSION" != "$VERSION" ]; then
+            echo "::error::Tagged package version $TAGGED_VERSION does not match expected version $VERSION."
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional
+
+      - name: Run publish checks
+        run: |
+          npm test
+          npm run package:ls
+
+      - name: Package VSIX
+        id: package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VSIX_PATH="$RUNNER_TEMP/jotebooksync-$VERSION.vsix"
+
+          npx @vscode/vsce package             --out "$VSIX_PATH"             --allow-missing-repository             --no-rewrite-relative-links
+
+          echo "path=$VSIX_PATH" >> "$GITHUB_OUTPUT"
+          echo "name=jotebooksync-$VERSION.vsix" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to VS Code Marketplace
+        id: marketplace
+        if: ${{ !inputs.dry-run && inputs.marketplace-mode == 'publish' }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          VSIX_PATH: ${{ steps.package.outputs.path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::VSCE_PAT is required to publish to the VS Code Marketplace."
+            exit 1
+          fi
+
+          npx @vscode/vsce publish --packagePath "$VSIX_PATH"
+          echo "status=published" >> "$GITHUB_OUTPUT"
+
+      - name: Record already-published Marketplace version
+        id: marketplace-existing
+        if: ${{ inputs.marketplace-mode == 'already-published' }}
+        shell: bash
+        run: |
+          echo "status=already-published" >> "$GITHUB_OUTPUT"
+          echo "Marketplace publication is being skipped because this version is already published."
+
+      - name: Publish GitHub Release
+        id: github-release
+        if: ${{ !inputs.dry-run && (inputs.marketplace-mode == 'already-published' || steps.marketplace.outcome == 'success') }}
+        env:
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE="$(
+            gh api               --method PATCH               "repos/$GH_REPO/releases/$RELEASE_ID"               -f tag_name="$TAG"               -f name="$TAG"               -F draft=false
+          )"
+
+          if [ "$(jq -r '.draft' <<< "$RELEASE")" != "false" ]; then
+            echo "::error::GitHub Release remained in draft state."
+            exit 1
+          fi
+
+          echo "status=published" >> "$GITHUB_OUTPUT"
+          echo "url=$(jq -r '.html_url' <<< "$RELEASE")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload VSIX artifact
+        if: ${{ always() && steps.package.outputs.path != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.path }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## JotebookSync publish"
+            echo
+            echo "| Setting | Value |"
+            echo "| --- | --- |"
+            echo "| Dry run | **${{ inputs.dry-run }}** |"
+            echo "| Version | `${{ steps.version.outputs.version || 'unresolved' }}` |"
+            echo "| Git tag | `${{ steps.version.outputs.tag || 'unresolved' }}` |"
+            echo "| Draft release | ${{ steps.draft.outputs.url || 'not resolved' }} |"
+            echo "| VSIX artifact | `${{ steps.package.outputs.name || 'not packaged' }}` |"
+            echo "| Marketplace mode | `${{ inputs.marketplace-mode }}` |"
+            echo "| Marketplace | `${{ steps.marketplace.outputs.status || steps.marketplace-existing.outputs.status || (inputs.dry-run && 'preview only' || 'not published') }}` |"
+            echo "| GitHub Release | `${{ steps.github-release.outputs.status || (inputs.dry-run && 'unchanged' || 'draft') }}` |"
+            echo "| Result | **${{ job.status }}** |"
+            echo
+            if [ "${{ inputs.dry-run }}" = "true" ]; then
+              echo "> Dry run only. The VSIX was validated and packaged, but Marketplace and GitHub Release state were not changed."
+            elif [ "${{ inputs.marketplace-mode }}" = "already-published" ]; then
+              echo "> Marketplace publishing was intentionally skipped; this run only published the matching GitHub Release."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

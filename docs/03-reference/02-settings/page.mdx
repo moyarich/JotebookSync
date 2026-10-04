@@ -1,0 +1,79 @@
+# Settings
+
+JotebookSync settings use the `jotebooksync` namespace.
+
+## `jotebooksync.autoSyncOnSave`
+
+Default:
+
+```json
+true
+```
+
+Synchronizes paired files whenever a paired notebook or text file is saved.
+
+## `jotebooksync.confirmDestructiveActions`
+
+Default:
+
+```json
+true
+```
+
+Requires confirmation before operations that replace paired content, replace notebooks, remove pairing metadata, or replace project configuration.
+
+## `jotebooksync.pythonPath`
+
+Default:
+
+```text
+python
+```
+
+Python executable used to run Jupytext.
+
+When left at the default, JotebookSync can fall back to the active interpreter exposed by the Microsoft Python extension.
+
+## `jotebooksync.supportedTextExtensions`
+
+Default:
+
+```json
+[]
+```
+
+Optional override for the text extensions considered by JotebookSync.
+
+Leave empty to use extensions discovered from Jupytext.
+
+Configured values are normalized by removing leading periods, whitespace, duplicates, and invalid extension names.
+
+## `jotebooksync.notebookEditorViewType`
+
+Default:
+
+```text
+jupyter-notebook
+```
+
+VS Code editor view type used when opening notebooks.
+
+## `jotebooksync.syncArgs`
+
+Default:
+
+```json
+[]
+```
+
+Additional arguments appended to Jupytext synchronization operations.
+
+## `jotebooksync.setFormatsArgs`
+
+Default:
+
+```json
+[]
+```
+
+Additional arguments used when changing Jupytext pair formats.

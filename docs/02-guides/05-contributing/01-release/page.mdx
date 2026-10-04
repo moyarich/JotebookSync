@@ -1,0 +1,362 @@
+# Release JotebookSync
+
+This tutorial covers the full maintainer release flow for JotebookSync.
+
+JotebookSync separates **release preparation** from **Marketplace publishing**:
+
+```text
+Release workflow
+  → version + changelog validation
+  → tests + package validation
+  → release commit + vX.Y.Z tag
+  → GitHub Release stays draft
+
+Publish workflow
+  → verify exact tag + draft
+  → tests + VSIX validation
+  → publish to Marketplace
+  → publish GitHub Release
+```
+
+For versions that are already live in the VS Code Marketplace, the Publish
+workflow also supports a GitHub-release-only path.
+
+## Prerequisites
+
+Before running a real release, verify the repository has:
+
+### GitHub environment
+
+Create an environment named:
+
+```text
+release
+```
+
+Configure required reviewers or other protection rules if approval is required.
+
+Real Release and Publish runs use this environment as their approval gate.
+Dry runs do not require approval.
+
+### Marketplace secret
+
+Add the VS Code Marketplace publishing token as the repository secret:
+
+```text
+VSCE_PAT
+```
+
+This secret is required only when the Publish workflow uses:
+
+```text
+marketplace-mode: publish
+```
+
+It is not required for:
+
+```text
+marketplace-mode: already-published
+```
+
+## Step 1: Prepare the changelog
+
+Before releasing a version, add a matching section to `CHANGELOG.md`.
+
+Example:
+
+```md
+## [0.2.0] - 2026-10-04
+
+### Added
+
+- Added a new workflow.
+
+### Fixed
+
+- Fixed pair synchronization behavior.
+```
+
+The Release workflow extracts the matching version section and uses it as the
+GitHub Release body.
+
+A release fails when the requested version does not have a matching changelog
+section.
+
+## Step 2: Choose the version strategy
+
+The Release workflow supports three version modes.
+
+### Use the current package version
+
+Use:
+
+```text
+version-mode: package-json
+```
+
+This is appropriate when `package.json` already contains the version you want
+to release.
+
+### Bump the current version
+
+Use:
+
+```text
+version-mode: bump
+```
+
+Then choose one of:
+
+```text
+patch
+minor
+major
+prepatch
+preminor
+premajor
+prerelease
+```
+
+The workflow updates `package.json` and `package-lock.json`.
+
+### Use an exact version
+
+Use:
+
+```text
+version-mode: exact
+exact-version: 0.2.0
+```
+
+Use this when the next version is known and should not be calculated from the
+current version.
+
+## Step 3: Dry-run the Release workflow
+
+Open:
+
+**GitHub → Actions → Release → Run workflow**
+
+Recommended settings:
+
+```text
+target-branch: main
+version-mode: package-json | bump | exact
+dry-run: true
+```
+
+The dry run performs the release checks without mutating the repository.
+
+It:
+
+1. resolves the release version;
+2. validates the matching changelog section;
+3. installs dependencies;
+4. runs the extension test suite;
+5. verifies packaged extension contents;
+6. builds the VSIX;
+7. uploads the VSIX as a workflow artifact;
+8. prints the release plan and full release notes to the workflow summary.
+
+It does **not**:
+
+- commit changes;
+- create a Git tag;
+- create or update a GitHub Release.
+
+Review the workflow summary before continuing.
+
+## Step 4: Create the release
+
+Run the **Release** workflow again with the same version settings and:
+
+```text
+dry-run: false
+```
+
+After approval through the `release` environment, the workflow:
+
+1. reruns the release checks;
+2. updates version files when required;
+3. creates the release commit;
+4. creates the canonical tag:
+
+   ```text
+   vX.Y.Z
+   ```
+
+5. pushes the commit and tag;
+6. creates or updates the matching GitHub Release as a **draft**.
+
+At this point the expected state is:
+
+```text
+package.json        X.Y.Z
+Git tag             vX.Y.Z
+GitHub Release      vX.Y.Z draft
+Marketplace         not changed yet
+```
+
+Do not manually publish the GitHub Release yet.
+
+## Step 5: Dry-run the Publish workflow
+
+Open:
+
+**GitHub → Actions → Publish → Run workflow**
+
+For a normal release, use:
+
+```text
+version: X.Y.Z
+marketplace-mode: publish
+dry-run: true
+```
+
+The workflow verifies:
+
+- `package.json` matches the requested version;
+- the exact `vX.Y.Z` tag exists;
+- the matching GitHub draft release exists;
+- the draft release name matches the canonical tag;
+- the tagged source passes tests;
+- package contents are valid;
+- the VSIX can be created.
+
+The dry run uploads the VSIX artifact but does not publish anything.
+
+## Step 6: Publish to Marketplace
+
+After the Publish dry run succeeds, run the same workflow again with:
+
+```text
+marketplace-mode: publish
+dry-run: false
+```
+
+After approval through the `release` environment, the workflow:
+
+1. checks out the exact release tag;
+2. reruns tests and package validation;
+3. packages the VSIX;
+4. publishes the VSIX to the VS Code Marketplace using `VSCE_PAT`;
+5. publishes the matching GitHub Release.
+
+If Marketplace publishing fails, the GitHub Release stays in draft state.
+
+That ordering ensures the public GitHub Release never claims a version was
+published successfully when Marketplace publication failed.
+
+## Existing Marketplace version: GitHub release only
+
+Use this path when the extension version is already live in the VS Code
+Marketplace but its GitHub Release is still missing or remains a draft.
+
+First make sure the canonical release state exists:
+
+```text
+package.json        X.Y.Z
+Git tag             vX.Y.Z
+GitHub Release      vX.Y.Z draft
+Marketplace         X.Y.Z already published
+```
+
+Then run **Publish** with:
+
+```text
+version: X.Y.Z
+marketplace-mode: already-published
+dry-run: true
+```
+
+The dry run still validates the tag, draft release, tests, package contents, and
+VSIX.
+
+If it succeeds, run again with:
+
+```text
+marketplace-mode: already-published
+dry-run: false
+```
+
+The workflow skips `vsce publish` and publishes only the matching GitHub
+Release.
+
+This is the correct backfill path for a version that was originally published
+outside the current release workflow.
+
+## Verify the release
+
+After publishing, verify all release identities match:
+
+```text
+package.json        X.Y.Z
+Git tag             vX.Y.Z
+GitHub Release      vX.Y.Z published
+Marketplace         X.Y.Z
+```
+
+Also confirm:
+
+- the GitHub Release notes match the changelog;
+- the VSIX artifact was produced by the workflow;
+- Marketplace shows the intended version;
+- `main` contains the release commit.
+
+## Common mistakes
+
+### Running Publish before Release
+
+Publish requires the canonical Git tag and matching draft GitHub Release.
+
+Run Release first.
+
+### Missing changelog entry
+
+The Release workflow requires:
+
+```md
+## [X.Y.Z]
+```
+
+or a dated equivalent such as:
+
+```md
+## [X.Y.Z] - YYYY-MM-DD
+```
+
+### Publishing an already-live Marketplace version
+
+Do not run:
+
+```text
+marketplace-mode: publish
+```
+
+for a version already available in Marketplace.
+
+Use:
+
+```text
+marketplace-mode: already-published
+```
+
+instead.
+
+### Publishing the GitHub Release manually too early
+
+Leave the GitHub Release as a draft until the Publish workflow completes.
+The workflow is designed to publish the GitHub Release only after Marketplace
+state is correct.
+
+## Local publishing
+
+The repository still includes:
+
+```sh
+npm run publish:extension
+```
+
+This is useful for local testing or exceptional maintenance, but normal releases
+should use GitHub Actions so version identity, approvals, tags, artifacts,
+Marketplace publication, and GitHub Release state remain synchronized.
