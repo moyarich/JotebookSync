@@ -1,0 +1,48 @@
+# Sync and Review Freshness
+
+JotebookSync supports automatic synchronization and explicit source-of-truth workflows.
+
+## Automatic sync on save
+
+With `jotebooksync.autoSyncOnSave` enabled, saving a paired notebook or text representation runs Jupytext synchronization for that pair.
+
+## Overwrite from the selected file
+
+Use **Overwrite Paired Files from This File…** when the current file should be treated as the source of truth.
+
+Before replacing other representations, JotebookSync checks modification times and warns when a destination is newer.
+
+## Sync from the newest pair member
+
+Use **Sync All from Newest Paired File…** when the most recently modified member should win.
+
+This is useful when you know the pair is valid but are not sure which file was edited last.
+
+## Review Pair Freshness
+
+**Review Pair Freshness…** opens a dedicated review panel showing:
+
+- source and destination files;
+- modification times;
+- which file is newest;
+- whether a destination is stale;
+- per-file recommendations;
+- open-file actions;
+- targeted replacement actions;
+- refresh support.
+
+## Normalized diffs
+
+The freshness panel can open a normalized VS Code diff.
+
+Instead of comparing unlike file formats directly, JotebookSync converts both sides to a comparable Jupytext representation first. This makes it easier to review meaningful notebook-content changes rather than serialization differences.
+
+## Safety
+
+Destructive synchronization requires confirmation by default through:
+
+```text
+jotebooksync.confirmDestructiveActions
+```
+
+Disable this setting only when you intentionally want overwrite/remove actions to run without confirmation.
