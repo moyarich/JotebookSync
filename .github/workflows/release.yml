@@ -1,0 +1,345 @@
+name: Release
+
+run-name: >-
+  JotebookSync Release · ${{ inputs.target-branch }} · ${{ inputs.version-mode }} ·
+  dry-run=${{ inputs.dry-run }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target-branch:
+        description: Release target branch
+        required: true
+        default: main
+        type: string
+
+      version-mode:
+        description: Version — bump, use package.json, or enter an exact version
+        required: true
+        default: package-json
+        type: choice
+        options:
+          - bump
+          - package-json
+          - exact
+
+      version-bump:
+        description: Version — bump amount (used with "bump")
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prepatch
+          - preminor
+          - premajor
+          - prerelease
+
+      exact-version:
+        description: Version — exact version (used with "exact", e.g. 0.1.0)
+        required: false
+        default: ""
+        type: string
+
+      dry-run:
+        description: Release — preview without creating commits, tags, or releases
+        required: true
+        default: true
+        type: boolean
+
+      node-version:
+        description: Advanced — Node.js version
+        required: true
+        default: "24"
+        type: string
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ inputs.target-branch }}-
+    ${{ inputs.exact-version || inputs.version-bump || inputs.version-mode }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release-approval:
+    name: "job: Release approval"
+    if: ${{ !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    steps:
+      - name: Record approval
+        shell: bash
+        run: |
+          {
+            echo "# Release approved"
+            echo
+            echo "A real extension release was approved through the `release` environment."
+            echo
+            echo "| Environment | `release` |"
+            echo "| Protection | Configure required reviewers/rules in **Settings → Environments → release** |"
+            echo
+            echo "> Dry runs do not require this approval."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    name: "extension: JotebookSync"
+    needs: release-approval
+    if: ${{ always() && (inputs.dry-run || needs.release-approval.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TARGET_BRANCH: ${{ inputs.target-branch }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional
+
+      - name: Resolve release version
+        id: version
+        env:
+          VERSION_MODE: ${{ inputs.version-mode }}
+          VERSION_BUMP: ${{ inputs.version-bump }}
+          EXACT_VERSION: ${{ inputs.exact-version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CURRENT_VERSION="$(node -p "require('./package.json').version")"
+
+          case "$VERSION_MODE" in
+            package-json)
+              VERSION="$CURRENT_VERSION"
+              ;;
+            bump)
+              npm version "$VERSION_BUMP" --no-git-tag-version
+              VERSION="$(node -p "require('./package.json').version")"
+              ;;
+            exact)
+              if [ -z "$EXACT_VERSION" ]; then
+                echo "::error::exact-version is required when version-mode=exact."
+                exit 1
+              fi
+              npm version "$EXACT_VERSION" --no-git-tag-version
+              VERSION="$(node -p "require('./package.json').version")"
+              ;;
+            *)
+              echo "::error::Unsupported version mode: $VERSION_MODE"
+              exit 1
+              ;;
+          esac
+
+          TAG="v$VERSION"
+
+          echo "current=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Validate changelog entry
+        id: changelog
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! grep -Fq "## [$VERSION]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md does not contain a release section for $VERSION."
+            exit 1
+          fi
+
+          BODY="$(
+            awk -v version="$VERSION" '
+              $0 == "## [" version "]" || index($0, "## [" version "] - ") == 1 {
+                capture = 1
+                next
+              }
+              capture && /^## \[/ {
+                exit
+              }
+              capture {
+                print
+              }
+            ' CHANGELOG.md
+          )"
+
+          if [ -z "${BODY//[[:space:]]/}" ]; then
+            echo "::error::The CHANGELOG.md section for $VERSION is empty."
+            exit 1
+          fi
+
+          {
+            echo "body<<EOF"
+            printf '%s\n' "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run release checks
+        run: |
+          npm test
+          npm run package:ls
+
+      - name: Package VSIX
+        id: package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VSIX_PATH="$RUNNER_TEMP/jotebooksync-$VERSION.vsix"
+
+          npx @vscode/vsce package             --out "$VSIX_PATH"             --allow-missing-repository             --no-rewrite-relative-links
+
+          echo "path=$VSIX_PATH" >> "$GITHUB_OUTPUT"
+          echo "name=jotebooksync-$VERSION.vsix" >> "$GITHUB_OUTPUT"
+
+      - name: Check release identity
+        id: existing
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RELEASE="$(
+            gh api --paginate "repos/$GH_REPO/releases?per_page=100" |
+              jq -s -c --arg tag "$TAG" '
+                add
+                | map(select(.tag_name == $tag))
+                | first // empty
+              '
+          )"
+
+          if [ -n "$RELEASE" ]; then
+            if [ "$(jq -r '.draft' <<< "$RELEASE")" != "true" ]; then
+              echo "::error::A published GitHub Release already exists for $TAG."
+              exit 1
+            fi
+
+            echo "id=$(jq -r '.id' <<< "$RELEASE")" >> "$GITHUB_OUTPUT"
+            echo "url=$(jq -r '.html_url' <<< "$RELEASE")" >> "$GITHUB_OUTPUT"
+            echo "state=existing-draft" >> "$GITHUB_OUTPUT"
+          else
+            echo "state=not-created" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release commit and tag
+        if: ${{ !inputs.dry-run }}
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Git tag $TAG already exists."
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add package.json package-lock.json CHANGELOG.md
+
+          if git diff --cached --quiet; then
+            git commit --allow-empty -m "chore: release $TAG"
+          else
+            git commit -m "chore: release $TAG"
+          fi
+
+          git tag -a "$TAG" -m "JotebookSync $TAG"
+
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+          git push origin "HEAD:$TARGET_BRANCH"
+          git push origin "$TAG"
+
+      - name: Create or update draft release
+        id: draft
+        if: ${{ !inputs.dry-run }}
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          BODY: ${{ steps.changelog.outputs.body }}
+          EXISTING_ID: ${{ steps.existing.outputs.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -n "$EXISTING_ID" ]; then
+            RELEASE="$(
+              gh api                 --method PATCH                 "repos/$GH_REPO/releases/$EXISTING_ID"                 -f tag_name="$TAG"                 -f name="$TAG"                 -f body="$BODY"                 -F draft=true
+            )"
+          else
+            RELEASE="$(
+              gh api                 --method POST                 "repos/$GH_REPO/releases"                 -f tag_name="$TAG"                 -f target_commitish="$TAG"                 -f name="$TAG"                 -f body="$BODY"                 -F draft=true
+            )"
+          fi
+
+          echo "url=$(jq -r '.html_url' <<< "$RELEASE")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload VSIX artifact
+        if: ${{ always() && steps.package.outputs.path != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.path }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Release summary
+        if: always()
+        env:
+          RELEASE_BODY: ${{ steps.changelog.outputs.body }}
+        shell: bash
+        run: |
+          {
+            echo "## JotebookSync release"
+            echo
+            echo "| Setting | Value |"
+            echo "| --- | --- |"
+            echo "| Dry run | **${{ inputs.dry-run }}** |"
+            echo "| Target branch | `${{ inputs.target-branch }}` |"
+            echo "| Version mode | `${{ inputs.version-mode }}` |"
+            echo "| Current version | `${{ steps.version.outputs.current || 'unresolved' }}` |"
+            echo "| Release version | `${{ steps.version.outputs.version || 'unresolved' }}` |"
+            echo "| Git tag | `${{ steps.version.outputs.tag || 'unresolved' }}` |"
+            echo "| Draft state | `${{ steps.existing.outputs.state || 'unresolved' }}` |"
+            echo "| VSIX artifact | `${{ steps.package.outputs.name || 'not packaged' }}` |"
+            if [ -n "${{ steps.draft.outputs.url }}" ]; then
+              echo "| Draft release | ${{ steps.draft.outputs.url }} |"
+            fi
+            echo "| Result | **${{ job.status }}** |"
+            echo
+            if [ -n "$RELEASE_BODY" ]; then
+              echo "### Release notes"
+              echo
+              printf '%s\n' "$RELEASE_BODY"
+            fi
+            if [ "${{ inputs.dry-run }}" = "true" ]; then
+              echo
+              echo "> Dry run only. No commit, tag, or GitHub Release was created or changed."
+            else
+              echo
+              echo "> Release commit and tag were pushed; the GitHub Release remains a draft until the Publish workflow succeeds."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
