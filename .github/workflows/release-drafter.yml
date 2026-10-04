@@ -1,6 +1,13 @@
 name: Release Drafter
 
 on:
+  workflow_dispatch:
+    inputs:
+      write-draft:
+        description: "Create/update the draft release instead of validation only"
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -79,7 +86,7 @@ jobs:
 
       - name: Validate initial comparison baseline
         id: validate-baseline
-        if: github.event_name == 'pull_request' && steps.release-history.outputs.published-release-count == '0'
+        if: (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.write-draft != true)) && steps.release-history.outputs.published-release-count == '0'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -107,7 +114,7 @@ jobs:
 
       - name: Update initial draft release
         id: initial-draft
-        if: github.event_name == 'push' && steps.release-history.outputs.published-release-count == '0'
+        if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.write-draft == true)) && steps.release-history.outputs.published-release-count == '0'
         uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
@@ -115,7 +122,7 @@ jobs:
 
       - name: Update draft release
         id: normal-draft
-        if: github.event_name == 'push' && steps.release-history.outputs.published-release-count != '0'
+        if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.write-draft == true)) && steps.release-history.outputs.published-release-count != '0'
         uses: release-drafter/release-drafter@v7
         with:
           config-name: release-drafter.yml
@@ -124,6 +131,7 @@ jobs:
         if: always()
         env:
           EVENT_NAME: ${{ github.event_name }}
+          WRITE_DRAFT: ${{ inputs.write-draft }}
           PUBLISHED_RELEASE_COUNT: ${{ steps.release-history.outputs.published-release-count }}
           FIRST_PR: ${{ steps.initial-baseline.outputs.first-pr }}
           BASELINE_SOURCE: ${{ steps.initial-baseline.outputs.source }}
@@ -144,6 +152,9 @@ jobs:
             echo "| Detail | Value |"
             echo "| --- | --- |"
             printf '| Event | `%s` |\n' "$EVENT_NAME"
+            if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+              printf '| Write draft | `%s` |\n' "${WRITE_DRAFT:-false}"
+            fi
             printf '| Published releases | `%s` |\n' "${PUBLISHED_RELEASE_COUNT:-unknown}"
 
             if [[ "$PUBLISHED_RELEASE_COUNT" == "0" ]]; then
@@ -154,11 +165,11 @@ jobs:
               fi
               printf '| Comparison baseline | `%s` |\n' "${BASELINE:-unknown}"
 
-              if [[ "$EVENT_NAME" == "pull_request" ]]; then
+              if [[ "$EVENT_NAME" == "pull_request" || ( "$EVENT_NAME" == "workflow_dispatch" && "$WRITE_DRAFT" != "true" ) ]]; then
                 printf '| Validation | `%s` |\n' "${VALIDATION_STATUS:-not run}"
                 printf '| Commits to main | `%s` |\n' "${COMMIT_COUNT:-unknown}"
                 echo
-                echo "> Pull request validation only. No draft release was written."
+                echo "> Validation only. No draft release was written."
               else
                 printf '| Resolved version | `%s` |\n' "${INITIAL_DRAFT_VERSION:-unknown}"
                 if [[ -n "$INITIAL_DRAFT_URL" ]]; then
@@ -174,9 +185,9 @@ jobs:
             else
               echo "| Mode | Normal draft |"
 
-              if [[ "$EVENT_NAME" == "pull_request" ]]; then
+              if [[ "$EVENT_NAME" == "pull_request" || ( "$EVENT_NAME" == "workflow_dispatch" && "$WRITE_DRAFT" != "true" ) ]]; then
                 echo
-                echo "> Pull request validation only. Release Drafter will use the previous published release after merge."
+                echo "> Validation only. Release Drafter will use the previous published release when draft writing is enabled."
               else
                 printf '| Resolved version | `%s` |\n' "${NORMAL_DRAFT_VERSION:-unknown}"
                 if [[ -n "$NORMAL_DRAFT_URL" ]]; then
