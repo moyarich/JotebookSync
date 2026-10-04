@@ -702,7 +702,8 @@ export class PairSetupPanel {
     const cssUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
-        "media",
+        "out",
+        "webview-ui",
         "pair-setup",
         "styles.css",
       ),
@@ -710,7 +711,8 @@ export class PairSetupPanel {
     const jsUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
-        "media",
+        "out",
+        "webview-ui",
         "pair-setup",
         "index.js",
       ),
