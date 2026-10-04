@@ -115,11 +115,23 @@ jobs:
       - name: Build initial release notes
         id: initial-notes
         if: steps.release-history.outputs.published-release-count == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
 
-          version="$(node -p "require('./package.json').version")"
+          package_json="$(
+            gh api "repos/$GH_REPO/contents/package.json?ref=main" --jq '.content' |
+              base64 --decode
+          )"
+          changelog="$(
+            gh api "repos/$GH_REPO/contents/CHANGELOG.md?ref=main" --jq '.content' |
+              base64 --decode
+          )"
+
+          version="$(jq -r '.version' <<< "$package_json")"
           tag="v$version"
 
           body="$(
@@ -134,7 +146,7 @@ jobs:
               capture {
                 print
               }
-            ' CHANGELOG.md
+            ' <<< "$changelog"
           )"
 
           if [[ -z "${body//[[:space:]]/}" ]]; then
