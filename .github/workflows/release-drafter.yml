@@ -133,7 +133,7 @@ jobs:
                 map(
                   "- " +
                   (.commit.message | split("\n")[0]) +
-                  " (\`" + (.sha[0:7]) + "\`)"
+                  " (`" + (.sha[0:7]) + "`)"
                 ) |
                 join("\n")
               )
