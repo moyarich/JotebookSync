@@ -190,17 +190,78 @@ JotebookSync can also provide targeted guidance when optional tools are needed:
 - **Format with Black** requires the `black` Python package.
 - notebook execution features may require `jupyter_client`.
 
-## Settings
+## VS Code settings
+
+Open **Settings** and search for **JotebookSync** to configure the extension from
+the VS Code Settings UI.
+
+You can also edit the same options in `settings.json`.
+
+### Recommended defaults
+
+```json
+{
+  "jotebooksync.autoSyncOnSave": true,
+  "jotebooksync.confirmDestructiveActions": true,
+  "jotebooksync.pythonPath": "python",
+  "jotebooksync.notebookEditorViewType": "jupyter-notebook",
+  "jotebooksync.supportedTextExtensions": [],
+  "jotebooksync.syncArgs": [],
+  "jotebooksync.setFormatsArgs": []
+}
+```
+
+### Available settings
 
 | Setting | Default | What it controls |
 | --- | --- | --- |
-| `jotebooksync.autoSyncOnSave` | `true` | Synchronize a pair whenever one member is saved. |
-| `jotebooksync.confirmDestructiveActions` | `true` | Confirm before replacing content or removing pairing metadata. |
-| `jotebooksync.pythonPath` | `python` | Python executable used for Jupytext; the active Python interpreter is a fallback. |
-| `jotebooksync.notebookEditorViewType` | `jupyter-notebook` | VS Code editor used to open `.ipynb` files. |
-| `jotebooksync.supportedTextExtensions` | `[]` | Optional extension override; empty uses formats reported by Jupytext. |
-| `jotebooksync.syncArgs` | `[]` | Extra arguments appended to sync commands. |
-| `jotebooksync.setFormatsArgs` | `[]` | Extra arguments used when changing pair formats. |
+| `jotebooksync.autoSyncOnSave` | `true` | Keeps paired files synchronized whenever a paired notebook or text file is saved. |
+| `jotebooksync.confirmDestructiveActions` | `true` | Asks before removing pairing metadata or replacing notebook, paired-file, or project configuration content. |
+| `jotebooksync.pythonPath` | `python` | Python executable used to run Jupytext. When left as `python`, JotebookSync can fall back to the active interpreter from the Microsoft Python extension. |
+| `jotebooksync.notebookEditorViewType` | `jupyter-notebook` | VS Code editor view type used when opening `.ipynb` files. |
+| `jotebooksync.supportedTextExtensions` | `[]` | Optional override for text extensions handled by JotebookSync. Leave empty to use extensions reported by the installed Jupytext environment. |
+| `jotebooksync.syncArgs` | `[]` | Extra arguments appended to `jupytext --sync`. |
+| `jotebooksync.setFormatsArgs` | `[]` | Extra arguments passed before `--set-formats` when changing pair formats. |
+
+### Common examples
+
+Disable automatic synchronization:
+
+```json
+{
+  "jotebooksync.autoSyncOnSave": false
+}
+```
+
+Use a specific Python environment:
+
+```json
+{
+  "jotebooksync.pythonPath": "/path/to/venv/bin/python"
+}
+```
+
+Allow only selected text extensions:
+
+```json
+{
+  "jotebooksync.supportedTextExtensions": [
+    "py",
+    "md",
+    "qmd"
+  ]
+}
+```
+
+Pass additional arguments to Jupytext synchronization:
+
+```json
+{
+  "jotebooksync.syncArgs": [
+    "--update"
+  ]
+}
+```
 
 ## Troubleshooting
 
