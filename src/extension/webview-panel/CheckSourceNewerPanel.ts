@@ -321,7 +321,8 @@ export class CheckSourceNewerPanel {
     const cssUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
-        "media",
+        "out",
+        "webview-ui",
         "freshness-report",
         "styles.css",
       ),
@@ -330,7 +331,8 @@ export class CheckSourceNewerPanel {
     const jsUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
-        "media",
+        "out",
+        "webview-ui",
         "freshness-report",
         "index.js",
       ),
