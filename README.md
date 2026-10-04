@@ -11,13 +11,28 @@ leaving the editor.
 
 ## Install
 
-Install **JotebookSync** from the VS Code Extensions view.
+Install **JotebookSync** from the VS Code Extensions view or from the
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=moyarich.jotebooksync).
 
 JotebookSync uses the Microsoft Python and Jupyter extensions and requires
 Python with Jupytext available in the environment you want to use.
 
 If Jupytext is missing, JotebookSync can guide you through installing it in the
 selected Python environment.
+
+## Where to find JotebookSync
+
+JotebookSync integrates into the places you already use in VS Code:
+
+- **Command Palette** — search for `JotebookSync` to see all available commands.
+- **Explorer context menu** — right-click files and folders to access pairing,
+  synchronization, conversion, project configuration, and advanced tools.
+- **Notebook toolbar** — access pairing, freshness review, synchronization, and
+  pair removal while working in a Jupyter notebook.
+- **JotebookSync: Paired Files** — manage existing pairs from the Explorer view.
+
+Context-sensitive actions only appear when they apply to the selected file or
+workspace item.
 
 ## Why pair notebooks with source files?
 
@@ -51,6 +66,10 @@ The notebook keeps outputs while the paired Python file stays easy to review.
 JotebookSync discovers formats from the active Jupytext environment instead of
 using a fixed language list. You can also enter a Jupytext format code directly,
 such as `py:percent`, `md:myst`, `Rmd`, or `qmd`.
+
+If you switch Python environments or install new Jupytext integrations, run
+**JotebookSync: Refresh Available Formats** to refresh the discovered format
+list.
 
 ## Keep paired files synchronized
 
