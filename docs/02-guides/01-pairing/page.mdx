@@ -1,0 +1,39 @@
+# Configure Paired Files
+
+JotebookSync uses Jupytext pairing metadata to connect an `.ipynb` notebook with one or more text representations.
+
+## Configure a pair
+
+Run **JotebookSync: Configure Paired Files…** from the Command Palette, Explorer context menu, notebook toolbar, or Paired Files view.
+
+The setup page supports:
+
+- format suggestions from the active Jupytext environment;
+- common formats such as `py:percent`, `md:myst`, `Rmd`, `qmd`, and Julia formats;
+- custom Jupytext format codes;
+- existing-pair editing;
+- filename previews;
+- custom suffixes;
+- validation before pairing metadata is changed.
+
+JotebookSync does not rely on a fixed list of languages. Available formats come from the active Jupytext installation.
+
+## Existing filenames
+
+When editing an existing pair, JotebookSync preserves the existing paired filenames unless you explicitly change a suffix.
+
+## Remove one representation
+
+Use **Remove File from Pair…** to detach one representation while keeping the remaining files paired.
+
+The file is not deleted. Only its participation in the pair is removed.
+
+## Remove the full pairing
+
+Use **Remove Pairing…** to clear Jupytext pairing metadata.
+
+JotebookSync asks for confirmation by default because this changes synchronization behavior.
+
+## Open the paired notebook
+
+From a paired text file, use **Open Paired Notebook** to open its associated `.ipynb` representation directly.
