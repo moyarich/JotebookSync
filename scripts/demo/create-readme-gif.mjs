@@ -4,8 +4,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
-const projectDirectory = path.dirname(currentDirectory);
-const demoDirectory = path.join(projectDirectory, "demo", "artifacts");
+const projectDirectory = path.dirname(path.dirname(currentDirectory));
+const demoDirectory = path.join(projectDirectory, "scripts", "demo", "artifacts");
 const readmeMediaDirectory = path.join(projectDirectory, "media");
 const smokeDemo = path.join(currentDirectory, "extension.smoke.mjs");
 

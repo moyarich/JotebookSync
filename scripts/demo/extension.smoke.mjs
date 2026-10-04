@@ -36,9 +36,9 @@ import inspectAndRemovePairingScenario from "./scenarios/inspect-and-remove-pair
 
 const testsDirectory = path.dirname(fileURLToPath(import.meta.url));
 
-const projectDirectory = path.dirname(testsDirectory);
+const projectDirectory = path.dirname(path.dirname(testsDirectory));
 
-const outputDirectory = path.join(projectDirectory, "demo", "artifacts");
+const outputDirectory = path.join(projectDirectory, "scripts", "demo", "artifacts");
 
 const demoHostPath = path.join(testsDirectory, "demo-host.cjs");
 
