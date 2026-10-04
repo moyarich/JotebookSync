@@ -112,6 +112,42 @@ jobs:
           echo "status=$status" >> "$GITHUB_OUTPUT"
           echo "commits=$commits" >> "$GITHUB_OUTPUT"
 
+      - name: Build initial commit draft preview
+        id: commit-draft
+        if: (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.write-draft != true)) && steps.release-history.outputs.published-release-count == '0' && steps.initial-baseline.outputs.source == 'root commit'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          commits_json="$(
+            gh api --paginate "repos/$GH_REPO/commits?sha=main&per_page=100" |
+              jq -s 'add | reverse'
+          )"
+
+          commit_count="$(jq 'length' <<< "$commits_json")"
+          draft_body="$(
+            jq -r '
+              "## Changes\n\n" +
+              (
+                map(
+                  "- " +
+                  (.commit.message | split("\n")[0]) +
+                  " (\`" + (.sha[0:7]) + "\`)"
+                ) |
+                join("\n")
+              )
+            ' <<< "$commits_json"
+          )"
+
+          echo "Commit-based preview contains $commit_count commits."
+          {
+            echo "count=$commit_count"
+            echo "body<<EOF"
+            printf '%s\n' "$draft_body"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Update initial draft release
         id: initial-draft
         if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.write-draft == true)) && steps.release-history.outputs.published-release-count == '0'
@@ -138,6 +174,8 @@ jobs:
           BASELINE: ${{ steps.initial-baseline.outputs.from }}
           VALIDATION_STATUS: ${{ steps.validate-baseline.outputs.status }}
           COMMIT_COUNT: ${{ steps.validate-baseline.outputs.commits }}
+          COMMIT_DRAFT_COUNT: ${{ steps.commit-draft.outputs.count }}
+          COMMIT_DRAFT_BODY: ${{ steps.commit-draft.outputs.body }}
           INITIAL_DRAFT_VERSION: ${{ steps.initial-draft.outputs.resolved_version }}
           INITIAL_DRAFT_URL: ${{ steps.initial-draft.outputs.html_url }}
           INITIAL_DRAFT_BODY: ${{ steps.initial-draft.outputs.body }}
@@ -168,7 +206,14 @@ jobs:
               if [[ "$EVENT_NAME" == "pull_request" || ( "$EVENT_NAME" == "workflow_dispatch" && "$WRITE_DRAFT" != "true" ) ]]; then
                 printf '| Validation | `%s` |\n' "${VALIDATION_STATUS:-not run}"
                 printf '| Commits to main | `%s` |\n' "${COMMIT_COUNT:-unknown}"
-                echo
+                if [[ -n "$COMMIT_DRAFT_BODY" ]]; then
+                  printf '| Commits in preview | \`%s\` |\n' "${COMMIT_DRAFT_COUNT:-unknown}"
+                  echo
+                  echo "### Draft release content (preview)"
+                  echo
+                  printf '%s\n' "$COMMIT_DRAFT_BODY"
+                  echo
+                fi
                 echo "> Validation only. No draft release was written."
               else
                 printf '| Resolved version | `%s` |\n' "${INITIAL_DRAFT_VERSION:-unknown}"
