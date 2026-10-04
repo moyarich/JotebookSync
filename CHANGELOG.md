@@ -11,8 +11,15 @@ No user-facing changes yet.
 
 ## [0.1.0] - Initial Release - 2026-09-08
 
-JotebookSync's first public release brings Jupytext pairing, synchronization,
-review, conversion, and notebook-management workflows directly into VS Code.
+JotebookSync makes Jupyter notebooks easier to manage in real development workflows.
+
+Built around Jupytext, it lets you pair notebooks with readable source files, keep
+representations synchronized automatically, review differences before overwriting
+files, preserve notebook outputs, and manage project-wide notebook workflows
+without leaving VS Code.
+
+The goal is simple: keep the flexibility of notebooks while making them easier to
+review, version, share, and maintain alongside the rest of your codebase.
 
 ### Pairing and synchronization
 
