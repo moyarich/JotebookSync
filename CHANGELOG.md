@@ -1,6 +1,6 @@
 # Changelog
 
-All notable user-facing changes to JotebookSync are documented in this file.
+All notable JotebookSync releases are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 JotebookSync uses [Semantic Versioning](https://semver.org/).
@@ -9,85 +9,104 @@ JotebookSync uses [Semantic Versioning](https://semver.org/).
 
 No user-facing changes yet.
 
-## [0.1.0] - 2026-09-08
+## [0.1.0] - Initial Release - 2026-09-08
 
-### Added
+JotebookSync's first public release brings Jupytext pairing, synchronization,
+review, conversion, and notebook-management workflows directly into VS Code.
+
+### Pairing and synchronization
 
 - Pair Jupyter notebooks with readable Jupytext representations such as Python,
   Markdown, MyST, Quarto, R Markdown, Julia, and other formats supported by the
   active Jupytext installation.
-- Guided **Configure Paired Files…** workflow with format suggestions, custom
-  Jupytext format codes, existing-pair editing, filename previews, and suffix
-  validation.
-- Automatic synchronization on save for both notebook and text members of a
-  pair.
-- Explicit synchronization commands to either:
-  - overwrite the rest of a pair from the currently selected file; or
-  - synchronize the pair from its newest member.
-- **Review Pair Freshness…** with timestamps, per-file status, normalized
-  Jupytext diffs, refresh support, and targeted replace/sync actions.
-- **JotebookSync: Paired Files** Explorer view for discovering and managing
-  pairs across the current workspace.
-- Explorer and notebook-toolbar actions for pairing, synchronization, freshness
-  review, opening the paired notebook, removing one representation, and removing
-  pairing metadata.
-- **Convert File to Another Format…** for creating a one-off Jupytext
-  representation without changing pairing metadata.
-- **Create Notebook from Text File…** for creating an independent `.ipynb`
-  notebook from a supported text notebook.
-- **Update Existing Notebook from Text File…** for updating notebook inputs and
-  metadata while preserving saved cell outputs.
-- Project-wide pairing configuration through `jupytext.toml`, including guided
-  configuration creation and applying project formats to existing notebooks.
-- Dynamic format discovery from the selected Python/Jupytext environment, plus
-  optional `jotebooksync.supportedTextExtensions` overrides.
-- Python environment resolution using the configured executable or the active
-  Microsoft Python extension environment.
-- Dependency-aware guidance for Jupytext, Black, Marimo, Quarto, and
-  `jupyter_client`.
-- Advanced Jupytext commands for:
-  - Black formatting;
-  - round-trip and strict round-trip checks;
-  - external `--pipe` and `--check` workflows;
-  - kernel selection and notebook execution;
-  - metadata and format-option updates;
-  - pre-commit workflows; and
-  - arbitrary advanced Jupytext argument lists.
-- Settings for auto-sync, destructive-action confirmation, Python executable,
-  notebook editor type, supported text extensions, sync arguments, and
-  set-format arguments.
+- Configure pairs through a guided **Configure Paired Files…** workflow with
+  discovered format suggestions, custom Jupytext format codes, filename
+  previews, suffix validation, and existing-pair editing.
+- Automatically synchronize notebook and text representations on save.
+- Explicitly choose a source of truth with:
+  - **Overwrite Paired Files from This File…**
+  - **Sync All from Newest Paired File…**
+- Remove one representation without breaking the remaining pair, or remove the
+  complete pairing without deleting files.
 
-### Changed
+### Freshness review and safe updates
 
-- Pair and conversion choices are based on capabilities reported by the active
-  Jupytext environment instead of a fixed language list.
-- Destructive operations such as overwriting paired content, replacing
-  notebooks, removing pairing metadata, and replacing project configuration
-  require confirmation by default.
-- Paired-file discovery avoids continuously rescanning the workspace and
-  excludes common generated or dependency directories.
-- Pairing setup reuses existing paired filenames unless the user explicitly
-  changes a suffix.
+- Review modification times and pair state through **Review Pair Freshness…**.
+- Open normalized Jupytext diffs so unlike notebook representations can be
+  compared as equivalent text rather than raw serialization.
+- Replace a specific stale destination or synchronize the complete pair directly
+  from the freshness review.
+- Confirm destructive operations by default before replacing paired content,
+  replacing notebooks, removing pairing metadata, or replacing project
+  configuration.
+- Update an existing notebook from a text representation while preserving saved
+  cell outputs.
 
-### Fixed
+### Workspace and project workflows
 
-- Updating an existing notebook from a text representation preserves notebook
-  outputs instead of replacing them.
-- Pair management keeps remaining representations paired when a single file is
-  detached.
-- Format normalization handles paired format variants consistently, including
-  custom suffixes and format names.
-- Marketplace publishing uses the correct VS Code extension publishing command.
+- Manage discovered pairs from the **JotebookSync: Paired Files** Explorer view.
+- Open paired notebooks, review freshness, synchronize, reconfigure, detach
+  representations, and remove pairing directly from Explorer.
+- Create project-wide pairing rules in `jupytext.toml`.
+- Apply project configuration to existing notebooks, including richer folder
+  mappings where notebook and text representations live in different
+  directories.
+- Avoid continuous workspace rescanning by using visibility-aware, on-demand
+  pair discovery that excludes common generated and dependency directories.
 
-### Quality
+### Conversion and format support
 
-- Added extension-host integration coverage for pairing lifecycle,
-  synchronization, project configuration, conversion, format discovery,
-  output-preserving notebook updates, menus, and command registration.
-- Added webview tests for pair setup, conversion, freshness filtering/sorting,
+- Convert a file to another Jupytext representation without changing pairing
+  metadata.
+- Create an independent `.ipynb` notebook from a supported text notebook.
+- Discover formats from the selected Python/Jupytext environment instead of
+  relying on a fixed language list.
+- Override supported text extensions when needed with
+  `jotebooksync.supportedTextExtensions`.
+- Reuse existing paired filenames unless a suffix is explicitly changed.
+
+### Python and dependency handling
+
+- Resolve the configured Python executable or fall back to the active Microsoft
+  Python extension environment.
+- Detect and provide targeted guidance for required or optional tooling,
+  including Jupytext, Black, Marimo, Quarto, and `jupyter_client`.
+
+### Advanced Jupytext tools
+
+- Format notebook text with Black.
+- Run round-trip and strict round-trip conversion checks.
+- Pipe content through external commands or validate it with `--check`.
+- Set notebook kernels and execute notebooks.
+- Update notebook metadata and format options.
+- Run pre-commit workflows.
+- Run arbitrary advanced Jupytext argument lists from VS Code.
+
+### Configuration
+
+The initial release includes settings for:
+
+- automatic synchronization on save;
+- destructive-action confirmation;
+- Python executable selection;
+- notebook editor view type;
+- supported text-extension overrides;
+- extra synchronization arguments; and
+- extra set-format arguments.
+
+### Quality and release tooling
+
+- Extension-host integration coverage for pairing lifecycle, synchronization,
+  project configuration, conversion, format discovery, output-preserving
+  notebook updates, menus, and command registration.
+- Webview tests for pairing setup, conversion, freshness filtering and sorting,
   refresh behavior, file actions, validation, and error handling.
-- Added validated demo scenarios and generated GIFs for the primary extension
+- Validated demo scenarios and generated GIFs for the primary extension
   workflows.
+- Release and publish workflows with dry-run summaries, canonical release tags,
+  VSIX validation, Marketplace publishing, and an `already-published` path for
+  publishing a matching GitHub Release when the Marketplace version already
+  exists.
 
 [Unreleased]: https://github.com/moyarich/JotebookSync/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/moyarich/JotebookSync/releases/tag/v0.1.0
