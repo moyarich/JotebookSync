@@ -34,7 +34,7 @@ You can also watch them independently:
 
 ```sh
 npm run watch:extension
-npm run watch:webviews
+npm run watch:webview
 ```
 
 ## Launch the Extension Development Host
@@ -56,14 +56,27 @@ users:
 
 ## Webview development
 
-Run the webview development server with:
+Run the standalone preview shell with:
 
 ```sh
 npm run dev
 ```
 
-The production extension still uses the built webview output, so run
-`npm run compile` before validating the packaged extension.
+Preview pages use clean URLs:
+
+```text
+/previews
+/previews/pair-setup
+/previews/freshness-report
+/previews/convert-file
+```
+
+You can open a specific screen directly with `npm run dev:pair-setup`,
+`npm run dev:freshness`, or `npm run dev:convert`.
+
+Preview code lives in `previews/`; production browser code stays in
+`src/webview-ui/`. Both the extension runtime and production webview bundles
+are generated under `out/`.
 
 ## Package a VSIX
 
