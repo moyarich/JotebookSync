@@ -94,19 +94,5 @@ The initial release includes settings for:
 - extra synchronization arguments; and
 - extra set-format arguments.
 
-### Quality and release tooling
-
-- Extension-host integration coverage for pairing lifecycle, synchronization,
-  project configuration, conversion, format discovery, output-preserving
-  notebook updates, menus, and command registration.
-- Webview tests for pairing setup, conversion, freshness filtering and sorting,
-  refresh behavior, file actions, validation, and error handling.
-- Validated demo scenarios and generated GIFs for the primary extension
-  workflows.
-- Release and publish workflows with dry-run summaries, canonical release tags,
-  VSIX validation, Marketplace publishing, and an `already-published` path for
-  publishing a matching GitHub Release when the Marketplace version already
-  exists.
-
 [Unreleased]: https://github.com/moyarich/JotebookSync/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/moyarich/JotebookSync/releases/tag/v0.1.0
