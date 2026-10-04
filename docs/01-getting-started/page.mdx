@@ -1,0 +1,60 @@
+# Getting Started
+
+JotebookSync pairs Jupyter notebooks with readable text representations through Jupytext so you can keep rich notebook output while working with source files that are easier to review and version.
+
+## Requirements
+
+- VS Code
+- Microsoft Python extension
+- Microsoft Jupyter extension
+- Python
+- Jupytext
+
+The Python and Jupyter extensions are declared as extension dependencies. If Jupytext is missing from the selected Python environment, JotebookSync can guide you through installing it.
+
+## Create your first pair
+
+1. Open a notebook or supported text notebook.
+2. Right-click the file in Explorer.
+3. Open the **JotebookSync** submenu.
+4. Choose **Configure Paired Files…**.
+5. Select one or more representations.
+6. Choose **Create pair**.
+
+For example, pairing:
+
+```text
+analysis.ipynb
+```
+
+with:
+
+```text
+py:percent
+```
+
+creates:
+
+```text
+analysis.py
+```
+
+The notebook keeps outputs while the Python representation produces readable Git diffs.
+
+## Automatic synchronization
+
+`jotebooksync.autoSyncOnSave` is enabled by default. Saving either member of a pair synchronizes the other representations.
+
+For deliberate synchronization, use:
+
+- **Overwrite Paired Files from This File…**
+- **Sync All from Newest Paired File…**
+- **Review Pair Freshness…**
+
+## Workspace view
+
+Open **JotebookSync: Paired Files** in Explorer to inspect all detected pairs in the workspace and run pair-specific actions without finding each file manually.
+
+## One-off conversion
+
+Use **Convert File to Another Format…** when you want another representation without changing the file's pairing metadata.
