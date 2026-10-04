@@ -84,6 +84,10 @@ The validated VSIX is uploaded as a workflow artifact, but nothing is published.
 
 Run **Actions → Publish** again with **dry run** disabled.
 
+For a normal new release, use:
+
+- marketplace mode: `publish`
+
 After approval through the `release` environment, the workflow:
 
 1. checks out the exact release tag;
@@ -93,6 +97,25 @@ After approval through the `release` environment, the workflow:
 5. publishes the matching GitHub Release.
 
 If Marketplace publishing fails, the GitHub Release remains a draft.
+
+### Marketplace already published / GitHub release only
+
+Use this for a version that is already live in the VS Code Marketplace but is
+missing its matching published GitHub Release.
+
+Run **Actions → Publish** with:
+
+- the already-published version;
+- marketplace mode: `already-published`;
+- dry run: enabled first.
+
+After the dry run succeeds, run it again with dry run disabled. The workflow
+still verifies the version, release tag, draft GitHub Release, tests, package
+contents, and VSIX, but skips `vsce publish` and publishes only the matching
+GitHub Release.
+
+For the existing JotebookSync `0.1.0` Marketplace release, use this mode after
+the canonical `v0.1.0` tag and draft GitHub Release have been created.
 
 ## Local publishing
 
