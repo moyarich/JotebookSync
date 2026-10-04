@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import template from "../../../webviews-ui/src/webviews/freshness-report/template.html?raw";
+import template from "../../../src/webview-ui/freshness-report/template.html?raw";
 
 export type PostedMessage = { command: string; [key: string]: unknown };
 const file = (overrides: Record<string, unknown>) => ({ id: "file", kind: "destination", status: "review", format: "md", formatLabel: "Markdown", fileName: "paired.md", subtitle: "Paired file", path: "/example/paired.md", lastUpdated: "2026-05-26T09:30:00.000Z", lastUpdatedLabel: "May 26, 2026, 9:30 AM", comparisonLabel: "Behind source by", comparisonValue: "30 minutes", recommendation: "Review this file.", detailMessage: "Review this file.", canReplace: true, expanded: false, ...overrides });
@@ -18,7 +18,7 @@ export async function setupFreshness(): Promise<PostedMessage[]> {
   const messages: PostedMessage[] = [];
   document.documentElement.innerHTML = template.replace(/<link[^>]+>/, "").replace("{{{webviewData}}}", JSON.stringify(data));
   Object.assign(globalThis, { acquireVsCodeApi: () => ({ postMessage: (message: PostedMessage) => messages.push(message), getState: () => undefined, setState: vi.fn() }) });
-  await import("../../../webviews-ui/src/webviews/freshness-report/index.js");
+  await import("../../../src/webview-ui/freshness-report/index.js");
   return messages;
 }
 
