@@ -10,6 +10,7 @@ tests/**
 demo/**
 scripts/**
 examples/**
+docs/04-development/**
 
 node_modules/**
 out-test/**
@@ -26,6 +27,7 @@ vite.webview.config.ts
 vite.webview-assets-plugin.ts
 
 .gitignore
+package-lock.json
 .yarnrc
 .mypy_cache
 .env
