@@ -49,21 +49,32 @@ jobs:
 
           first_pr="$(jq -r '.number // empty' <<< "$first_pr_json")"
           baseline="$(jq -r '.base.sha // empty' <<< "$first_pr_json")"
+          baseline_source="first merged PR"
 
-          if [[ -z "$first_pr" ]]; then
-            echo "No merged pull request targeting main was found." >&2
-            exit 1
+          if [[ -z "$first_pr" || -z "$baseline" ]]; then
+            echo "No usable merged-PR baseline was found; falling back to commit history."
+
+            baseline="$(
+              gh api --paginate "repos/$GH_REPO/commits?sha=main&per_page=100" |
+                jq -s 'add | last | .sha // empty'
+            )"
+            baseline_source="root commit"
           fi
 
           if [[ -z "$baseline" ]]; then
-            echo "Pull request #$first_pr does not expose a base SHA to use as the initial baseline." >&2
+            echo "Could not determine an initial comparison baseline from PR or commit history." >&2
             exit 1
           fi
 
-          echo "First merged PR: #$first_pr"
+          if [[ -n "$first_pr" && "$baseline_source" == "first merged PR" ]]; then
+            echo "First merged PR: #$first_pr"
+            echo "first-pr=$first_pr" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "Initial comparison baseline source: $baseline_source"
           echo "Initial comparison baseline: $baseline"
 
-          echo "first-pr=$first_pr" >> "$GITHUB_OUTPUT"
+          echo "source=$baseline_source" >> "$GITHUB_OUTPUT"
           echo "from=$baseline" >> "$GITHUB_OUTPUT"
 
       - name: Validate initial comparison baseline
@@ -115,6 +126,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PUBLISHED_RELEASE_COUNT: ${{ steps.release-history.outputs.published-release-count }}
           FIRST_PR: ${{ steps.initial-baseline.outputs.first-pr }}
+          BASELINE_SOURCE: ${{ steps.initial-baseline.outputs.source }}
           BASELINE: ${{ steps.initial-baseline.outputs.from }}
           VALIDATION_STATUS: ${{ steps.validate-baseline.outputs.status }}
           COMMIT_COUNT: ${{ steps.validate-baseline.outputs.commits }}
@@ -131,21 +143,24 @@ jobs:
             echo
             echo "| Detail | Value |"
             echo "| --- | --- |"
-            echo "| Event | `$EVENT_NAME` |"
-            echo "| Published releases | `${PUBLISHED_RELEASE_COUNT:-unknown}` |"
+            printf '| Event | `%s` |\n' "$EVENT_NAME"
+            printf '| Published releases | `%s` |\n' "${PUBLISHED_RELEASE_COUNT:-unknown}"
 
             if [[ "$PUBLISHED_RELEASE_COUNT" == "0" ]]; then
               echo "| Mode | Initial draft |"
-              echo "| First merged PR | #${FIRST_PR:-unknown} |"
-              echo "| Comparison baseline | `${BASELINE:-unknown}` |"
+              printf '| Baseline source | %s |\n' "${BASELINE_SOURCE:-unknown}"
+              if [[ -n "$FIRST_PR" ]]; then
+                printf '| First merged PR | #%s |\n' "$FIRST_PR"
+              fi
+              printf '| Comparison baseline | `%s` |\n' "${BASELINE:-unknown}"
 
               if [[ "$EVENT_NAME" == "pull_request" ]]; then
-                echo "| Validation | `${VALIDATION_STATUS:-not run}` |"
-                echo "| Commits to main | `${COMMIT_COUNT:-unknown}` |"
+                printf '| Validation | `%s` |\n' "${VALIDATION_STATUS:-not run}"
+                printf '| Commits to main | `%s` |\n' "${COMMIT_COUNT:-unknown}"
                 echo
                 echo "> Pull request validation only. No draft release was written."
               else
-                echo "| Resolved version | `${INITIAL_DRAFT_VERSION:-unknown}` |"
+                printf '| Resolved version | `%s` |\n' "${INITIAL_DRAFT_VERSION:-unknown}"
                 if [[ -n "$INITIAL_DRAFT_URL" ]]; then
                   echo "| Draft release | $INITIAL_DRAFT_URL |"
                 fi
@@ -163,7 +178,7 @@ jobs:
                 echo
                 echo "> Pull request validation only. Release Drafter will use the previous published release after merge."
               else
-                echo "| Resolved version | `${NORMAL_DRAFT_VERSION:-unknown}` |"
+                printf '| Resolved version | `%s` |\n' "${NORMAL_DRAFT_VERSION:-unknown}"
                 if [[ -n "$NORMAL_DRAFT_URL" ]]; then
                   echo "| Draft release | $NORMAL_DRAFT_URL |"
                 fi
