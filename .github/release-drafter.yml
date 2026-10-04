@@ -1,0 +1,51 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: Features
+    semver-increment: minor
+    when:
+      labels:
+        - feature
+        - enhancement
+
+  - title: Fixes
+    semver-increment: patch
+    when:
+      labels:
+        - fix
+        - bug
+        - bugfix
+
+  - title: Documentation
+    when:
+      labels:
+        - documentation
+        - docs
+
+  - title: Maintenance
+    when:
+      labels:
+        - chore
+        - dependencies
+
+  - type: pre-exclude
+    when:
+      label: skip-changelog
+
+  - type: version-resolver
+    semver-increment: major
+    when:
+      label: major
+
+  - type: version-resolver
+    semver-increment: patch
+
+change-template: "- $TITLE (#$NUMBER) $AUTHORS"
+
+no-changes-template: "* No changes"
+
+template: |
+  ## Changes
+
+  $CHANGES
