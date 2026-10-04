@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url";
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectDirectory = path.dirname(path.dirname(currentDirectory));
 const demoDirectory = path.join(projectDirectory, "scripts", "demo", "artifacts");
-const readmeMediaDirectory = path.join(projectDirectory, "media");
+// README and Marketplace screenshots/GIFs are committed at the repository root.
+// Keep demo recordings under scripts/demo/artifacts, but write final GIFs to media/.
+const repositoryMediaDirectory = path.join(projectDirectory, "media");
 const smokeDemo = path.join(currentDirectory, "extension.smoke.mjs");
 
 function positiveNumber({ value, fallback, minimum }) {
@@ -62,7 +64,9 @@ async function exists(filePath) {
 }
 
 await mkdir(demoDirectory, { recursive: true });
-await mkdir(readmeMediaDirectory, { recursive: true });
+await mkdir(repositoryMediaDirectory, { recursive: true });
+
+console.log(`README media output: ${repositoryMediaDirectory}`);
 
 if (!process.argv.includes("--no-record") && (await exists(smokeDemo))) {
   const recorderArguments = process.argv
@@ -110,7 +114,7 @@ for (const scenario of scenarios) {
   }
 
   const destination = path.join(
-    readmeMediaDirectory,
+    repositoryMediaDirectory,
     `${scenario.name}.gif`,
   );
   await run({
