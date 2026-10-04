@@ -1,0 +1,39 @@
+# Development
+
+Developer and maintainer documentation for JotebookSync lives here, alongside
+the extension user documentation.
+
+## Develop locally
+
+- [Local development](./01-local-development/page.mdx)
+- [Testing](./02-testing/page.mdx)
+- [Release and publishing](./03-release-and-publishing/page.mdx)
+
+## Repository layout
+
+```text
+src/            VS Code extension runtime
+webviews-ui/    React/Vite webview UI
+test/           extension and webview tests
+demo/           demo and README GIF tooling
+media/          extension icons and README media
+docs/           user and developer documentation
+scripts/        development and publishing helpers
+```
+
+The extension runtime and webview UI are built separately and packaged together
+for the VS Code extension.
+
+## Common commands
+
+```sh
+npm install
+npm run compile
+npm run watch
+npm test
+npm run lint
+npm run package
+```
+
+Use the focused guides in this section for the expected development, testing,
+and release workflows.

@@ -1,0 +1,97 @@
+# Local development
+
+This guide covers the normal JotebookSync development loop.
+
+## Install dependencies
+
+From the repository root:
+
+```sh
+npm install
+npm --prefix webviews-ui install
+```
+
+## Build the extension
+
+Build the React webviews and TypeScript extension runtime:
+
+```sh
+npm run compile
+```
+
+The VS Code extension entry point is compiled from `src/` into `out/`. The
+webview UI is built separately from `webviews-ui/`.
+
+## Watch while developing
+
+Run both the webview and extension compilers in watch mode:
+
+```sh
+npm run watch
+```
+
+You can also watch them independently:
+
+```sh
+npm run watch:extension
+npm run watch:webviews
+```
+
+## Launch the Extension Development Host
+
+Use VS Code's extension debugging configuration or run:
+
+```sh
+npm run dev:extension
+```
+
+When testing interactively, verify behavior from the same surfaces available to
+users:
+
+- Command Palette
+- Explorer **JotebookSync** context menu
+- notebook toolbar
+- **JotebookSync: Paired Files** Explorer view
+- pairing, conversion, and freshness webviews
+
+## Webview development
+
+Run the webview development server with:
+
+```sh
+npm run dev
+```
+
+The production extension still uses the built webview output, so run
+`npm run compile` before validating the packaged extension.
+
+## Package a VSIX
+
+Build and package the extension locally:
+
+```sh
+npm run package
+```
+
+To inspect the files that would be included in the package:
+
+```sh
+npm run package:ls
+```
+
+## Demo workflows
+
+The repository includes automated demo scenarios used to validate and capture
+the primary extension workflows:
+
+```sh
+npm run demo
+npm run demo:all
+npm run demo:freshness
+npm run demo:round-trip
+npm run demo:formats
+npm run demo:gif
+```
+
+Keep README screenshots and GIFs representative of the actual extension
+behavior when user-facing workflows change.
