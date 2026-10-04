@@ -1,0 +1,249 @@
+name: Release Drafter
+
+on:
+  workflow_dispatch:
+    inputs:
+      write-draft:
+        description: "Create/update the draft release instead of validation only"
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/release-drafter.yml"
+      - ".github/release-drafter.yml"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  update-release-draft:
+    name: Update release draft
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Detect release history
+        id: release-history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          published_release_count="$(
+            gh api --paginate "repos/$GH_REPO/releases?per_page=100" |
+              jq -s 'add | map(select(.draft == false)) | length'
+          )"
+
+          echo "Published release count: $published_release_count"
+          echo "published-release-count=$published_release_count" >> "$GITHUB_OUTPUT"
+
+      - name: Find initial comparison baseline
+        id: initial-baseline
+        if: steps.release-history.outputs.published-release-count == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          first_pr_json="$(
+            gh api --paginate               "repos/$GH_REPO/pulls?state=closed&base=main&sort=created&direction=asc&per_page=100" |
+              jq -s 'add | map(select(.merged_at != null)) | sort_by(.merged_at) | first'
+          )"
+
+          first_pr="$(jq -r '.number // empty' <<< "$first_pr_json")"
+          baseline="$(jq -r '.base.sha // empty' <<< "$first_pr_json")"
+          baseline_source="first merged PR"
+
+          if [[ -z "$first_pr" || -z "$baseline" ]]; then
+            echo "No usable merged-PR baseline was found; falling back to commit history."
+
+            baseline="$(
+              gh api --paginate "repos/$GH_REPO/commits?sha=main&per_page=100" |
+                jq -r -s 'add | last | .sha // empty'
+            )"
+            baseline_source="root commit"
+          fi
+
+          if [[ -z "$baseline" ]]; then
+            echo "Could not determine an initial comparison baseline from PR or commit history." >&2
+            exit 1
+          fi
+
+          if [[ -n "$first_pr" && "$baseline_source" == "first merged PR" ]]; then
+            echo "First merged PR: #$first_pr"
+            echo "first-pr=$first_pr" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "Initial comparison baseline source: $baseline_source"
+          echo "Initial comparison baseline: $baseline"
+
+          echo "source=$baseline_source" >> "$GITHUB_OUTPUT"
+          echo "from=$baseline" >> "$GITHUB_OUTPUT"
+
+      - name: Validate initial comparison baseline
+        id: validate-baseline
+        if: (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.write-draft != true)) && steps.release-history.outputs.published-release-count == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BASELINE: ${{ steps.initial-baseline.outputs.from }}
+        shell: bash
+        run: |
+          comparison="$(
+            gh api "repos/$GH_REPO/compare/$BASELINE...main"
+          )"
+
+          status="$(jq -r '.status' <<< "$comparison")"
+          commits="$(jq -r '.total_commits' <<< "$comparison")"
+
+          if [[ "$status" != "ahead" && "$status" != "identical" ]]; then
+            echo "Unexpected comparison status for $BASELINE...main: $status" >&2
+            exit 1
+          fi
+
+          echo "Validated initial baseline: $BASELINE"
+          echo "Comparison status: $status"
+          echo "Commits from baseline to main: $commits"
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "commits=$commits" >> "$GITHUB_OUTPUT"
+
+      - name: Build initial commit draft preview
+        id: commit-draft
+        if: (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.write-draft != true)) && steps.release-history.outputs.published-release-count == '0' && steps.initial-baseline.outputs.source == 'root commit'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          commits_json="$(
+            gh api --paginate "repos/$GH_REPO/commits?sha=main&per_page=100" |
+              jq -s 'add | reverse'
+          )"
+
+          commit_count="$(jq 'length' <<< "$commits_json")"
+          draft_body="$(
+            jq -r '
+              "## Changes\n\n" +
+              (
+                map(
+                  "- " +
+                  (.commit.message | split("\n")[0]) +
+                  " (`" + (.sha[0:7]) + "`)"
+                ) |
+                join("\n")
+              )
+            ' <<< "$commits_json"
+          )"
+
+          echo "Commit-based preview contains $commit_count commits."
+          {
+            echo "count=$commit_count"
+            echo "body<<EOF"
+            printf '%s\n' "$draft_body"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Update initial draft release
+        id: initial-draft
+        if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.write-draft == true)) && steps.release-history.outputs.published-release-count == '0'
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter.yml
+          from: ${{ steps.initial-baseline.outputs.from }}
+
+      - name: Update draft release
+        id: normal-draft
+        if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.write-draft == true)) && steps.release-history.outputs.published-release-count != '0'
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter.yml
+
+      - name: Write workflow summary
+        if: always()
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WRITE_DRAFT: ${{ inputs.write-draft }}
+          PUBLISHED_RELEASE_COUNT: ${{ steps.release-history.outputs.published-release-count }}
+          FIRST_PR: ${{ steps.initial-baseline.outputs.first-pr }}
+          BASELINE_SOURCE: ${{ steps.initial-baseline.outputs.source }}
+          BASELINE: ${{ steps.initial-baseline.outputs.from }}
+          VALIDATION_STATUS: ${{ steps.validate-baseline.outputs.status }}
+          COMMIT_COUNT: ${{ steps.validate-baseline.outputs.commits }}
+          COMMIT_DRAFT_COUNT: ${{ steps.commit-draft.outputs.count }}
+          COMMIT_DRAFT_BODY: ${{ steps.commit-draft.outputs.body }}
+          INITIAL_DRAFT_VERSION: ${{ steps.initial-draft.outputs.resolved_version }}
+          INITIAL_DRAFT_URL: ${{ steps.initial-draft.outputs.html_url }}
+          INITIAL_DRAFT_BODY: ${{ steps.initial-draft.outputs.body }}
+          NORMAL_DRAFT_VERSION: ${{ steps.normal-draft.outputs.resolved_version }}
+          NORMAL_DRAFT_URL: ${{ steps.normal-draft.outputs.html_url }}
+          NORMAL_DRAFT_BODY: ${{ steps.normal-draft.outputs.body }}
+        shell: bash
+        run: |
+          {
+            echo "## Release Drafter"
+            echo
+            echo "| Detail | Value |"
+            echo "| --- | --- |"
+            printf '| Event | `%s` |\n' "$EVENT_NAME"
+            if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+              printf '| Write draft | `%s` |\n' "${WRITE_DRAFT:-false}"
+            fi
+            printf '| Published releases | `%s` |\n' "${PUBLISHED_RELEASE_COUNT:-unknown}"
+
+            if [[ "$PUBLISHED_RELEASE_COUNT" == "0" ]]; then
+              echo "| Mode | Initial draft |"
+              printf '| Baseline source | %s |\n' "${BASELINE_SOURCE:-unknown}"
+              if [[ -n "$FIRST_PR" ]]; then
+                printf '| First merged PR | #%s |\n' "$FIRST_PR"
+              fi
+              printf '| Comparison baseline | `%s` |\n' "${BASELINE:-unknown}"
+
+              if [[ "$EVENT_NAME" == "pull_request" || ( "$EVENT_NAME" == "workflow_dispatch" && "$WRITE_DRAFT" != "true" ) ]]; then
+                printf '| Validation | `%s` |\n' "${VALIDATION_STATUS:-not run}"
+                printf '| Commits to main | `%s` |\n' "${COMMIT_COUNT:-unknown}"
+                if [[ -n "$COMMIT_DRAFT_BODY" ]]; then
+                  printf '| Commits in preview | \`%s\` |\n' "${COMMIT_DRAFT_COUNT:-unknown}"
+                  echo
+                  echo "### Draft release content (preview)"
+                  echo
+                  printf '%s\n' "$COMMIT_DRAFT_BODY"
+                  echo
+                fi
+                echo "> Validation only. No draft release was written."
+              else
+                printf '| Resolved version | `%s` |\n' "${INITIAL_DRAFT_VERSION:-unknown}"
+                if [[ -n "$INITIAL_DRAFT_URL" ]]; then
+                  echo "| Draft release | $INITIAL_DRAFT_URL |"
+                fi
+                if [[ -n "$INITIAL_DRAFT_BODY" ]]; then
+                  echo
+                  echo "### Draft release content"
+                  echo
+                  printf '%s\n' "$INITIAL_DRAFT_BODY"
+                fi
+              fi
+            else
+              echo "| Mode | Normal draft |"
+
+              if [[ "$EVENT_NAME" == "pull_request" || ( "$EVENT_NAME" == "workflow_dispatch" && "$WRITE_DRAFT" != "true" ) ]]; then
+                echo
+                echo "> Validation only. Release Drafter will use the previous published release when draft writing is enabled."
+              else
+                printf '| Resolved version | `%s` |\n' "${NORMAL_DRAFT_VERSION:-unknown}"
+                if [[ -n "$NORMAL_DRAFT_URL" ]]; then
+                  echo "| Draft release | $NORMAL_DRAFT_URL |"
+                fi
+                if [[ -n "$NORMAL_DRAFT_BODY" ]]; then
+                  echo
+                  echo "### Draft release content"
+                  echo
+                  printf '%s\n' "$NORMAL_DRAFT_BODY"
+                fi
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
