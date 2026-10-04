@@ -485,13 +485,14 @@
     "publish:extension": "./scripts/publish_ext.sh",
     "package:ls": "npm run compile && npx @vscode/vsce ls --tree",
     "build:extension": "tsc -p ./",
-    "build:webview": "vite build --config vite.webview.config.ts",
+    "build:webview": "tsc --noEmit -p tsconfig.webview.json && vite build --config vite.webview.config.ts",
     "clean": "node -e \"require('node:fs').rmSync('out', { recursive: true, force: true })\"",
     "watch:webview": "vite build --watch --mode development --config vite.webview.config.ts",
     "dev:preview": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews",
     "dev:pair-setup": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/pair-setup",
     "dev:freshness": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/freshness-report",
-    "dev:convert": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/convert-file"
+    "dev:convert": "vite --config vite.webview.config.ts --host 127.0.0.1 --open /previews/convert-file",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.webview.json && tsc --noEmit -p tsconfig.preview.json"
   },
   "dependencies": {
     "date-fns": "^4.4.0",
