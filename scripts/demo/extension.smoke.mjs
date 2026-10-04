@@ -38,7 +38,11 @@ const testsDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 const projectDirectory = path.dirname(path.dirname(testsDirectory));
 
+// Raw demo recordings are temporary developer artifacts. Final README GIFs are
+// generated separately into the repository-root media/ directory.
 const outputDirectory = path.join(projectDirectory, "scripts", "demo", "artifacts");
+
+const repositoryMediaDirectory = path.join(projectDirectory, "media");
 
 const demoHostPath = path.join(testsDirectory, "demo-host.cjs");
 
@@ -84,6 +88,7 @@ function getCliScenarioSelection() {
 const config = {
   projectDirectory,
   outputDirectory,
+  repositoryMediaDirectory,
   demoHostPath,
   extensionsDirectory,
 
@@ -1054,6 +1059,8 @@ async function runDemo(config) {
       "",
       "Each scenario runs in an isolated VS Code window and workspace.",
       `Scenarios: ${scenarioNames.join(", ")}`,
+      `Recording artifacts: ${config.outputDirectory}`,
+      `README media: ${config.repositoryMediaDirectory}`,
       `Frame rate: ${config.frameRate}`,
       `Window size: ${config.windowSize.width}x${config.windowSize.height}`,
       `Theme: ${
