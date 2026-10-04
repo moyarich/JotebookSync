@@ -12,17 +12,20 @@ the extension user documentation.
 ## Repository layout
 
 ```text
-src/            VS Code extension runtime
-webviews-ui/    React/Vite webview UI
-test/           extension and webview tests
-demo/           demo and README GIF tooling
-media/          extension icons and README media
-docs/           user and developer documentation
-scripts/        development and publishing helpers
+src/
+├── extension/   VS Code extension runtime
+└── webview-ui/  browser-side webview source
+previews/        standalone clean-URL webview previews
+out/             generated extension and webview build output
+test/            extension and webview tests
+demo/            demo and README GIF tooling
+media/           static extension icons and README media
+docs/            user and developer documentation
+scripts/         development and publishing helpers
 ```
 
-The extension runtime and webview UI are built separately and packaged together
-for the VS Code extension.
+The extension runtime and webview UI are built separately into `out/` and packaged
+together for the VS Code extension. Generated webview assets do not live in `media/`.
 
 ## Common commands
 
