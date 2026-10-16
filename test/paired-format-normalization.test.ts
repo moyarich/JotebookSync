@@ -1,5 +1,5 @@
 import * as assert from "node:assert/strict";
-import { pairedFormatToJupytextFormat } from "../src/jupytext/JupytextPairingService.js";
+import { pairedFormatToJupytextFormat } from "../src/extension/jupytext/JupytextPairingService.js";
 
 suite("paired formats", () => {
   test("normalizes paired format descriptions", () => {

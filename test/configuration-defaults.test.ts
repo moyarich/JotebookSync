@@ -1,7 +1,7 @@
 import * as assert from "node:assert/strict";
 import * as vscode from "vscode";
-import { CONFIG, EXTENSION_NAMESPACE } from "../src/constants.js";
-import { ExtensionConfig } from "../src/ExtensionConfig/index.js";
+import { CONFIG, EXTENSION_NAMESPACE } from "../src/extension/constants.js";
+import { ExtensionConfig } from "../src/extension/ExtensionConfig/index.js";
 
 suite("configuration", () => {
   test("uses safe defaults and supports normal-mode auto confirmation", async () => {

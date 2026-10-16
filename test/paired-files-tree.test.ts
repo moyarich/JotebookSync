@@ -6,11 +6,11 @@ import * as path from "node:path";
 import {
   getExistingPairPaths,
   mergeOverlappingPairPaths,
-} from "../src/views/PairedFilesTreeProvider.js";
+} from "../src/extension/views/PairedFilesTreeProvider.js";
 import {
   EXTENSION_COMMANDS,
   EXTENSION_VIEWS,
-} from "../src/constants.js";
+} from "../src/extension/constants.js";
 
 type Manifest = {
   contributes: {

@@ -1,6 +1,6 @@
 import Mustache from "mustache";
 import { vi } from "vitest";
-import template from "../../../webviews-ui/src/webviews/pair-setup/template.html?raw";
+import template from "../../../src/webview-ui/pair-setup/template.html?raw";
 import type { PostedMessage } from "./freshness-harness.js";
 
 const data = { selectedPath: "/example/README.md", sourceFormat: "md", options: [
@@ -27,6 +27,6 @@ export async function setupPairing({ isExistingPair = false }: { isExistingPair?
     },
   );
   Object.assign(globalThis, { acquireVsCodeApi: () => ({ postMessage: (message: PostedMessage) => messages.push(message), getState: () => undefined, setState: vi.fn() }) });
-  await import("../../../webviews-ui/src/webviews/pair-setup/index.js");
+  await import("../../../src/webview-ui/pair-setup/index.js");
   return messages;
 }

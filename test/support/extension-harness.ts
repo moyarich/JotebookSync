@@ -2,9 +2,9 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { EXTENSION } from "../../src/constants.js";
-import { ExtensionConfig } from "../../src/ExtensionConfig/index.js";
-import { JupytextPairingService } from "../../src/jupytext/JupytextPairingService.js";
+import { EXTENSION } from "../../src/extension/extension/constants.js";
+import { ExtensionConfig } from "../../src/extension/extension/ExtensionConfig/index.js";
+import { JupytextPairingService } from "../../src/extension/extension/jupytext/JupytextPairingService.js";
 
 export type TestContext = {
   directory: string;

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import Mustache from "mustache";
 import { beforeEach, expect, test, vi } from "vitest";
-import template from "../../webviews-ui/src/webviews/convert-file/template.html?raw";
+import template from "../../src/webview-ui/convert-file/template.html?raw";
 import type { PostedMessage } from "./support/freshness-harness.js";
 
 let messages: PostedMessage[];
@@ -32,7 +32,7 @@ beforeEach(async () => {
       setState: vi.fn(),
     }),
   });
-  await import("../../webviews-ui/src/webviews/convert-file/index.js");
+  await import("../../src/webview-ui/convert-file/index.js");
 });
 
 test("updates the default destination and submits one conversion", () => {
