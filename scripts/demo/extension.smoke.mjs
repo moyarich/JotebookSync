@@ -40,7 +40,12 @@ const projectDirectory = path.dirname(path.dirname(testsDirectory));
 
 // Raw demo recordings are temporary developer artifacts. Final README GIFs are
 // generated separately into the repository-root media/ directory.
-const outputDirectory = path.join(projectDirectory, "scripts", "demo", "artifacts");
+const outputDirectory = path.join(
+  projectDirectory,
+  "scripts",
+  "demo",
+  "artifacts",
+);
 
 const repositoryMediaDirectory = path.join(projectDirectory, "media");
 
@@ -759,8 +764,7 @@ const demoScenarios = {
   "convert-file-format": convertFileFormatScenario(scenarioDependencies),
   "test-round-trip-conversion":
     testRoundTripConversionScenario(scenarioDependencies),
-  "show-available-formats":
-    showAvailableFormatsScenario(scenarioDependencies),
+  "show-available-formats": showAvailableFormatsScenario(scenarioDependencies),
   "update-existing-notebook":
     updateExistingNotebookScenario(scenarioDependencies),
   "inspect-and-remove-pairing":
@@ -1139,7 +1143,9 @@ async function runDemo(config) {
         "",
         colors.bold("Demo scenario summary"),
         "",
-        colors.green(`Completed (${recordings.length}/${scenarioNames.length}):`),
+        colors.green(
+          `Completed (${recordings.length}/${scenarioNames.length}):`,
+        ),
         ...completedLines,
         "",
         colors.red("Failed:"),

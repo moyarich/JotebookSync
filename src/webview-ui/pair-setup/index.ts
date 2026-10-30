@@ -190,38 +190,35 @@ const changedSuffixes = new Set(initialState.changedSuffixes);
 // #region Component: PairSetupOptions
 function renderOptions(): void {
   const renderedOptions = data.options.map((option) => {
-      const rowClass =
-        option.isSourceFormat || option.isExisting ? "required" : "";
+    const rowClass =
+      option.isSourceFormat || option.isExisting ? "required" : "";
 
-      const suffixValue = normalizeFilenameSuffix(
-        initialState.suffixes[option.rawFormat] ?? "",
-      );
-      const isSelected = initialState.selectedFormats.includes(
-        option.rawFormat,
-      );
+    const suffixValue = normalizeFilenameSuffix(
+      initialState.suffixes[option.rawFormat] ?? "",
+    );
+    const isSelected = initialState.selectedFormats.includes(option.rawFormat);
 
-      const selectionStatus = option.isSourceFormat
-        ? "Selected file · included automatically"
-        : option.isNotebook
-          ? option.isExisting
-            ? "Currently paired"
-            : "Recommended · stores outputs"
-          : option.isExisting
-            ? "Currently paired"
-            : "";
+    const selectionStatus = option.isSourceFormat
+      ? "Selected file · included automatically"
+      : option.isNotebook
+        ? option.isExisting
+          ? "Currently paired"
+          : "Recommended · stores outputs"
+        : option.isExisting
+          ? "Currently paired"
+          : "";
 
-      const rawExtension = option.rawFormat.split(":", 1)[0].replace(/^\./, "");
-      const suggestedSuffix = option.formatName
-        ? `.${option.formatName}.${rawExtension}`
-        : `.custom.${rawExtension}`;
-      const supportsCustomSuffix =
-        !option.isNotebook &&
-        !option.isSourceFormat &&
-        (!option.isExisting || Boolean(suffixValue));
+    const rawExtension = option.rawFormat.split(":", 1)[0].replace(/^\./, "");
+    const suggestedSuffix = option.formatName
+      ? `.${option.formatName}.${rawExtension}`
+      : `.custom.${rawExtension}`;
+    const supportsCustomSuffix =
+      !option.isNotebook &&
+      !option.isSourceFormat &&
+      (!option.isExisting || Boolean(suffixValue));
 
-      const suffixInput =
-        supportsCustomSuffix
-          ? `
+    const suffixInput = supportsCustomSuffix
+      ? `
           <div class="suffix">
             <label for="pair-suffix-${escapeHtml(option.id)}">Generated filename suffix${option.requiresCustomSuffix ? "" : " (optional)"}</label>
             <input
@@ -239,9 +236,9 @@ function renderOptions(): void {
             </span>
           </div>
         `
-          : "";
+      : "";
 
-      const html = `
+    const html = `
         <section class="row ${rowClass}" data-option-row>
           <input
             type="checkbox"
@@ -262,8 +259,8 @@ function renderOptions(): void {
         </section>
       `;
 
-      return { isAdvanced: Boolean(option.isAdvanced), html };
-    });
+    return { isAdvanced: Boolean(option.isAdvanced), html };
+  });
 
   optionsRoot.innerHTML = renderedOptions
     .filter((option) => !option.isAdvanced)
@@ -302,15 +299,18 @@ function getSelected(): SelectedFormat[] {
 }
 
 function syncOptionRows(): void {
-  setupForm.querySelectorAll<HTMLElement>("[data-option-row]").forEach((row) => {
-    const checkbox = row.querySelector<HTMLInputElement>("[data-option-id]");
-    const isSelected = Boolean(checkbox?.checked);
-    const suffixInput = row.querySelector<HTMLInputElement>("[data-suffix-for]");
-    row.classList.toggle("selected", isSelected);
-    if (suffixInput) {
-      suffixInput.disabled = !isSelected;
-    }
-  });
+  setupForm
+    .querySelectorAll<HTMLElement>("[data-option-row]")
+    .forEach((row) => {
+      const checkbox = row.querySelector<HTMLInputElement>("[data-option-id]");
+      const isSelected = Boolean(checkbox?.checked);
+      const suffixInput =
+        row.querySelector<HTMLInputElement>("[data-suffix-for]");
+      row.classList.toggle("selected", isSelected);
+      if (suffixInput) {
+        suffixInput.disabled = !isSelected;
+      }
+    });
 }
 
 function saveState(): void {
@@ -491,10 +491,11 @@ setupForm.addEventListener("submit", (event) => {
 
 renderOptions();
 syncOptionRows();
-setupDataElement.dataset.submitLabel = required(
-  document.querySelector<HTMLButtonElement>("#submitButton"),
-  "#submitButton",
-).textContent?.trim() ?? "Save pair";
+setupDataElement.dataset.submitLabel =
+  required(
+    document.querySelector<HTMLButtonElement>("#submitButton"),
+    "#submitButton",
+  ).textContent?.trim() ?? "Save pair";
 initialState.customFormats.forEach((value) => addCustomFormat(value, false));
 
 if (initialState.customFormats.length > 0) {

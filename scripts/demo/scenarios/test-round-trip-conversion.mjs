@@ -1,4 +1,3 @@
-
 export default function createScenario({
   chooseVisibleQuickPickItem,
   confirmQuickInput,
@@ -16,10 +15,7 @@ export default function createScenario({
 
     async run({ page }) {
       await pause(2_500);
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Test Round-Trip Conversion",
-      );
+      await runVSCodeCommand(page, "JotebookSync: Test Round-Trip Conversion");
       await chooseVisibleQuickPickItem({
         page,
         name: "Enter custom --to format...",

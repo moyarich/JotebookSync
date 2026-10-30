@@ -1,9 +1,17 @@
 // @vitest-environment happy-dom
 import { beforeEach, expect, it } from "vitest";
-import { button, card, confirm, setupFreshness, type PostedMessage } from "./support/freshness-harness.js";
+import {
+  button,
+  card,
+  confirm,
+  setupFreshness,
+  type PostedMessage,
+} from "./support/freshness-harness.js";
 
 let messages: PostedMessage[];
-beforeEach(async () => { messages = await setupFreshness(); });
+beforeEach(async () => {
+  messages = await setupFreshness();
+});
 it("posts every file action after confirmation where required", async () => {
   const source = card("README.md");
   const python = card("README.py");
@@ -20,5 +28,12 @@ it("posts every file action after confirmation where required", async () => {
   button(python, "Sync all from this file").click();
   confirm("Sync all from this file");
   await Promise.resolve();
-  expect(messages.map(({ command }) => command)).toEqual(["openFile", "syncPairedFilesFromCurrentFile", "openDiff", "openFile", "syncPairedFilesFromCurrentFile", "syncPairedFilesFromNewestPair"]);
+  expect(messages.map(({ command }) => command)).toEqual([
+    "openFile",
+    "syncPairedFilesFromCurrentFile",
+    "openDiff",
+    "openFile",
+    "syncPairedFilesFromCurrentFile",
+    "syncPairedFilesFromNewestPair",
+  ]);
 });

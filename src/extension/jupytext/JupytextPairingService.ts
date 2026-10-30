@@ -72,11 +72,9 @@ export class JupytextPairingService {
     private readonly context: vscode.ExtensionContext,
     private readonly settings = new ExtensionConfig(),
   ) {
-    this.runtime = new JupytextRuntime(
-      context,
-      settings,
-      () => { this.optionsCache = undefined; },
-    );
+    this.runtime = new JupytextRuntime(context, settings, () => {
+      this.optionsCache = undefined;
+    });
     this.commands = new JupytextCommands(context, this.runtime);
   }
 
@@ -299,9 +297,8 @@ export class JupytextPairingService {
   ): Promise<ComparableDiffFiles> {
     const requestedFormat = toFormat.trim() || "md";
     const [rawExtension, ...formatOptions] = requestedFormat.split(":");
-    const normalizedExtension = rawExtension.toLowerCase() === "rmd"
-      ? "Rmd"
-      : rawExtension.toLowerCase();
+    const normalizedExtension =
+      rawExtension.toLowerCase() === "rmd" ? "Rmd" : rawExtension.toLowerCase();
     const format = [normalizedExtension, ...formatOptions]
       .filter(Boolean)
       .join(":");
@@ -704,7 +701,9 @@ export class JupytextPairingService {
               check.stderr ||
               "Could not determine this file's freshness.";
             const destination =
-              check.destinationFileName || check.destinationPath || check.toFormat;
+              check.destinationFileName ||
+              check.destinationPath ||
+              check.toFormat;
             return [`Paired file: ${destination}`, detail].join("\n");
           })
           .join("\n\n");

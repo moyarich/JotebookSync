@@ -46,7 +46,5 @@ const overviewMeta = {
 
 export function getPreviewPageMeta(pathname: string) {
   const route = pathname.replace(/^\/previews/, "") || "/";
-  return (
-    previewPages.find((page) => page.path === route) ?? overviewMeta
-  );
+  return previewPages.find((page) => page.path === route) ?? overviewMeta;
 }

@@ -133,7 +133,10 @@ suite("paired files tree", () => {
     const commandIcons = new Map(
       manifest.contributes.commands.map(({ command, icon }) => [command, icon]),
     );
-    assert.equal(commandIcons.get(EXTENSION_COMMANDS.removePairing), "$(trash)");
+    assert.equal(
+      commandIcons.get(EXTENSION_COMMANDS.removePairing),
+      "$(trash)",
+    );
     assert.equal(
       commandIcons.get(EXTENSION_COMMANDS.removeFileFromPair),
       "$(remove)",

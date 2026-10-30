@@ -4,6 +4,16 @@
     "rootDir": ".",
     "outDir": "out-test"
   },
-  "include": ["src/extension/**/*.ts", "test/*.test.ts", "test/support/**/*.ts"],
-  "exclude": ["node_modules", "out", "src/webview-ui", "previews", "src/**/* copy.ts"]
+  "include": [
+    "src/extension/**/*.ts",
+    "test/*.test.ts",
+    "test/support/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "out",
+    "src/webview-ui",
+    "previews",
+    "src/**/* copy.ts"
+  ]
 }
