@@ -1,4 +1,3 @@
-
 export default function createScenario({
   createPairedAnalysis,
   findFrameByHeading,

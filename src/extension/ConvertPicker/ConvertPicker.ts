@@ -158,14 +158,12 @@ export class ConvertPicker {
       uri,
       pairSuggestions,
       options,
-    ).map(
-      (item): ToFormatQuickPickItem => ({
-        label: item.value,
-        description: item.description,
-        detail: item.detail,
-        value: item.value,
-      }),
-    );
+    ).map((item): ToFormatQuickPickItem => ({
+      label: item.value,
+      description: item.description,
+      detail: item.detail,
+      value: item.value,
+    }));
 
     const pickedFormat = await vscode.window.showQuickPick(
       [customInputChoice, ...formatItems],

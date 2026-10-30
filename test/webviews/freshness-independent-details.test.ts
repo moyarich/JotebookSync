@@ -8,9 +8,17 @@ it("keeps destination details independently expanded", () => {
   const python = card("README.py");
   button(notebook, "Show details").click();
   button(python, "Show details").click();
-  expect(notebook.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden).toBe(false);
-  expect(python.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden).toBe(false);
+  expect(
+    notebook.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden,
+  ).toBe(false);
+  expect(
+    python.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden,
+  ).toBe(false);
   button(python, "Hide details").click();
-  expect(notebook.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden).toBe(false);
-  expect(python.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden).toBe(true);
+  expect(
+    notebook.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden,
+  ).toBe(false);
+  expect(
+    python.shadowRoot!.querySelector<HTMLElement>(".details-panel")?.hidden,
+  ).toBe(true);
 });

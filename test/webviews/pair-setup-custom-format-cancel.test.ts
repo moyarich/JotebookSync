@@ -4,10 +4,14 @@ import { setupPairing } from "./support/pair-setup-harness.js";
 import type { PostedMessage } from "./support/freshness-harness.js";
 
 let messages: PostedMessage[];
-beforeEach(async () => { messages = await setupPairing(); });
+beforeEach(async () => {
+  messages = await setupPairing();
+});
 it("adds and removes a custom format and sends cancel", () => {
   document.querySelector<HTMLButtonElement>("#addCustomFormatButton")!.click();
-  const input = document.querySelector<HTMLInputElement>("[data-custom-format]")!;
+  const input = document.querySelector<HTMLInputElement>(
+    "[data-custom-format]",
+  )!;
   input.value = "jl:percent";
   input.dispatchEvent(new InputEvent("input", { bubbles: true }));
   document.querySelector<HTMLButtonElement>("[data-remove-custom]")!.click();

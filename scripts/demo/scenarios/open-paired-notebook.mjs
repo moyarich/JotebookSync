@@ -1,4 +1,3 @@
-
 export default function createScenario({
   createPairedAnalysis,
   pause,
@@ -19,7 +18,10 @@ export default function createScenario({
     },
 
     async verify({ page }) {
-      await page.locator(".notebook-editor").first().waitFor({ timeout: 10_000 });
+      await page
+        .locator(".notebook-editor")
+        .first()
+        .waitFor({ timeout: 10_000 });
     },
   };
 }

@@ -5,7 +5,12 @@ import { fileURLToPath } from "node:url";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectDirectory = path.dirname(path.dirname(currentDirectory));
-const demoDirectory = path.join(projectDirectory, "scripts", "demo", "artifacts");
+const demoDirectory = path.join(
+  projectDirectory,
+  "scripts",
+  "demo",
+  "artifacts",
+);
 // README and Marketplace screenshots/GIFs are committed at the repository root.
 // Keep demo recordings under scripts/demo/artifacts, but write final GIFs to media/.
 const repositoryMediaDirectory = path.join(projectDirectory, "media");

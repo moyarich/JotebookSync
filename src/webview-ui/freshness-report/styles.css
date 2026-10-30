@@ -18,11 +18,7 @@
     --vscode-editorWidget-background,
     var(--vscode-editor-background, var(--fallback-card))
   );
-  --muted: color-mix(
-    in srgb,
-    var(--foreground) 5%,
-    var(--background)
-  );
+  --muted: color-mix(in srgb, var(--foreground) 5%, var(--background));
   --muted-foreground: var(
     --vscode-descriptionForeground,
     var(--fallback-muted-foreground)
@@ -39,10 +35,7 @@
     color-mix(in srgb, var(--foreground) 22%, transparent)
   );
   --primary: var(--vscode-textLink-foreground, var(--fallback-primary));
-  --action-background: var(
-    --vscode-button-background,
-    var(--fallback-primary)
-  );
+  --action-background: var(--vscode-button-background, var(--fallback-primary));
   --action-hover-background: var(
     --vscode-button-hoverBackground,
     color-mix(in srgb, var(--action-background) 88%, var(--foreground))
@@ -343,7 +336,8 @@ select:focus-visible {
     color-mix(in srgb, var(--card) 94%, var(--muted) 6%),
     var(--card)
   );
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent) inset;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 7%, transparent)
+    inset;
 }
 
 .section-header {

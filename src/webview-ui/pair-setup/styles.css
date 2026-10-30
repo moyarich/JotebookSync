@@ -13,18 +13,48 @@
   --foreground: var(--vscode-foreground, var(--fallback-foreground));
   --card: var(--vscode-editorWidget-background, var(--background));
   --muted: color-mix(in srgb, var(--foreground) 5%, var(--background));
-  --muted-foreground: var(--vscode-descriptionForeground, var(--fallback-muted-foreground));
-  --border: var(--vscode-contrastBorder, var(--vscode-editorWidget-border, var(--vscode-panel-border, var(--fallback-border))));
+  --muted-foreground: var(
+    --vscode-descriptionForeground,
+    var(--fallback-muted-foreground)
+  );
+  --border: var(
+    --vscode-contrastBorder,
+    var(
+      --vscode-editorWidget-border,
+      var(--vscode-panel-border, var(--fallback-border))
+    )
+  );
   --primary: var(--vscode-textLink-foreground, var(--fallback-primary));
   --action-background: var(--vscode-button-background, var(--fallback-primary));
-  --action-hover-background: var(--vscode-button-hoverBackground, color-mix(in srgb, var(--action-background) 88%, var(--foreground)));
-  --primary-foreground: var(--vscode-button-foreground, var(--fallback-primary-foreground));
-  --warning: var(--vscode-notificationsWarningIcon-foreground, var(--fallback-warning));
+  --action-hover-background: var(
+    --vscode-button-hoverBackground,
+    color-mix(in srgb, var(--action-background) 88%, var(--foreground))
+  );
+  --primary-foreground: var(
+    --vscode-button-foreground,
+    var(--fallback-primary-foreground)
+  );
+  --warning: var(
+    --vscode-notificationsWarningIcon-foreground,
+    var(--fallback-warning)
+  );
   --ring: var(--vscode-focusBorder, var(--fallback-ring));
-  --border-strong: var(--vscode-input-border, color-mix(in srgb, var(--foreground) 22%, transparent));
-  --button-secondary: var(--vscode-button-secondaryBackground, color-mix(in srgb, var(--foreground) 7%, var(--card)));
-  --button-secondary-foreground: var(--vscode-button-secondaryForeground, var(--foreground));
-  --button-secondary-hover: var(--vscode-button-secondaryHoverBackground, color-mix(in srgb, var(--foreground) 12%, var(--card)));
+  --border-strong: var(
+    --vscode-input-border,
+    color-mix(in srgb, var(--foreground) 22%, transparent)
+  );
+  --button-secondary: var(
+    --vscode-button-secondaryBackground,
+    color-mix(in srgb, var(--foreground) 7%, var(--card))
+  );
+  --button-secondary-foreground: var(
+    --vscode-button-secondaryForeground,
+    var(--foreground)
+  );
+  --button-secondary-hover: var(
+    --vscode-button-secondaryHoverBackground,
+    color-mix(in srgb, var(--foreground) 12%, var(--card))
+  );
   --widget-shadow: var(--vscode-widget-shadow, rgba(15, 23, 42, 0.12));
   --mono: var(--vscode-editor-font-family, ui-monospace, monospace);
   --sans: var(--vscode-font-family, system-ui, sans-serif);
@@ -62,7 +92,11 @@ body {
   min-height: 100vh;
   padding: clamp(12px, 3vw, 32px);
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 4%, transparent), transparent 32rem),
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--primary) 4%, transparent),
+      transparent 32rem
+    ),
     var(--background);
   color: var(--foreground);
   font-family: var(--sans);
@@ -137,7 +171,10 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--card);
-  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
 }
 .row.selected {
   border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
@@ -305,13 +342,25 @@ input:disabled {
   gap: 10px;
 }
 button.danger {
-  border-color: color-mix(in srgb, var(--vscode-errorForeground) 55%, var(--border));
+  border-color: color-mix(
+    in srgb,
+    var(--vscode-errorForeground) 55%,
+    var(--border)
+  );
   color: var(--vscode-errorForeground);
-  background: color-mix(in srgb, var(--vscode-errorForeground) 8%, var(--button-secondary));
+  background: color-mix(
+    in srgb,
+    var(--vscode-errorForeground) 8%,
+    var(--button-secondary)
+  );
 }
 button.danger:hover {
   border-color: var(--vscode-errorForeground);
-  background: color-mix(in srgb, var(--vscode-errorForeground) 16%, var(--button-secondary-hover));
+  background: color-mix(
+    in srgb,
+    var(--vscode-errorForeground) 16%,
+    var(--button-secondary-hover)
+  );
 }
 button {
   min-height: 36px;

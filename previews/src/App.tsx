@@ -6,7 +6,10 @@ import { previewPages } from "./preview-pages";
 
 function Overview() {
   return (
-    <section className="preview-overview" aria-label="Available webview previews">
+    <section
+      className="preview-overview"
+      aria-label="Available webview previews"
+    >
       {previewPages.map((page) => (
         <Link className="preview-card" key={page.path} to={page.path}>
           <strong>{page.title}</strong>
