@@ -3,11 +3,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { loadHtmlPage, removePageAssets } from "./preview-loader";
 import type { PageDefinition } from "./types";
 
-export function WebviewPreview({
-  getPage,
-}: {
-  getPage: () => PageDefinition;
-}) {
+export function WebviewPreview({ getPage }: { getPage: () => PageDefinition }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const page = useMemo(getPage, [getPage]);
 

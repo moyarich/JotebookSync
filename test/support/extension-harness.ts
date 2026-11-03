@@ -14,7 +14,10 @@ export type TestContext = {
 
 export function createService(
   storageDirectory: string,
-  overrides: Partial<{ confirmDestructiveActions: boolean; supportedTextExtensionsOverride: string[] }> = {},
+  overrides: Partial<{
+    confirmDestructiveActions: boolean;
+    supportedTextExtensionsOverride: string[];
+  }> = {},
 ): JupytextPairingService {
   const context = {
     extension: { packageJSON: { displayName: "JotebookSync" } },
@@ -28,13 +31,16 @@ export function createService(
     notebookEditorViewType: EXTENSION.defaultNotebookEditorViewType,
     syncArgs: [],
     setFormatsArgs: [],
-    supportedTextExtensionsOverride: overrides.supportedTextExtensionsOverride ?? [],
+    supportedTextExtensionsOverride:
+      overrides.supportedTextExtensionsOverride ?? [],
   } as unknown as ExtensionConfig;
   return new JupytextPairingService(context, settings);
 }
 
 export async function createTestContext(): Promise<TestContext> {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "jotebooksync-test-"));
+  const directory = await fs.mkdtemp(
+    path.join(os.tmpdir(), "jotebooksync-test-"),
+  );
   return {
     directory,
     service: createService(path.join(directory, "storage")),

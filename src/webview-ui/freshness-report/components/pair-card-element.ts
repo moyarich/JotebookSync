@@ -155,8 +155,10 @@ function buildReplaceConfirmHtml(
 
   return html`
     <p class="confirm-callout">
-      ${destination.detailMessage ||
-      "Review this destination before overwriting it."}
+      ${
+        destination.detailMessage ||
+        "Review this destination before overwriting it."
+      }
     </p>
 
     <section class="confirm-section">
@@ -178,9 +180,11 @@ function buildReplaceConfirmHtml(
           <span class="confirm-meta-line">
             <span class="confirm-meta-label">Last updated:</span>
             <span class="confirm-meta-value">
-              ${sourceFile.lastUpdatedLabel ||
-              sourceFile.lastUpdated ||
-              "Missing"}
+              ${
+                sourceFile.lastUpdatedLabel ||
+                sourceFile.lastUpdated ||
+                "Missing"
+              }
             </span>
           </span>
         </div>
@@ -192,9 +196,11 @@ function buildReplaceConfirmHtml(
           <span class="confirm-meta-line">
             <span class="confirm-meta-label">Last updated:</span>
             <span class="confirm-meta-value">
-              ${destination.lastUpdatedLabel ||
-              destination.lastUpdated ||
-              "Missing"}
+              ${
+                destination.lastUpdatedLabel ||
+                destination.lastUpdated ||
+                "Missing"
+              }
             </span>
           </span>
 
@@ -555,7 +561,6 @@ export function definePairCardElement(): void {
       this.#refs.card.dataset.expanded = String(shouldOpen);
 
       this.#setExpandedAttributes(shouldOpen);
-
     }
 
     #setExpandedAttributes(expanded: boolean): void {

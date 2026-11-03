@@ -4,10 +4,18 @@ import { setupPairing } from "./support/pair-setup-harness.js";
 
 beforeEach(setupPairing);
 it("normalizes suffixes and explains filename collisions", () => {
-  const percent = document.querySelector<HTMLInputElement>('[data-option-id="percent"]')!;
-  const nomarker = document.querySelector<HTMLInputElement>('[data-option-id="nomarker"]')!;
-  const percentSuffix = document.querySelector<HTMLInputElement>('[data-suffix-for="percent"]')!;
-  const nomarkerSuffix = document.querySelector<HTMLInputElement>('[data-suffix-for="nomarker"]')!;
+  const percent = document.querySelector<HTMLInputElement>(
+    '[data-option-id="percent"]',
+  )!;
+  const nomarker = document.querySelector<HTMLInputElement>(
+    '[data-option-id="nomarker"]',
+  )!;
+  const percentSuffix = document.querySelector<HTMLInputElement>(
+    '[data-suffix-for="percent"]',
+  )!;
+  const nomarkerSuffix = document.querySelector<HTMLInputElement>(
+    '[data-suffix-for="nomarker"]',
+  )!;
   percent.click();
   nomarker.click();
   percentSuffix.value = "shared.py";

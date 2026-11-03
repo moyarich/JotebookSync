@@ -55,12 +55,12 @@ To rebuild GIFs from existing `.webm` recordings without opening VS Code, use
 
 GIF output can be adjusted with environment variables:
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `JOTEBOOKSYNC_GIF_FPS` | `12` | Output GIF frame rate. |
-| `JOTEBOOKSYNC_GIF_WIDTH` | `960` | Maximum output width. |
-| `JOTEBOOKSYNC_GIF_TRIM_START` | `1` | Seconds removed from the start. |
-| `JOTEBOOKSYNC_DEMO_THEME` | `Default Dark Modern` | VS Code theme used while recording. |
+| Variable                      | Default               | Purpose                             |
+| ----------------------------- | --------------------- | ----------------------------------- |
+| `JOTEBOOKSYNC_GIF_FPS`        | `12`                  | Output GIF frame rate.              |
+| `JOTEBOOKSYNC_GIF_WIDTH`      | `960`                 | Maximum output width.               |
+| `JOTEBOOKSYNC_GIF_TRIM_START` | `1`                   | Seconds removed from the start.     |
+| `JOTEBOOKSYNC_DEMO_THEME`     | `Default Dark Modern` | VS Code theme used while recording. |
 
 At the end of every recording run—including failed runs—the recorder prints a
 colored summary containing:

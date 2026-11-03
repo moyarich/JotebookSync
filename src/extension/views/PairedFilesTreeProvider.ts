@@ -200,13 +200,11 @@ function getPrimaryPairUri(files: readonly PairFile[]): vscode.Uri {
  */
 function createPairFiles(paths: PairInfo["paths"]): PairFile[] {
   return paths
-    .map(
-      ([filePath, format]): PairFile => ({
-        kind: "file",
-        uri: vscode.Uri.file(filePath),
-        format,
-      }),
-    )
+    .map(([filePath, format]): PairFile => ({
+      kind: "file",
+      uri: vscode.Uri.file(filePath),
+      format,
+    }))
     .sort((left, right) => {
       const leftIsNotebook = isNotebook(left.uri);
       const rightIsNotebook = isNotebook(right.uri);
