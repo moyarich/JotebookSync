@@ -7,7 +7,11 @@ suite("pairing menus", () => {
   test("only shows paired-file actions when the selected resource is paired", async () => {
     const manifest = JSON.parse(
       await fs.readFile(path.resolve("package.json"), "utf8"),
-    ) as { contributes: { menus: Record<string, Array<{ command: string; when?: string }>> } };
+    ) as {
+      contributes: {
+        menus: Record<string, Array<{ command: string; when?: string }>>;
+      };
+    };
     const menus = Object.values(manifest.contributes.menus).flat();
     const removeEntries = menus.filter(
       ({ command }) => command === EXTENSION_COMMANDS.removePairing,

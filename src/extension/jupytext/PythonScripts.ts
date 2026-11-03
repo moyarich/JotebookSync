@@ -14,6 +14,5 @@ export const JUPYTEXT_PAIR_SUGGESTIONS = loadPythonScript(
 );
 export const JUPYTEXT_OPTIONS_SCRIPT = loadPythonScript("available-options.py");
 export const PAIR_INFO_SCRIPT = loadPythonScript("pair-info.py");
-export const JUPYTEXT_PAIR_FRESHNESS_SCRIPT = loadPythonScript(
-  "pair-freshness.py",
-);
+export const JUPYTEXT_PAIR_FRESHNESS_SCRIPT =
+  loadPythonScript("pair-freshness.py");

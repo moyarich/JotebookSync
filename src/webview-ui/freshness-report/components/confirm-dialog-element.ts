@@ -100,7 +100,8 @@ export class ConfirmDialogElement extends HTMLElement {
       this.close(false);
     }
 
-    this.#previousActiveElement = options.returnFocus ??
+    this.#previousActiveElement =
+      options.returnFocus ??
       (document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null);

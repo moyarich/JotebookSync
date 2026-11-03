@@ -7,10 +7,7 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { EXTENSION_COMMANDS, EXTENSION_WEBVIEWS } from "../constants.js";
 import { JupytextPairingService } from "../jupytext/JupytextPairingService.js";
 import type { SourceNewerCheckResult } from "../jupytext/types.js";
-import {
-  createWebviewNonce,
-  serializeWebviewData,
-} from "../lib/webview.js";
+import { createWebviewNonce, serializeWebviewData } from "../lib/webview.js";
 
 export type WebviewPairCheckRow = {
   status: "PASS" | "NOT NEWER";
@@ -145,7 +142,9 @@ export class CheckSourceNewerPanel {
           const requireAllowedPath = (candidate: unknown): string => {
             const filePath = String(candidate ?? "");
             if (!allowedPaths.has(filePath)) {
-              throw new Error("The requested file is not part of this Jupytext pair.");
+              throw new Error(
+                "The requested file is not part of this Jupytext pair.",
+              );
             }
             return filePath;
           };
@@ -167,9 +166,7 @@ export class CheckSourceNewerPanel {
             message.destinationPath
           ) {
             const sourcePath = requireAllowedPath(message.sourcePath);
-            const destinationPath = requireAllowedPath(
-              message.destinationPath,
-            );
+            const destinationPath = requireAllowedPath(message.destinationPath);
             const sourceRow = model.rows.find(
               (row) => row.sourcePath === sourcePath,
             );
@@ -206,7 +203,6 @@ export class CheckSourceNewerPanel {
                   sourceUri,
                   destinationPath,
                 );
-
               } else {
                 await this.jupytext.syncPairedFilesFromCurrentFile(sourceUri);
               }
@@ -232,7 +228,6 @@ export class CheckSourceNewerPanel {
                 true,
                 true,
               );
-
             } finally {
               await refresh("Jupytext sync finished.");
             }
@@ -414,9 +409,9 @@ export class CheckSourceNewerPanel {
       const comparison = this.getComparison(row);
       const needsReview = Boolean(
         row.destinationIsNewer ||
-          row.timestampsAreEqual ||
-          row.resultKind === "destination_missing" ||
-          row.resultKind === "check_failed",
+        row.timestampsAreEqual ||
+        row.resultKind === "destination_missing" ||
+        row.resultKind === "check_failed",
       );
       const expanded = needsReview && !expandedReviewAssigned;
       if (expanded) {

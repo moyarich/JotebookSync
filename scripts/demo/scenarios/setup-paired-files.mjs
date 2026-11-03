@@ -1,4 +1,3 @@
-
 export default function createScenario({
   assertFileExists,
   createPlainMarkdown,
@@ -25,10 +24,7 @@ export default function createScenario({
       // Open setup command
       // -----------------------------------------------------------------------
 
-      await runVSCodeCommand(
-        page,
-        "JotebookSync: Configure Paired Files",
-      );
+      await runVSCodeCommand(page, "JotebookSync: Configure Paired Files");
 
       // -----------------------------------------------------------------------
       // Wait for setup webview
@@ -132,7 +128,9 @@ export default function createScenario({
       await assertFileExists(path.join(workspaceDirectory, "analysis.ipynb"));
       const files = await readdir(workspaceDirectory);
       if (!files.some((file) => file.endsWith(".py"))) {
-        throw new Error("Pair setup did not create the selected Python format.");
+        throw new Error(
+          "Pair setup did not create the selected Python format.",
+        );
       }
       const visibleGroups = await page
         .locator(".editor-group-container:visible")
