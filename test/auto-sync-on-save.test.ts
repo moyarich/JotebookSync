@@ -2,11 +2,16 @@ import * as assert from "node:assert/strict";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { createTestContext, type TestContext } from "./support/extension-harness.js";
+import {
+  createTestContext,
+  type TestContext,
+} from "./support/extension-harness.js";
 
 suite("automatic synchronization", () => {
   let context: TestContext;
-  setup(async () => { context = await createTestContext(); });
+  setup(async () => {
+    context = await createTestContext();
+  });
   teardown(async () => context.dispose());
   test("synchronizes a paired file through the save handler behavior", async function () {
     this.timeout(60_000);

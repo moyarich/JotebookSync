@@ -69,14 +69,14 @@ suite("pair setup options", () => {
         formats: ["md", "py:percent"],
         paths: [
           ["/workspace/love.md", { extension: ".md" }],
-          [
-            "/workspace/love.py",
-            { extension: ".py", format_name: "percent" },
-          ],
+          ["/workspace/love.py", { extension: ".py", format_name: "percent" }],
         ],
       },
     );
 
-    assert.equal(options.find(({ isNotebook }) => isNotebook)?.isSelected, false);
+    assert.equal(
+      options.find(({ isNotebook }) => isNotebook)?.isSelected,
+      false,
+    );
   });
 });

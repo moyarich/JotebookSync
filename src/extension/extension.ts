@@ -1287,8 +1287,11 @@ export function activate(context: vscode.ExtensionContext): void {
             pairSuggestions,
             options,
           );
-          await convertFilePanel.show(fileUri, formats, (format) =>
-            convertPicker.getDefaultConvertOutputUri(fileUri, format).fsPath,
+          await convertFilePanel.show(
+            fileUri,
+            formats,
+            (format) =>
+              convertPicker.getDefaultConvertOutputUri(fileUri, format).fsPath,
           );
         }),
     ),
