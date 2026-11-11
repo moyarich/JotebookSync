@@ -1,0 +1,44 @@
+---
+title: Table of Contents
+label: Table of Contents
+description: Canonical MoyaForge Table of Contents component example.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Table of Contents
+
+This live example uses the canonical component source in `packages/moyaforge-ui/src/components/`.
+
+## Installation
+
+Install the `table-of-contents` registry item through the MoyaForge CLI to copy editable component source and styles.
+
+[UI Components](/ui)
+
+## Usage
+
+```tsx
+<TableOfContents selector="h2[id], h3[id]" />
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Table of Contents"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+The installed component includes its source-owned CSS. Customize its styles in your application using scoped CSS selectors or the component's documented CSS variables. The example preview frame can be customized separately with `--mf-preview-border` and `--mf-preview-radius`.

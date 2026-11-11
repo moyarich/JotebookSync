@@ -7,7 +7,7 @@ node_modules
 *.venv
 .mypy_cache
 .DS_Store
-zip/**
-scripts/demo/artifacts/**
+**/zip/**
+**/demo/artifacts/**
 .env
 !.env.example

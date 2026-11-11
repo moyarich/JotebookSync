@@ -1,0 +1,12 @@
+.mf-monaco-preview-stage {
+  display: grid;
+  place-items: center;
+  min-height: 10rem;
+  padding: var(--mf-preview-padding, 1.5rem);
+}
+.mf-monaco-preview-editor {
+  min-height: 20rem;
+}
+.mf-monaco-preview-toggle {
+  cursor: pointer;
+}

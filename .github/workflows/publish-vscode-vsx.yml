@@ -15,7 +15,7 @@ on:
         description: VS Code extension directory (one extension per run)
         required: true
         type: string
-        default: .
+        default: packages/JotebookSync
       registry:
         description: Extension registry
         type: choice

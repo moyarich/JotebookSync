@@ -1,0 +1,6 @@
+.mf-preview-example-button {
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--mf-preview-border, currentColor);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}

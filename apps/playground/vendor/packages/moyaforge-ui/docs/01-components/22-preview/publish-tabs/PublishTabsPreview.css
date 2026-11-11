@@ -1,0 +1,7 @@
+.mf-publish-preview-stage {
+  padding: var(--mf-preview-padding, 1.5rem);
+  min-height: 8rem;
+}
+.mf-publish-preview-editor {
+  min-height: 14rem;
+}

@@ -1,0 +1,163 @@
+---
+title: Copy Button
+label: Copy Button
+order: 3
+description: A clipboard button with built-in success and error feedback.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/CodePreview.tsx";
+import DefaultExample from "./default/Example.tsx";
+import defaultSource from "./default/Example.tsx?raw";
+import IconExample from "./with-icon/Example.tsx";
+import iconSource from "./with-icon/Example.tsx?raw";
+import DynamicExample from "./dynamic-value/Example.tsx";
+import dynamicSource from "./dynamic-value/Example.tsx?raw";
+import dynamicStyles from "./dynamic-value/Example.css?raw";
+import DisabledExample from "./disabled/Example.tsx";
+import disabledSource from "./disabled/Example.tsx?raw";
+import FeedbackExample from "./copy-feedback/Example.tsx";
+import feedbackSource from "./copy-feedback/Example.tsx?raw";
+import feedbackStyles from "./copy-feedback/Example.css?raw";
+
+# Copy Button
+
+A clipboard button with built-in success and error feedback.
+
+<CodePreview
+  title="Copy Button"
+  files={[{ label: "Example.tsx", code: defaultSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <DefaultExample />
+</CodePreview>
+
+## Installation
+
+Install the component source and styles into your application.
+
+<CodeGroup label="Install Copy Button">
+<CodeTab label="MoyaForge CLI">
+
+```sh
+npx @moyarich/moyaforge-cli@latest add copy-button
+```
+
+</CodeTab>
+<CodeTab label="shadcn">
+
+```sh
+npx shadcn@latest add moyarich/moyaforge/copy-button
+```
+
+</CodeTab>
+</CodeGroup>
+
+CopyButton requires React. The preview frames on this page are documentation components and are not required in your application.
+
+The default destination is `src/components/ui`. The component imports its own CSS. The examples below use `@/` as an alias for `src/`; use a relative import if your application does not configure that alias.
+
+## Usage
+
+```tsx
+import { CopyButton } from "@/components/ui/components/CopyButton";
+
+<CopyButton value="npm install react">Copy command</CopyButton>;
+```
+
+## Examples
+
+### With icon
+
+Pass a Lucide icon through the `icon` prop. This example additionally needs `lucide-react`:
+
+```sh
+npm install lucide-react
+```
+
+Keep decorative icons hidden from assistive technology.
+
+<CodePreview
+  title="With icon"
+  files={[{ label: "Example.tsx", code: iconSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <IconExample />
+</CodePreview>
+
+### Dynamic value
+
+The Code view includes both `Example.tsx` and its `Example.css` file.
+
+Use `getValue` to read the latest text when the button is clicked. It takes precedence over `value`.
+
+<CodePreview
+  title="Dynamic value"
+  files={[
+    { label: "Example.tsx", code: dynamicSource },
+    { label: "Example.css", code: dynamicStyles },
+  ]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <DynamicExample />
+</CodePreview>
+
+### Disabled
+
+Pass the native `disabled` prop to prevent copying.
+
+<CodePreview
+  title="Disabled"
+  files={[{ label: "Example.tsx", code: disabledSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <DisabledExample />
+</CodePreview>
+
+### Copy feedback
+
+The label changes to “Copied!” after success and “Retry copy” after failure. `onCopy` runs after a successful clipboard write.
+
+<CodePreview
+  title="Copy feedback"
+  files={[
+    { label: "Example.tsx", code: feedbackSource },
+    { label: "Example.css", code: feedbackStyles },
+  ]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <FeedbackExample />
+</CodePreview>
+
+## API Reference
+
+<div className="mf-table-scroll">
+
+| Prop       | Type           | Default     | Description                                       |
+| ---------- | -------------- | ----------- | ------------------------------------------------- |
+| `value`    | `unknown`      | `undefined` | Text to copy; converted to a string.              |
+| `getValue` | `() => string` | `undefined` | Reads the value at click time; overrides `value`. |
+| `children` | `ReactNode`    | `"Copy"`    | The idle button label.                            |
+| `icon`     | `ReactNode`    | `undefined` | An optional icon before the label.                |
+| `onCopy`   | `() => void`   | `undefined` | Called after a successful copy.                   |
+| `disabled` | `boolean`      | `false`     | Disables the native button.                       |
+
+</div>
+
+Other native button props, including `className` and `aria-label`, are forwarded. The feedback label resets after two seconds. Clipboard access requires HTTPS or localhost.
+
+## Styling
+
+Override the component’s public CSS variables on a containing element:
+
+```css
+.copy-button-theme {
+  --copy-button-border-radius: 0.5rem;
+  --copy-button-padding: 0.5rem 0.75rem;
+  --copy-button-background: transparent;
+  --copy-button-border-color: currentColor;
+  --copy-button-color: inherit;
+}
+```

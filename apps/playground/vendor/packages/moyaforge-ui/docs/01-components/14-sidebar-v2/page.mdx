@@ -1,0 +1,55 @@
+---
+title: Sidebar V2
+label: Sidebar V2
+description: Live demonstration of the canonical Sidebar V2 component.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Sidebar V2
+
+This example uses the real source-owned MoyaForge UI component. It does not create a second component implementation or application router.
+
+## Installation
+
+Install `sidebar-v2` from the MoyaForge registry to copy the selected component source and CSS into your application.
+
+[All UI components](/ui)
+
+## Usage
+
+```tsx
+<Sidebar aria-label="Sample navigation">
+  <SidebarHeader>Documentation</SidebarHeader>
+  <SidebarContent>
+    <SidebarSection>
+      <SidebarGroup label="Getting started">
+        <SidebarItem>Overview</SidebarItem>
+        <SidebarItem>Components</SidebarItem>
+      </SidebarGroup>
+    </SidebarSection>
+  </SidebarContent>
+  <SidebarFooter>Component registry</SidebarFooter>
+</Sidebar>
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Sidebar V2"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+The installed component includes its source-owned CSS. Customize its styles in your application using scoped CSS selectors or the component's documented CSS variables. The example preview frame can be customized separately with `--mf-preview-border` and `--mf-preview-radius`.

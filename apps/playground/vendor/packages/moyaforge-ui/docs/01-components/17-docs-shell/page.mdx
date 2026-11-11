@@ -1,0 +1,56 @@
+---
+title: Docs Shell
+label: Docs Shell
+description: Canonical Docs Shell example in the MoyaForge component gallery.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Docs Shell
+
+The registry's Docs Shell item is an editable template wrapping DocsLayout; this preview renders its canonical layout dependency.
+
+## Installation
+
+Install `docs-shell` from the MoyaForge component registry to obtain editable source and related styles. UI remains separate from the headless framework package.
+
+[Preview component](/ui/components/preview)
+
+## Usage
+
+```tsx
+<DocsLayout
+  title="Docs Shell preview"
+  pages={[{ url: "#/ui/components/docs-shell", title: "Docs Shell" }]}
+  currentUrl="#/ui/components/docs-shell"
+  header={<strong>Docs Shell</strong>}
+  sidebar={null}
+  outline={null}
+>
+  <p>
+    Installable DocsShell composes this canonical DocsLayout with host-supplied
+    routes and slots.
+  </p>
+</DocsLayout>
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Docs Shell"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+Style the installed component using its source-owned CSS and public theme variables. The live example frame has separate `--mf-preview-border` and `--mf-preview-radius` overrides.

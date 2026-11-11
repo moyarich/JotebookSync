@@ -1,0 +1,52 @@
+---
+title: Documentation Site
+label: Documentation Site
+description: Live demonstration of the canonical Documentation Site component.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Documentation Site
+
+This example uses the real source-owned MoyaForge UI component. It does not create a second component implementation or application router.
+
+## Installation
+
+Install `documentation-site` from the MoyaForge registry to copy the selected component source and CSS into your application.
+
+[All UI components](/ui)
+
+## Usage
+
+```tsx
+<DocumentationSite
+  title="Example site"
+  pages={[{ path: "/ui", label: "Overview" }]}
+  currentPath="/ui"
+  sidebar={null}
+  outline={null}
+>
+  <p>Standalone documentation chrome with host-owned routing.</p>
+</DocumentationSite>
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Documentation Site"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+The installed component includes its source-owned CSS. Customize its styles in your application using scoped CSS selectors or the component's documented CSS variables. The example preview frame can be customized separately with `--mf-preview-border` and `--mf-preview-radius`.

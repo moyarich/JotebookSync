@@ -1,0 +1,70 @@
+---
+title: Docs Layout
+label: Docs Layout
+description: Live demonstration of the canonical Docs Layout component.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import OutlineExample from "./collapsible-outline/Example.tsx";
+import outlineSource from "./collapsible-outline/Example.tsx?raw";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Docs Layout
+
+This example uses the real source-owned MoyaForge UI component. It does not create a second component implementation or application router.
+
+## Installation
+
+Install `docs-layout` from the MoyaForge registry to copy the selected component source and CSS into your application.
+
+[All UI components](/ui)
+
+## Usage
+
+```tsx
+<DocsLayout
+  title="Example documentation"
+  pages={[{ url: "/ui", title: "Overview" }]}
+  currentUrl="/ui"
+  header={<strong>Documentation preview</strong>}
+  sidebar={null}
+  outline={null}
+>
+  <p>Customizable layout content</p>
+</DocsLayout>
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Docs Layout"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+### Collapsible outline
+
+Set `toc.collapsible` to enable native HTML `<details>` disclosure, and
+`toc.defaultOpen` to control its initial state. No React disclosure state or
+JavaScript click handler is required. Custom `outline` and `sidebar` slots
+continue to replace the defaults.
+
+<CodePreview
+  title="Collapsible outline"
+  files={[{ label: "Example.tsx", code: outlineSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <OutlineExample />
+</CodePreview>
+
+## Styling
+
+Use the documented `DocsLayout` styles and `toc` settings to customize layout and outline presentation.

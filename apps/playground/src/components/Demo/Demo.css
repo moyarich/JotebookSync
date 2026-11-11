@@ -1,0 +1,11 @@
+[data-demo] {
+  --_demo-background: var(--demo-background, transparent);
+  --_demo-color: var(--demo-color, inherit);
+  --_demo-padding: var(--demo-padding, 0);
+  --_demo-border-radius: var(--demo-border-radius, 0);
+
+  background: var(--_demo-background);
+  color: var(--_demo-color);
+  padding: var(--_demo-padding);
+  border-radius: var(--_demo-border-radius);
+}

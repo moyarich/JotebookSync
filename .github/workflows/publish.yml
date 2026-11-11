@@ -75,6 +75,9 @@ jobs:
     needs: publish-approval
     if: ${{ always() && (inputs.dry-run || needs.publish-approval.result == 'success') }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/JotebookSync
     permissions:
       contents: write
     env:
@@ -170,6 +173,7 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           cache: npm
+          cache-dependency-path: packages/JotebookSync/package-lock.json
 
       - name: Install dependencies
         run: npm ci --include=optional

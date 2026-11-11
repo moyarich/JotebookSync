@@ -1,0 +1,101 @@
+---
+title: Monaco Editor TypeFox
+label: Monaco Editor TypeFox
+description: A multi-file code editor with read-only mode and copy support.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/CodePreview.tsx";
+import MultiFileEditor from "./real-editor/Example.tsx";
+import editorSource from "./real-editor/Example.tsx?raw";
+import ReadOnlyEditor from "./read-only/Example.tsx";
+import readOnlySource from "./read-only/Example.tsx?raw";
+import setupSource from "./setup.ts?raw";
+
+# Monaco Editor TypeFox
+
+A multi-file code editor with read-only mode and copy support.
+
+## Installation
+
+<CodeGroup label="Install Monaco Editor TypeFox">
+<CodeTab label="MoyaForge CLI">
+
+```sh
+npx @moyarich/moyaforge-cli@latest add monaco-editor-type-fox
+```
+
+</CodeTab>
+<CodeTab label="shadcn">
+
+```sh
+npx shadcn@latest add moyarich/moyaforge/monaco-editor-type-fox
+```
+
+</CodeTab>
+</CodeGroup>
+
+In an existing React app, ensure these runtime dependencies are installed:
+
+```sh
+npm install @typefox/monaco-editor-react@~8.0.2 monaco-languageclient@~11.0.2 @codingame/monaco-vscode-editor-api@^37.6.1 lucide-react
+```
+
+For Vite, copy `setup.ts` from the preview’s Code tab and import it before the editor. It configures local Monaco workers. Other bundlers need their own worker setup.
+
+## Usage
+
+```tsx
+import "./setup";
+import { MonacoEditorTypeFox } from "@/components/ui/components/MonacoEditorTypeFox/MonacoEditorTypeFox";
+
+<MonacoEditorTypeFox
+  files={[
+    { name: "index.ts", value: "const answer = 42;" },
+    { name: "styles.css", value: "body { margin: 0; }" },
+  ]}
+  height={320}
+/>;
+```
+
+Use `onSave` to handle Save or Ctrl/Cmd+S and persist changes. Use `onFileChange` to track edits.
+
+## Examples
+
+### Editable workspace
+
+[Open the full editable workspace example](/ui/components/monaco-editor-typefox/editable-workspace).
+
+### Read-only
+
+Set `readOnly` on the editor to lock all files, or on an individual file to lock only that file. Copying remains available.
+
+<CodePreview
+  title="Read-only workspace"
+  files={[
+    { label: "Example.tsx", code: readOnlySource },
+    { label: "setup.ts", code: setupSource },
+  ]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <ReadOnlyEditor />
+</CodePreview>
+
+<details>
+<summary>Advanced options</summary>
+
+- `activeFile` and `onActiveFileChange` control the selected file.
+- `theme` overrides the inherited light/dark appearance.
+- `options`, `vscodeApiConfig`, `onReady`, and `onError` customize TypeFox.
+- `showCopyButton` and `showFileTabs` control toolbar visibility.
+- `className` and `--monaco-*` CSS variables customize styling.
+
+The installed `components/MonacoEditorTypeFox/README.md` includes additional dependency and setup guidance.
+
+</details>
+
+## Styling
+
+Customize the editor using `className` and the public `--monaco-*` CSS variables described in Advanced options.

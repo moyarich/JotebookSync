@@ -1,0 +1,202 @@
+[data-moyaforge-monaco] {
+  --_monaco-background: var(--monaco-background, transparent);
+  --_monaco-border: var(
+    --monaco-border-color,
+    color-mix(in srgb, currentColor 14%, transparent)
+  );
+  --_monaco-radius: var(--monaco-border-radius, 0.75rem);
+  --_monaco-toolbar-background: var(
+    --monaco-toolbar-background,
+    color-mix(in srgb, currentColor 2%, transparent)
+  );
+  --_monaco-tabs-gap: var(--monaco-tabs-gap, 0.25rem);
+  --_monaco-tabs-border-color: var(
+    --monaco-tabs-border-color,
+    var(--_monaco-border)
+  );
+  --_monaco-tabs-padding: var(--monaco-tabs-padding, 0.75rem 0.875rem);
+  --_monaco-tabs-active-color: var(--monaco-tabs-active-color, currentColor);
+  --_monaco-hover: var(
+    --monaco-hover-background,
+    color-mix(in srgb, currentColor 5%, transparent)
+  );
+  --_monaco-focus: var(
+    --monaco-focus-color,
+    color-mix(in srgb, currentColor 40%, transparent)
+  );
+  --_monaco-font-size: var(--monaco-font-size, 0.8125rem);
+  --_monaco-editor-padding: var(--monaco-editor-padding, 1.25rem);
+  --_monaco-editor-min-height: var(--monaco-editor-min-height, 14rem);
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--_monaco-border);
+  border-radius: var(--_monaco-radius);
+  background: var(--_monaco-background);
+  overflow: hidden;
+  font-size: var(--_monaco-font-size);
+}
+[data-moyaforge-monaco-toolbar] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-inline: 0.375rem;
+  min-height: 3rem;
+  background: var(--_monaco-toolbar-background);
+  border-bottom: 1px solid var(--_monaco-tabs-border-color);
+}
+[data-moyaforge-monaco-tabs] {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: var(--_monaco-tabs-gap);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+[data-moyaforge-monaco-tabs] button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: inherit;
+  padding: var(--_monaco-tabs-padding);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+[data-moyaforge-monaco-tabs] button:hover {
+  background: var(--_monaco-hover);
+}
+[data-moyaforge-monaco-tabs] button[aria-selected="true"] {
+  border-bottom-color: var(--_monaco-tabs-active-color);
+  color: var(--_monaco-tabs-active-color);
+  font-weight: 600;
+}
+[data-moyaforge-monaco-tabs] button:focus-visible {
+  outline: 2px solid var(--_monaco-focus);
+  outline-offset: -4px;
+}
+[data-moyaforge-monaco-filename] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 0.75rem 0.5rem;
+}
+[data-moyaforge-monaco-copy] {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.375rem;
+  border-color: var(--_monaco-border);
+  padding: 0.375rem 0.625rem;
+  margin-inline-end: 0.25rem;
+  font: inherit;
+}
+[data-moyaforge-monaco-copy]:hover {
+  background: var(--_monaco-hover);
+}
+[data-moyaforge-monaco-copy]:focus-visible {
+  outline: 2px solid var(--_monaco-focus);
+  outline-offset: 2px;
+}
+[data-moyaforge-monaco-editor] {
+  min-width: 0;
+}
+[data-moyaforge-monaco-editor] > textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: var(--_monaco-editor-min-height);
+  resize: vertical;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  padding: var(--_monaco-editor-padding);
+  background: var(--_monaco-background);
+  color: inherit;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--_monaco-font-size);
+  line-height: 1.75;
+  tab-size: 2;
+}
+[data-moyaforge-monaco-editor] > textarea:focus-visible {
+  outline: 2px solid var(--_monaco-focus);
+  outline-offset: -2px;
+}
+[data-moyaforge-monaco-loading] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 2rem;
+  font:
+    0.8125rem/1.5 system-ui,
+    sans-serif;
+  color: inherit;
+}
+[data-moyaforge-monaco-loading] svg {
+  animation: mf-monaco-spin 1s linear infinite;
+}
+@keyframes mf-monaco-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-moyaforge-monaco-loading] svg {
+    animation: none;
+  }
+}
+
+[data-moyaforge-monaco-actions] {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+[data-moyaforge-monaco-readonly] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-inline: 0.375rem;
+  font-size: 0.75rem;
+}
+[data-moyaforge-monaco-save] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid var(--_monaco-border);
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+[data-moyaforge-monaco-save]:hover:not(:disabled) {
+  background: var(--_monaco-hover);
+}
+[data-moyaforge-monaco-save]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+[data-moyaforge-monaco-save]:focus-visible {
+  outline: 2px solid var(--_monaco-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  [data-moyaforge-monaco-toolbar] {
+    flex-wrap: wrap;
+  }
+  [data-moyaforge-monaco-actions] {
+    margin-inline-start: auto;
+    padding-bottom: 0.375rem;
+  }
+}

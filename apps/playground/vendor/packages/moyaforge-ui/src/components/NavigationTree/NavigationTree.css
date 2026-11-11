@@ -1,0 +1,14 @@
+[data-moyaforge-navigation-tree] {
+  --_navigation-tree-gap: var(--navigation-tree-gap, 0.125rem);
+  --_navigation-tree-indent: var(--navigation-tree-indent, 1rem);
+
+  display: grid;
+  gap: var(--_navigation-tree-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-moyaforge-navigation-tree] [data-moyaforge-navigation-tree] {
+  margin-left: var(--_navigation-tree-indent);
+}

@@ -1,0 +1,71 @@
+{
+  "name": "@moyarich/moyaforge",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./registry-routes": {
+      "types": "./dist/registry-routes.d.ts",
+      "import": "./dist/registry-routes.js"
+    },
+    "./headless": {
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moyarich/moyaforge.git",
+    "directory": "packages/moyaforge"
+  },
+  "description": "Reusable MDX and documentation infrastructure for MoyaForge-powered sites.",
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "react-router-dom": "^7.18.4"
+  },
+  "scripts": {
+    "build": "npm run build --workspace @moyarich/moyaforge-mdx && node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "typecheck": "npm run build --workspace @moyarich/moyaforge-mdx && tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run --exclude tests/integration/docs-routes.test.js --exclude tests/unit/mdx.test.js --exclude tests/unit/sidebar-composition.test.js --exclude tests/unit/toc-render.test.js",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "@moyarich/moyaforge-mdx": "^0.1.0"
+  },
+  "publisher": "moyarich",
+  "author": "Moya Richards",
+  "keywords": [
+    "moyaforge",
+    "react",
+    "components",
+    "documentation",
+    "docs",
+    "mdx",
+    "ui"
+  ],
+  "homepage": "https://github.com/moyarich/moyaforge/tree/main/packages/moyaforge#readme",
+  "bugs": {
+    "url": "https://github.com/moyarich/moyaforge/issues"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

@@ -30,7 +30,7 @@ on:
         default: all
         options:
           - all
-          - "packages/example"
+          - "packages/JotebookSync"
       version-mode:
         description: Resolve each package version
         type: choice

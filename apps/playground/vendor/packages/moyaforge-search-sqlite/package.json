@@ -1,0 +1,76 @@
+{
+  "name": "@moyarich/moyaforge-search-sqlite",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone SQLite-backed documentation search indexing and querying",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moyarich/moyaforge.git",
+    "directory": "packages/moyaforge-search-sqlite"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite-plugin/index.d.ts",
+      "import": "./dist/vite-plugin/index.js"
+    },
+    "./client": {
+      "types": "./src/search/search-client.d.ts",
+      "import": "./src/search/search-client.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "src/search"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@moyarich/moyaforge-mdx": "0.1.0",
+    "sql.js": "^1.15.0"
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.11",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "publisher": "moyarich",
+  "author": "Moya Richards",
+  "keywords": [
+    "moyaforge",
+    "sqlite",
+    "search",
+    "documentation",
+    "full-text-search",
+    "indexing",
+    "vite"
+  ],
+  "homepage": "https://github.com/moyarich/moyaforge/tree/main/packages/moyaforge-search-sqlite#readme",
+  "bugs": {
+    "url": "https://github.com/moyarich/moyaforge/issues"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

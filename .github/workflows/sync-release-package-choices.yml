@@ -54,7 +54,7 @@ jobs:
       workspace-tools-source: ${{ inputs.workspace-tools-source || 'auto' }}
       workflow-files: '[".github/workflows/check-dist.yml",".github/workflows/release-draft.yml",".github/workflows/release.yml",".github/workflows/restore-release.yml",".github/workflows/reset-release.yml",".github/workflows/publish.yml"]'
       packages-directory: packages
-      use-workspaces: true
+      use-workspaces: false
       require-publish-config: false
 
     secrets:
