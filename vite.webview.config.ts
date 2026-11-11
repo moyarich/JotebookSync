@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: false,
     cssCodeSplit: true,
     rolldownOptions: {
+      // The webview plugin supplies the entry points for this build.
+      input: {},
       output: {
         entryFileNames: "assets/[name].js",
         chunkFileNames: "webview-ui/shared/[name]-[hash].js",

@@ -2,7 +2,7 @@
   "name": "jotebooksync",
   "displayName": "JotebookSync",
   "description": "Pair Jupyter notebooks with readable scripts and Markdown using Jupytext. Sync on save, review changes, preserve outputs, and convert formats in VS Code.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "moyarich",
   "author": "Moya Richards",
   "license": "MIT",
