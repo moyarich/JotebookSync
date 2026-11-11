@@ -51,7 +51,13 @@ try {
       });
       if (pandocCheck.status !== 0) {
         run("sudo", ["apt-get", "update", "-qq"]);
-        run("sudo", ["apt-get", "install", "-y", "--no-install-recommends", "pandoc"]);
+        run("sudo", [
+          "apt-get",
+          "install",
+          "-y",
+          "--no-install-recommends",
+          "pandoc",
+        ]);
       }
       run("pandoc", ["--version"]);
     }
