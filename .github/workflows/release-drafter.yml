@@ -118,16 +118,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          NOTES_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
         shell: bash
         run: |
           set -euo pipefail
 
+          # Support both the original root extension and the workspace layout.
+          notes_directory=""
+          if gh api "repos/$GH_REPO/contents/packages/JotebookSync/package.json?ref=$NOTES_REF" --silent >/dev/null 2>&1; then
+            notes_directory="packages/JotebookSync/"
+          fi
+
           package_json="$(
-            gh api "repos/$GH_REPO/contents/package.json?ref=main" --jq '.content' |
+            gh api "repos/$GH_REPO/contents/${notes_directory}package.json?ref=$NOTES_REF" --jq '.content' |
               base64 --decode
           )"
           changelog="$(
-            gh api "repos/$GH_REPO/contents/CHANGELOG.md?ref=main" --jq '.content' |
+            gh api "repos/$GH_REPO/contents/${notes_directory}CHANGELOG.md?ref=$NOTES_REF" --jq '.content' |
               base64 --decode
           )"
 
