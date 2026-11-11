@@ -42,6 +42,19 @@ try {
       "jupytext>=1.16,<2",
     ]);
     run(testPython, ["-m", "jupytext", "--version"]);
+
+    // Pandoc Markdown conversion requires the Pandoc executable, not merely
+    // Jupytext's Python package. Install it for Linux CI integration tests.
+    if (process.platform === "linux") {
+      const pandocCheck = spawnSync("pandoc", ["--version"], {
+        stdio: "ignore",
+      });
+      if (pandocCheck.status !== 0) {
+        run("sudo", ["apt-get", "update", "-qq"]);
+        run("sudo", ["apt-get", "install", "-y", "--no-install-recommends", "pandoc"]);
+      }
+      run("pandoc", ["--version"]);
+    }
     env.JOTEBOOKSYNC_TEST_PYTHON = testPython;
   }
 
