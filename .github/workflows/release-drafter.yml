@@ -118,16 +118,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          NOTES_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
         shell: bash
         run: |
           set -euo pipefail
 
           package_json="$(
-            gh api "repos/$GH_REPO/contents/packages/JotebookSync/package.json?ref=main" --jq '.content' |
+            gh api "repos/$GH_REPO/contents/packages/JotebookSync/package.json?ref=$NOTES_REF" --jq '.content' |
               base64 --decode
           )"
           changelog="$(
-            gh api "repos/$GH_REPO/contents/packages/JotebookSync/CHANGELOG.md?ref=main" --jq '.content' |
+            gh api "repos/$GH_REPO/contents/packages/JotebookSync/CHANGELOG.md?ref=$NOTES_REF" --jq '.content' |
               base64 --decode
           )"
 
