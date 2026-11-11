@@ -94,8 +94,18 @@ npm run package:ls
 
 ## Demo workflows
 
-The repository includes demo tooling under `scripts/demo/` to validate and capture
+The repository includes demo tooling under `demo/` to validate and capture
 the primary extension workflows:
+
+The recorder uses the same Jupytext-enabled interpreter for creating fixtures and
+running the extension. On macOS or Linux, create an isolated demo environment with:
+
+```sh
+python3 -m venv .vscode-test/demo-python
+.vscode-test/demo-python/bin/python -m pip install jupytext black ipykernel nbconvert
+```
+
+Set `JOTEBOOKSYNC_PYTHON` to use a different interpreter that can import Jupytext.
 
 ```sh
 npm run demo
@@ -106,7 +116,7 @@ npm run demo:formats
 npm run demo:gif
 ```
 
-Demo recordings are written to `scripts/demo/artifacts/` and are ignored by Git.
+Demo recordings are written to `demo/artifacts/` and are ignored by Git.
 `npm run demo:gif` converts those recordings into the committed README/Marketplace
 GIFs under the repository-root `media/` directory.
 

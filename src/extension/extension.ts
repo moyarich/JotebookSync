@@ -12,6 +12,8 @@ import {
   withJupytextAndBlack,
 } from "./jupytext/JupytextPairingService.js";
 
+import { JUPYTER_CLIENT_PYTHON_PACKAGE_NAME } from "./jupytext/JupytextRuntime.js";
+
 import { ConvertPicker } from "./ConvertPicker/ConvertPicker.js";
 import { PairFormatPicker } from "./PairFormatPicker/PairFormatPicker.js";
 
@@ -671,16 +673,16 @@ export function activate(context: vscode.ExtensionContext): void {
         isPaired = pairInfo.isPaired;
 
         if (isPaired) {
-          knownPairedResourcePaths.add(uri.path);
+          knownPairedResourcePaths.add(uri.fsPath);
           pairInfo.paths.forEach(([pairedPath]) => {
-            knownPairedResourcePaths.add(vscode.Uri.file(pairedPath).path);
+            knownPairedResourcePaths.add(vscode.Uri.file(pairedPath).fsPath);
           });
         } else {
-          knownPairedResourcePaths.delete(uri.path);
+          knownPairedResourcePaths.delete(uri.fsPath);
         }
       }
     } catch {
-      knownPairedResourcePaths.delete(uri.path);
+      knownPairedResourcePaths.delete(uri.fsPath);
     }
 
     await vscode.commands.executeCommand(
@@ -873,9 +875,9 @@ export function activate(context: vscode.ExtensionContext): void {
     const pairInfo = await jupytext.getPairInfo(fileUri);
     await jupytext.removePairing(fileUri);
 
-    knownPairedResourcePaths.delete(fileUri.path);
+    knownPairedResourcePaths.delete(fileUri.fsPath);
     pairInfo.paths.forEach(([pairedPath]) => {
-      knownPairedResourcePaths.delete(vscode.Uri.file(pairedPath).path);
+      knownPairedResourcePaths.delete(vscode.Uri.file(pairedPath).fsPath);
     });
     await refreshPairingContext(fileUri);
     pairedFilesTree.refresh();
@@ -1173,7 +1175,7 @@ export function activate(context: vscode.ExtensionContext): void {
           }
 
           await jupytext.removeFileFromPair(fileUri);
-          knownPairedResourcePaths.delete(fileUri.path);
+          knownPairedResourcePaths.delete(fileUri.fsPath);
           await refreshPairingContext(fileUri);
           pairedFilesTree.refresh();
         }),
@@ -1468,7 +1470,7 @@ export function activate(context: vscode.ExtensionContext): void {
             path.dirname(fileUri.fsPath),
           );
           showCommandResult(extensionId, "Set Kernel", result);
-        }),
+        }, [JUPYTER_CLIENT_PYTHON_PACKAGE_NAME]),
     ),
 
     vscode.commands.registerCommand(
@@ -1499,7 +1501,7 @@ export function activate(context: vscode.ExtensionContext): void {
             runPath?.trim() || undefined,
           );
           showCommandResult(extensionId, "Execute", result);
-        }),
+        }, [JUPYTER_CLIENT_PYTHON_PACKAGE_NAME]),
     ),
 
     vscode.commands.registerCommand(
@@ -1617,11 +1619,6 @@ export function activate(context: vscode.ExtensionContext): void {
       EXTENSION_COMMANDS.runAdvanced,
       async (uri?: vscode.Uri) => {
         const cwd = getWorkspaceCwd(uri);
-        if (
-          !(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))
-        ) {
-          return;
-        }
         const input = await vscode.window.showInputBox({
           title: formatExtensionMessage(context, "Advanced Jupytext arguments"),
           prompt:
@@ -1678,6 +1675,39 @@ export function activate(context: vscode.ExtensionContext): void {
       void refreshPairingContext();
     }),
   );
+
+  const checkRequiredDependencies = async (): Promise<void> => {
+    const resource = getActiveResource();
+    const cwd = resource?.scheme === "file"
+      ? path.dirname(resource.fsPath)
+      : getWorkspaceCwd();
+    if (await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd)) {
+      pairedFilesTree.refresh();
+      await refreshPairingContext();
+    }
+  };
+
+  if (context.extensionMode !== vscode.ExtensionMode.Test) {
+    const checkSetup = () => {
+      void checkRequiredDependencies().catch((error: unknown) => {
+        vscode.window.showErrorMessage(
+          formatExtensionMessage(context, `Dependency check failed: ${String(error)}`),
+        );
+      });
+    };
+
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        if (
+          event.affectsConfiguration("jotebooksync.pythonPath") ||
+          event.affectsConfiguration("python.defaultInterpreterPath")
+        ) {
+          checkSetup();
+        }
+      }),
+    );
+    checkSetup();
+  }
 
   void refreshPairingContext();
 }

@@ -10,11 +10,11 @@ export default function createScenario({
   return {
     recordingFile: "convert-file-format.webm",
 
-    async prepareWorkspace({ workspaceDirectory }) {
+    async prepareWorkspace({ workspaceDirectory, config }) {
       const markdownFile = await createAnalysisMarkdown(workspaceDirectory);
       const notebookFile = path.join(workspaceDirectory, "analysis.ipynb");
       await runProcess(
-        process.env.JOTEBOOKSYNC_PYTHON ?? "python",
+        config.pythonPath,
         [
           "-m",
           "jupytext",

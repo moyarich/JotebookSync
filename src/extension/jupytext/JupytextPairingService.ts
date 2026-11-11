@@ -818,6 +818,7 @@ export async function withJupytext(
   jupytext: JupytextPairingService,
   uri: vscode.Uri | { uri: vscode.Uri } | undefined,
   action: (fileUri: vscode.Uri) => Promise<void>,
+  additionalPackages: string[] = [],
 ): Promise<void> {
   const fileUri = await getUriFromCommand(uri);
 
@@ -827,7 +828,7 @@ export async function withJupytext(
   }
 
   const cwd = getWorkspaceCwd(fileUri);
-  if (!(await jupytext.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))) {
+  if (!(await jupytext.runtime.ensurePackages([JUPYTEXT_PYTHON_PACKAGE_NAME, ...additionalPackages], cwd))) {
     return;
   }
 
@@ -846,12 +847,5 @@ export async function withJupytextAndBlack(
   uri: vscode.Uri | { uri: vscode.Uri } | undefined,
   action: (fileUri: vscode.Uri) => Promise<void>,
 ): Promise<void> {
-  await withJupytext(jupytext, uri, async (fileUri) => {
-    const cwd = getWorkspaceCwd(fileUri);
-    if (!(await jupytext.ensurePackage(BLACK_PYTHON_PACKAGE_NAME, cwd))) {
-      return;
-    }
-    await action(fileUri);
-  });
+  await withJupytext(jupytext, uri, action, [BLACK_PYTHON_PACKAGE_NAME]);
 }
-//============

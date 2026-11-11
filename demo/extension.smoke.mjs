@@ -1,9 +1,10 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import {
   access,
   mkdtemp,
   mkdir,
   readdir,
+  rename,
   readFile,
   rm,
   writeFile,
@@ -17,6 +18,8 @@ import { downloadAndUnzipVSCode, runTests } from "@vscode/test-electron";
 import { chromium } from "playwright-core";
 import colors from "colors/safe.js";
 
+import createContextMenuScenarios from "./scenarios/context-menus.mjs";
+import createAdditionalScenarios from "./scenarios/additional-commands.mjs";
 import setupPairedFilesScenario from "./scenarios/setup-paired-files.mjs";
 import reviewPairFreshnessScenario from "./scenarios/review-pair-freshness.mjs";
 import syncNewestPairedFileScenario from "./scenarios/sync-newest-paired-file.mjs";
@@ -36,13 +39,12 @@ import inspectAndRemovePairingScenario from "./scenarios/inspect-and-remove-pair
 
 const testsDirectory = path.dirname(fileURLToPath(import.meta.url));
 
-const projectDirectory = path.dirname(path.dirname(testsDirectory));
+const projectDirectory = path.dirname(testsDirectory);
 
 // Raw demo recordings are temporary developer artifacts. Final README GIFs are
 // generated separately into the repository-root media/ directory.
 const outputDirectory = path.join(
   projectDirectory,
-  "scripts",
   "demo",
   "artifacts",
 );
@@ -402,11 +404,11 @@ function getQuickOpenShortcut() {
   return process.platform === "darwin" ? "Meta+P" : "Control+P";
 }
 
-async function openWorkspaceFile({ page, fileName, openToSide = false }) {
+async function openWorkspaceFile({ page, fileName }) {
   await page.keyboard.press(getQuickOpenShortcut());
   await fillVisibleQuickInput({ page, value: fileName });
   await pause(700);
-  await page.keyboard.press(openToSide ? "Control+Enter" : "Enter");
+  await page.keyboard.press("Enter");
 }
 
 async function runVSCodeCommand(
@@ -664,10 +666,10 @@ async function createPlainMarkdown(workspaceDirectory) {
   return demoFile;
 }
 
-async function createPairedAnalysis(workspaceDirectory) {
+async function createPairedAnalysis(workspaceDirectory, pythonPath) {
   const markdownFile = await createAnalysisMarkdown(workspaceDirectory);
   await runProcess(
-    process.env.JOTEBOOKSYNC_PYTHON ?? "python",
+    pythonPath,
     [
       "-m",
       "jupytext",
@@ -751,6 +753,8 @@ const scenarioDependencies = {
 };
 
 const demoScenarios = {
+  ...createAdditionalScenarios(scenarioDependencies),
+  ...createContextMenuScenarios(scenarioDependencies),
   "setup-paired-files": setupPairedFilesScenario(scenarioDependencies),
   "review-pair-freshness": reviewPairFreshnessScenario(scenarioDependencies),
   "sync-newest-paired-file": syncNewestPairedFileScenario(scenarioDependencies),
@@ -822,6 +826,7 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
   const workspaceSettings = {
     ...config.workspace.settings,
     ...scenario.workspace?.settings,
+    "jotebooksync.pythonPath": config.pythonPath,
   };
 
   // ---------------------------------------------------------------------------
@@ -839,6 +844,25 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
   // ---------------------------------------------------------------------------
 
   const completionFile = path.join(temporaryDirectory, "done");
+  const editorLayoutFile = path.join(temporaryDirectory, "editor-layout.json");
+
+  async function showFilesSideBySide(fileNames) {
+    const files = fileNames.map((name) => path.join(workspaceDirectory, name));
+    await writeFile(`${editorLayoutFile}.tmp`, JSON.stringify(files), "utf8");
+    await rename(`${editorLayoutFile}.tmp`, editorLayoutFile);
+    const deadline = Date.now() + 15_000;
+    while (Date.now() < deadline) {
+      const result = await readFile(`${editorLayoutFile}.result`, "utf8").catch((error) => {
+        if (error.code !== "ENOENT") {throw error;}
+      });
+      if (result !== undefined) {
+        if (result) {throw new Error(result);}
+        return;
+      }
+      await pause(100);
+    }
+    throw new Error("Timed out opening the demo files side by side.");
+  }
 
   const scenarioOutputDirectory = path.join(config.outputDirectory, name);
 
@@ -902,6 +926,7 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
         ...process.env,
 
         JOTEBOOKSYNC_DEMO_COMPLETION_FILE: completionFile,
+        JOTEBOOKSYNC_DEMO_EDITOR_LAYOUT_FILE: editorLayoutFile,
         JOTEBOOKSYNC_DEMO_AUTO_CONFIRM: "1",
       },
 
@@ -981,12 +1006,14 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
 
     await scenario.run({
       page,
+      showFilesSideBySide,
       browser,
       workspaceDirectory,
       temporaryDirectory,
       config,
     });
 
+    await assertNoJotebookErrors(page);
     await scenario.verify?.({
       page,
       browser,
@@ -1050,6 +1077,32 @@ async function runScenario({ name, scenario, config, vscodeExecutable }) {
 // Demo runner
 // -----------------------------------------------------------------------------
 
+function resolveDemoPython(projectDirectory, modules) {
+  const cachedPython = path.join(
+    projectDirectory, ".vscode-test", "demo-python",
+    process.platform === "win32" ? "Scripts" : "bin",
+    process.platform === "win32" ? "python.exe" : "python",
+  );
+  const configured = process.env.JOTEBOOKSYNC_PYTHON;
+  const candidates = configured ? [configured] : [cachedPython, "python", "python3"];
+
+  for (const candidate of candidates) {
+    try {
+      return execFileSync(
+        candidate, ["-c", `import sys, jupytext${modules.map((module) => `, ${module}`).join("")}; print(sys.executable)`],
+        { cwd: projectDirectory, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      ).trim();
+    } catch {
+      // Try the next interpreter that can import Jupytext.
+    }
+  }
+
+  throw new Error(
+    `The demo needs a Python environment with these modules: ${["jupytext", ...modules].join(", ")}. ` +
+    "Install the listed dependencies in a virtual environment and set JOTEBOOKSYNC_PYTHON to its Python executable.",
+  );
+}
+
 async function runDemo(config) {
   const scenarioNames = resolveScenarioNames({
     selection: config.scenarios,
@@ -1083,6 +1136,8 @@ async function runDemo(config) {
     // Compile once
     // -------------------------------------------------------------------------
 
+    const modules = [...new Set(scenarioNames.flatMap((name) => demoScenarios[name].modules ?? []))];
+    const demoConfig = { ...config, pythonPath: resolveDemoPython(config.projectDirectory, modules) };
     await runProcess("npm", ["run", "compile"], {
       cwd: config.projectDirectory,
     });
@@ -1103,7 +1158,7 @@ async function runDemo(config) {
       const result = await runScenario({
         name,
         scenario: demoScenarios[name],
-        config,
+        config: demoConfig,
         vscodeExecutable,
       });
 

@@ -2,7 +2,6 @@ export default function createScenario({
   assertFileExists,
   createPlainMarkdown,
   findFrameByHeading,
-  openWorkspaceFile,
   path,
   pause,
   readdir,
@@ -16,7 +15,7 @@ export default function createScenario({
       return createPlainMarkdown(workspaceDirectory);
     },
 
-    async run({ page }) {
+    async run({ page, workspaceDirectory, showFilesSideBySide }) {
       // Show initial editor.
       await pause(1_500);
 
@@ -88,39 +87,13 @@ export default function createScenario({
       await pause(2_500);
 
       // End on the real payoff: all three representations visible together.
-      await openWorkspaceFile({ page, fileName: "analysis.md" });
-      await page.keyboard.press(
-        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
+      const pythonFile = (await readdir(workspaceDirectory)).find(
+        (file) => file.endsWith(".py"),
       );
-      await pause(500);
-      await openWorkspaceFile({ page, fileName: "analysis.ipynb" });
-      await page
-        .locator(".notebook-editor")
-        .first()
-        .waitFor({ timeout: 15_000 });
-      await page
-        .locator(".editor-group-container")
-        .nth(1)
-        .locator(".tab")
-        .filter({ hasText: "analysis.md" })
-        .getByLabel("Close")
-        .click();
-      await page.keyboard.press(
-        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
-      );
-      await pause(500);
-      await openWorkspaceFile({ page, fileName: "analysis.py" });
-      await page
-        .locator(".editor-group-container")
-        .nth(2)
-        .waitFor({ timeout: 10_000 });
-      await page
-        .locator(".editor-group-container")
-        .nth(2)
-        .locator(".tab")
-        .filter({ hasText: "analysis.ipynb" })
-        .getByLabel("Close")
-        .click();
+      if (!pythonFile) {
+        throw new Error("Pair setup did not create the selected Python format.");
+      }
+      await showFilesSideBySide(["analysis.md", "analysis.ipynb", pythonFile]);
       await pause(4_000);
     },
 

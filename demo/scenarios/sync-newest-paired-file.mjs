@@ -9,8 +9,8 @@ export default function createScenario({
   return {
     recordingFile: "sync-newest-paired-file.webm",
 
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
+    async prepareWorkspace({ workspaceDirectory, config }) {
+      const pair = await createPairedAnalysis(workspaceDirectory, config.pythonPath);
       await pause(1_100);
       await updatePairedPythonInput(pair.pythonFile);
       return pair.pythonFile;

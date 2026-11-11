@@ -42,7 +42,7 @@ export class JupytextRuntime {
     private readonly onEnvironmentChanged: () => void = () => undefined,
   ) {}
 
-  private async getPythonPath(): Promise<string> {
+  private async getPythonPath(cwd: string): Promise<string> {
     if (
       this.settings.configuredPythonPath &&
       this.settings.configuredPythonPath !== EXTENSION.defaultPythonPath
@@ -52,20 +52,16 @@ export class JupytextRuntime {
 
     const fallback =
       vscode.workspace
-        .getConfiguration("python")
+        .getConfiguration("python", vscode.Uri.file(cwd))
         .get<string>("defaultInterpreterPath") || EXTENSION.defaultPythonPath;
 
     const extension = vscode.extensions.getExtension("ms-python.python");
-    if (!extension) {
-      return fallback;
-    }
-
     try {
-      const api = extension.isActive
+      const api = extension?.isActive
         ? extension.exports
-        : await extension.activate();
+        : await extension?.activate();
 
-      const activeEnv = await api.environments?.getActiveEnvironmentPath?.();
+      const activeEnv = await api?.environments?.getActiveEnvironmentPath?.(vscode.Uri.file(cwd));
       if (activeEnv) {
         const resolved =
           await api.environments?.resolveEnvironment?.(activeEnv);
@@ -75,7 +71,7 @@ export class JupytextRuntime {
         }
       }
 
-      const execCommand = api.settings?.getExecutionDetails?.()?.execCommand;
+      const execCommand = api?.settings?.getExecutionDetails?.(vscode.Uri.file(cwd))?.execCommand;
       if (Array.isArray(execCommand) && execCommand.length > 0) {
         return execCommand[0];
       }
@@ -83,11 +79,23 @@ export class JupytextRuntime {
       // Fall through to configured/system fallback.
     }
 
+    if (
+      process.platform !== "win32" &&
+      fallback === EXTENSION.defaultPythonPath &&
+      !(await this.canRunPython(cwd, fallback)) &&
+      (await this.canRunPython(cwd, "python3"))
+    ) {
+      return "python3";
+    }
     return fallback;
   }
 
-  public async runPython(args: string[], cwd: string): Promise<CommandResult> {
-    const pythonPath = await this.getPythonPath();
+  public async runPython(
+    args: string[],
+    cwd: string,
+    pythonPath?: string,
+  ): Promise<CommandResult> {
+    pythonPath ??= await this.getPythonPath(cwd);
 
     return new Promise((resolve, reject) => {
       execFile(
@@ -120,23 +128,40 @@ export class JupytextRuntime {
     });
   }
 
+  public async runBlack(filePath: string, cwd: string): Promise<CommandResult> {
+    const pythonPath = await this.getPythonPath(cwd);
+    // Jupytext parses --pipe commands with Python's shlex.split.
+    const executable = "'" + pythonPath.replaceAll("'", `'"'"'`) + "'";
+    return this.runJupytext(
+      [filePath, "--pipe", `${executable} -m ${BLACK_PYTHON_PACKAGE_NAME} -`],
+      cwd,
+      pythonPath,
+    );
+  }
+
   public async runJupytext(
     args: string[],
     cwd: string,
+    pythonPath?: string,
   ): Promise<CommandResult> {
-    if (!(await this.ensurePackage(JUPYTEXT_PYTHON_PACKAGE_NAME, cwd))) {
+    const packages = [JUPYTEXT_PYTHON_PACKAGE_NAME];
+    if (this.jupytextArgsRequireMarimo(args)) {
+      packages.push(MARIMO_PYTHON_PACKAGE_NAME);
+    }
+    if (args.includes("--execute") || args.includes("--set-kernel")) {
+      packages.push(JUPYTER_CLIENT_PYTHON_PACKAGE_NAME);
+    }
+
+    if (!(await this.ensurePackages(packages, cwd))) {
       throw new Error(
         formatExtensionMessage(
           this.context,
-          "Jupytext is required to continue.",
+          `Required Python packages are unavailable: ${packages.join(", ")}.`,
         ),
       );
     }
 
-    if (
-      this.jupytextArgsRequireQuarto(args) &&
-      !(await this.ensureQuarto(cwd))
-    ) {
+    if (this.jupytextArgsRequireQuarto(args) && !(await this.ensureQuarto(cwd))) {
       throw new Error(
         formatExtensionMessage(
           this.context,
@@ -145,34 +170,11 @@ export class JupytextRuntime {
       );
     }
 
-    if (
-      this.jupytextArgsRequireMarimo(args) &&
-      !(await this.ensurePackage(MARIMO_PYTHON_PACKAGE_NAME, cwd))
-    ) {
-      throw new Error(
-        formatExtensionMessage(
-          this.context,
-          "Marimo is required for the selected Marimo format. Install Marimo or deselect the Marimo file, then try again.",
-        ),
-      );
-    }
-
-    if (
-      args.includes("--execute") &&
-      !(await this.ensurePackage(JUPYTER_CLIENT_PYTHON_PACKAGE_NAME, cwd))
-    ) {
-      throw new Error(
-        formatExtensionMessage(
-          this.context,
-          "Jupyter Client is required to execute notebook cells.",
-        ),
-      );
-    }
-
     try {
       return await this.runPython(
         ["-m", JUPYTEXT_PYTHON_PACKAGE_NAME, ...args],
         cwd,
+        pythonPath,
       );
     } catch (error) {
       if (error instanceof CommandExecutionError) {
@@ -292,16 +294,16 @@ export class JupytextRuntime {
       .slice(0, 800);
   }
 
-  private async canRunPython(cwd: string): Promise<boolean> {
+  private async canRunPython(cwd: string, pythonPath: string): Promise<boolean> {
     try {
-      await this.runPython(["--version"], cwd);
+      await this.runPython(["--version"], cwd, pythonPath);
       return true;
     } catch {
       return false;
     }
   }
 
-  private async promptForPython(): Promise<void> {
+  private async promptForPython(): Promise<boolean> {
     const choice = await vscode.window.showErrorMessage(
       formatExtensionMessage(
         this.context,
@@ -310,84 +312,96 @@ export class JupytextRuntime {
       { modal: true },
       "Install Python",
       "Choose Python",
+      "Configure Python Path",
     );
 
     if (choice === "Install Python") {
       await vscode.env.openExternal(
         vscode.Uri.parse("https://www.python.org/downloads/"),
       );
-    } else if (choice === "Choose Python") {
+      return (await vscode.window.showInformationMessage(
+        formatExtensionMessage(this.context, "After installing Python, check dependencies again."),
+        "Retry",
+      )) === "Retry";
+    }
+
+    if (choice === "Choose Python") {
+      await vscode.commands.executeCommand("python.setInterpreter");
+      return true;
+    }
+
+    if (choice === "Configure Python Path") {
       await vscode.commands.executeCommand(
         "workbench.action.openSettings",
         getExtensionConfigurationKey(CONFIG.pythonPath),
       );
     }
+    return false;
   }
 
-  private async canImportPackage(pkg: string, cwd: string): Promise<boolean> {
+  private async canImportPackage(pkg: string, cwd: string, pythonPath: string): Promise<boolean> {
     try {
-      await this.runPython(["-c", `import ${pkg}`], cwd);
+      await this.runPython(["-c", `import ${pkg}`], cwd, pythonPath);
       return true;
     } catch {
       return false;
     }
   }
 
-  public async ensurePackage(
-    pkg: string,
+  public ensurePackage(pkg: string, cwd: string, promptToInstall = true): Promise<boolean> {
+    return this.ensurePackages([pkg], cwd, promptToInstall);
+  }
+
+  public async ensurePackages(
+    packages: string[],
     cwd: string,
     promptToInstall = true,
   ): Promise<boolean> {
-    const pythonPath = await this.getPythonPath();
-    const cacheKey = `${pythonPath}:${pkg}`;
-    const packageLabel =
-      pkg === JUPYTEXT_PYTHON_PACKAGE_NAME
-        ? "Jupytext"
-        : pkg === BLACK_PYTHON_PACKAGE_NAME
-          ? "Black"
-          : pkg === MARIMO_PYTHON_PACKAGE_NAME
-            ? "Marimo"
-            : pkg === JUPYTER_CLIENT_PYTHON_PACKAGE_NAME
-              ? "Jupyter Client"
-              : pkg;
-
-    if (this.availablePackages.has(cacheKey)) {
+    const pythonPath = await this.getPythonPath(cwd);
+    const unchecked = [...new Set(packages)].filter(
+      (pkg) => !this.availablePackages.has(JSON.stringify([pythonPath, cwd, pkg])),
+    );
+    if (unchecked.length === 0) {
       return true;
     }
 
+    // A background check must not swallow an interactive install request.
+    const cacheKey = JSON.stringify([pythonPath, cwd, promptToInstall, unchecked.sort()]);
     const existingCheck = this.packageChecks.get(cacheKey);
     if (existingCheck) {
       return existingCheck;
     }
 
-    const check = (async () => {
-      if (!(await this.canRunPython(cwd))) {
-        if (promptToInstall) {
-          await this.promptForPython();
+    const findMissing = async (candidates: string[]): Promise<string[]> => {
+      const available = await Promise.all(
+        candidates.map((pkg) => this.canImportPackage(pkg, cwd, pythonPath)),
+      );
+      return candidates.filter((pkg, index) => {
+        if (available[index]) {
+          this.availablePackages.add(JSON.stringify([pythonPath, cwd, pkg]));
         }
+        return !available[index];
+      });
+    };
+
+    let retryWithPython = false;
+    const check = (async () => {
+      if (!(await this.canRunPython(cwd, pythonPath))) {
+        retryWithPython = promptToInstall && await this.promptForPython();
         return false;
       }
 
-      if (await this.canImportPackage(pkg, cwd)) {
-        this.availablePackages.add(cacheKey);
-        return true;
-      }
-      if (!promptToInstall) {
-        return false;
+      const missing = await findMissing(unchecked);
+      if (missing.length === 0 || !promptToInstall) {
+        return missing.length === 0;
       }
 
+      const packageList = missing.join(", ");
       const install = await vscode.window.showInformationMessage(
-        formatExtensionMessage(
-          this.context,
-          `${packageLabel} is required but is not installed in the selected Python environment.`,
-        ),
-        {
-          modal: true,
-          detail: `Install ${packageLabel} into ${pythonPath}?`,
-        },
+        formatExtensionMessage(this.context, `Missing Python packages: ${packageList}.`),
+        { modal: true, detail: `Install into ${pythonPath}?` },
         "Install",
       );
-
       if (install !== "Install") {
         return false;
       }
@@ -396,45 +410,24 @@ export class JupytextRuntime {
         await vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: formatExtensionMessage(
-              this.context,
-              `Installing ${packageLabel}...`,
-            ),
+            title: formatExtensionMessage(this.context, `Installing ${packageList}...`),
             cancellable: false,
           },
-          async () => {
-            await this.runPython(["-m", "pip", "install", pkg], cwd);
-          },
+          () => this.runPython(["-m", "pip", "install", ...missing], cwd, pythonPath),
         );
 
         this.onEnvironmentChanged();
-
-        const success = await this.canImportPackage(pkg, cwd);
-        if (!success) {
+        const stillMissing = await findMissing(missing);
+        if (stillMissing.length > 0) {
           vscode.window.showErrorMessage(
-            formatExtensionMessage(
-              this.context,
-              `Installed ${packageLabel}, but it could not be imported.`,
-            ),
+            formatExtensionMessage(this.context, `Could not import: ${stillMissing.join(", ")}.`),
           );
           return false;
         }
-
-        this.availablePackages.add(cacheKey);
-
-        vscode.window.showInformationMessage(
-          formatExtensionMessage(
-            this.context,
-            `${packageLabel} installed successfully.`,
-          ),
-        );
         return true;
       } catch (error) {
         vscode.window.showErrorMessage(
-          formatExtensionMessage(
-            this.context,
-            `Failed to install ${packageLabel}: ${String(error)}`,
-          ),
+          formatExtensionMessage(this.context, `Failed to install ${packageList}: ${String(error)}`),
         );
         return false;
       }
@@ -442,7 +435,16 @@ export class JupytextRuntime {
       this.packageChecks.delete(cacheKey);
     });
 
-    this.packageChecks.set(cacheKey, check);
-    return check;
+    const result = check.then(async (ready) => {
+      if (retryWithPython) {
+        const selectedPython = await this.getPythonPath(cwd);
+        if (await this.canRunPython(cwd, selectedPython)) {
+          return this.ensurePackages(packages, cwd, promptToInstall);
+        }
+      }
+      return ready;
+    });
+    this.packageChecks.set(cacheKey, result);
+    return result;
   }
 }

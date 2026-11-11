@@ -6,8 +6,8 @@ export default function createScenario({
   return {
     recordingFile: "open-paired-notebook.webm",
 
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
+    async prepareWorkspace({ workspaceDirectory, config }) {
+      const pair = await createPairedAnalysis(workspaceDirectory, config.pythonPath);
       return pair.pythonFile;
     },
 

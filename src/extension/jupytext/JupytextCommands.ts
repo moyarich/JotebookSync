@@ -2,11 +2,7 @@ import * as fs from "node:fs";
 import type * as vscode from "vscode";
 
 import { formatExtensionMessage } from "../lib/utils.js";
-import {
-  BLACK_PYTHON_PACKAGE_NAME,
-  JUPYTER_CLIENT_PYTHON_PACKAGE_NAME,
-  JupytextRuntime,
-} from "./JupytextRuntime.js";
+import type { JupytextRuntime } from "./JupytextRuntime.js";
 import type { CommandResult } from "./types.js";
 
 /** Thin, typed command builder for the supported Jupytext CLI workflows. */
@@ -61,10 +57,7 @@ export class JupytextCommands {
       );
     }
 
-    return this.runtime.runJupytext(
-      [filePath, "--pipe", BLACK_PYTHON_PACKAGE_NAME],
-      cwd,
-    );
+    return this.runtime.runBlack(filePath, cwd);
   }
 
   public testRoundtrip(
@@ -117,24 +110,7 @@ export class JupytextCommands {
     return this.runtime.runJupytext(args, cwd);
   }
 
-  public async setKernel(
-    filePath: string,
-    kernel: string,
-    cwd: string,
-  ): Promise<CommandResult> {
-    if (
-      !(await this.runtime.ensurePackage(
-        JUPYTER_CLIENT_PYTHON_PACKAGE_NAME,
-        cwd,
-      ))
-    ) {
-      throw new Error(
-        formatExtensionMessage(
-          this.context,
-          "Jupyter Client is required to select a notebook kernel.",
-        ),
-      );
-    }
+  public setKernel(filePath: string, kernel: string, cwd: string): Promise<CommandResult> {
     return this.runtime.runJupytext([filePath, "--set-kernel", kernel], cwd);
   }
 
@@ -181,8 +157,8 @@ export class JupytextCommands {
     preCommitMode = false,
   ): Promise<CommandResult> {
     const args = preCommitMode
-      ? ["--sync", "--pre-commit-mode"]
-      : ["--pre-commit"];
+      ? ["--pre-commit", "--sync", "--pre-commit-mode"]
+      : ["--pre-commit", "--sync"];
     if (fromFormat) {
       args.push("--from", fromFormat);
     }

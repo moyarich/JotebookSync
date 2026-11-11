@@ -10,8 +10,8 @@ export default function createScenario({
   return {
     recordingFile: "update-existing-notebook.webm",
 
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
+    async prepareWorkspace({ workspaceDirectory, config }) {
+      const pair = await createPairedAnalysis(workspaceDirectory, config.pythonPath);
       await writeFile(
         pair.markdownFile,
         `${await readFile(pair.markdownFile, "utf8")}\nUpdated from the text notebook.\n`,

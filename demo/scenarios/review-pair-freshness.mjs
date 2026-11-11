@@ -9,8 +9,8 @@ export default function createScenario({
 }) {
   return {
     recordingFile: "review-pair-freshness.webm",
-    async prepareWorkspace({ workspaceDirectory }) {
-      const pair = await createPairedAnalysis(workspaceDirectory);
+    async prepareWorkspace({ workspaceDirectory, config }) {
+      const pair = await createPairedAnalysis(workspaceDirectory, config.pythonPath);
       await pause(1_100);
       await writeFile(
         pair.markdownFile,

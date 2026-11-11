@@ -1,7 +1,6 @@
 export default function createScenario({
   assertFileExists,
   createAnalysisMarkdown,
-  openWorkspaceFile,
   path,
   pause,
   runVSCodeCommand,
@@ -13,7 +12,7 @@ export default function createScenario({
       return createAnalysisMarkdown(workspaceDirectory);
     },
 
-    async run({ page }) {
+    async run({ page, showFilesSideBySide }) {
       await pause(2_000);
       await runVSCodeCommand(
         page,
@@ -25,32 +24,7 @@ export default function createScenario({
 
       // Finish on the result instead of an apparently empty notebook canvas:
       // keep the source text visible beside the rendered notebook it created.
-      await openWorkspaceFile({ page, fileName: "analysis.md" });
-      await page.keyboard.press(
-        process.platform === "darwin" ? "Meta+\\" : "Control+\\",
-      );
-      await pause(500);
-      await openWorkspaceFile({ page, fileName: "analysis.ipynb" });
-      await page.locator(".notebook-editor").first().waitFor({
-        timeout: 15_000,
-      });
-
-      // Splitting copies the current group's tabs. Remove those copied tabs so
-      // each representation appears once: Markdown left, notebook right.
-      await page
-        .locator(".editor-group-container")
-        .nth(0)
-        .locator(".tab")
-        .filter({ hasText: "analysis.ipynb" })
-        .getByLabel("Close")
-        .click();
-      await page
-        .locator(".editor-group-container")
-        .nth(1)
-        .locator(".tab")
-        .filter({ hasText: "analysis.md" })
-        .getByLabel("Close")
-        .click();
+      await showFilesSideBySide(["analysis.md", "analysis.ipynb"]);
       await pause(4_000);
     },
 
