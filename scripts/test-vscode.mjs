@@ -1,26 +1,54 @@
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-const needsVirtualDisplay =
-  process.platform === "linux" && !process.env.DISPLAY;
-const command = needsVirtualDisplay
-  ? "xvfb-run"
-  : process.platform === "win32"
-    ? "vscode-test.cmd"
-    : "vscode-test";
-const args = needsVirtualDisplay ? ["-a", "vscode-test"] : [];
+function run(command, args, env = process.env) {
+  const result = spawnSync(command, args, {
+    stdio: "inherit",
+    env,
+    shell: process.platform === "win32",
+  });
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(`${command} exited with code ${result.status ?? "unknown"}`);
+  }
+}
 
-const result = spawnSync(command, args, {
-  stdio: "inherit",
-  env: process.env,
-  shell: process.platform === "win32",
-});
+let testEnvironment;
+try {
+  const env = { ...process.env };
 
-if (result.error) {
-  console.error(
-    "Unable to start VS Code extension tests:",
-    result.error.message,
-  );
+  // The integration tests exercise real Jupytext commands. CI runners do not
+  // have Jupytext installed by default, so create an isolated Python environment.
+  if (process.env.CI) {
+    testEnvironment = mkdtempSync(join(tmpdir(), "jotebooksync-python-"));
+    const python = process.platform === "win32" ? "python" : "python3";
+    run(python, ["-m", "venv", testEnvironment]);
+    const testPython = join(
+      testEnvironment,
+      process.platform === "win32" ? "Scripts" : "bin",
+      process.platform === "win32" ? "python.exe" : "python",
+    );
+    run(testPython, ["-m", "pip", "install", "--disable-pip-version-check", "jupytext>=1.16,<2"]);
+    run(testPython, ["-m", "jupytext", "--version"]);
+    env.JOTEBOOKSYNC_TEST_PYTHON = testPython;
+  }
+
+  const needsVirtualDisplay = process.platform === "linux" && !env.DISPLAY;
+  const command = needsVirtualDisplay
+    ? "xvfb-run"
+    : process.platform === "win32"
+      ? "vscode-test.cmd"
+      : "vscode-test";
+  run(command, needsVirtualDisplay ? ["-a", "vscode-test"] : [], env);
+} catch (error) {
+  console.error("VS Code integration tests failed:", error.message);
   process.exitCode = 1;
-} else {
-  process.exitCode = result.status ?? 1;
+} finally {
+  if (testEnvironment) {
+    rmSync(testEnvironment, { recursive: true, force: true });
+  }
 }
