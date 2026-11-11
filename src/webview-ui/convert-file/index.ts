@@ -83,11 +83,15 @@ function updateFormat(): void {
   detail.textContent = item
     ? [item.description, item.detail].filter(Boolean).join(" · ")
     : "Enter any format supported by your installed Jupytext version.";
-  if (!outputWasEdited) output.value = defaultOutput(selectedFormat());
+  if (!outputWasEdited) {
+    output.value = defaultOutput(selectedFormat());
+  }
 }
 format.addEventListener("change", updateFormat);
 customFormat.addEventListener("input", () => {
-  if (!outputWasEdited) output.value = defaultOutput(selectedFormat());
+  if (!outputWasEdited) {
+    output.value = defaultOutput(selectedFormat());
+  }
 });
 output.addEventListener("input", () => {
   outputWasEdited = true;

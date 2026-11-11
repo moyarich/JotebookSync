@@ -7,7 +7,7 @@ import {
   type PairSetupFormatSuggestion,
   type PairSetupOption,
   type PairSetupPairingInfo,
-} from "../src/extension/panels/PairSetupPanel.js";
+} from "../src/extension/webview-panel/PairSetupPanel.js";
 import type { JupytextPairingService } from "../src/extension/jupytext/JupytextPairingService.js";
 
 type PairSetupOptionsBuilder = {

@@ -53,10 +53,14 @@ suite("format conversion", () => {
       notebookPath,
       "py:percent",
     );
-    await context.service.commands.testStrictRoundtrip(
-      context.directory,
-      notebookPath,
-      "py:percent",
+    // A Python script cannot represent notebook execution outputs. A strict
+    // round trip must reject that loss rather than silently discard the data.
+    await assert.rejects(
+      context.service.commands.testStrictRoundtrip(
+        context.directory,
+        notebookPath,
+        "py:percent",
+      ),
     );
   });
 });
