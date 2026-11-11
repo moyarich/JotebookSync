@@ -13,7 +13,9 @@ function run(command, args, env = process.env) {
     throw result.error;
   }
   if (result.status !== 0) {
-    throw new Error(`${command} exited with code ${result.status ?? "unknown"}`);
+    throw new Error(
+      `${command} exited with code ${result.status ?? "unknown"}`,
+    );
   }
 }
 
@@ -32,7 +34,13 @@ try {
       process.platform === "win32" ? "Scripts" : "bin",
       process.platform === "win32" ? "python.exe" : "python",
     );
-    run(testPython, ["-m", "pip", "install", "--disable-pip-version-check", "jupytext>=1.16,<2"]);
+    run(testPython, [
+      "-m",
+      "pip",
+      "install",
+      "--disable-pip-version-check",
+      "jupytext>=1.16,<2",
+    ]);
     run(testPython, ["-m", "jupytext", "--version"]);
     env.JOTEBOOKSYNC_TEST_PYTHON = testPython;
   }
