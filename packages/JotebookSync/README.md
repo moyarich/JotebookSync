@@ -105,12 +105,16 @@ conversion to another format and back.
 
 ![Test a round-trip conversion from inside VS Code](media/test-round-trip-conversion.gif)
 
+![Run a strict round-trip conversion check](media/test-strict-round-trip-conversion.gif)
+
 ## Use the format that fits your workflow
 
 Choose a discovered format in the guided setup page or enter any Jupytext format
 code supported by your environment.
 
 ![See formats supported by the active Jupytext environment](media/show-available-formats.gif)
+
+![Refresh the formats reported by Jupytext](media/refresh-available-formats.gif)
 
 Need a one-time representation without creating a pair? Use **Convert File to
 Another Format…**.
@@ -145,6 +149,8 @@ not have to live in the same directory.
 
 ![Create and apply a project-wide Jupytext configuration](media/project-pairing-configuration.gif)
 
+![Apply the project configuration to existing notebooks](media/apply-project-pairing-configuration.gif)
+
 ## Manage every pair from Explorer
 
 The **JotebookSync: Paired Files** Explorer view groups discovered pairs across
@@ -166,6 +172,14 @@ Pair removal changes Jupytext pairing metadata; it does not delete your files.
 
 ![Inspect a pair and remove its pairing metadata](media/inspect-and-remove-pairing.gif)
 
+![Open a paired notebook from the Explorer context menu](media/explorer-context-menu.gif)
+
+![Configure a pair from the Paired Files context menu](media/paired-files-context-menu.gif)
+
+![Refresh the Paired Files view](media/refresh-paired-files.gif)
+
+![Detach one representation from a pair](media/remove-file-from-pair.gif)
+
 ## Advanced Jupytext tools
 
 JotebookSync also exposes additional Jupytext workflows through VS Code:
@@ -183,6 +197,30 @@ JotebookSync also exposes additional Jupytext workflows through VS Code:
 
 External commands and notebook execution can run arbitrary code, so
 JotebookSync asks for confirmation where appropriate.
+
+### Formatting and validation
+
+![Format a Python representation with Black](media/format-with-black.gif)
+
+![Set Jupytext format options](media/set-format-options.gif)
+
+![Pipe notebook text through an external command](media/pipe-through-external-command.gif)
+
+![Validate notebook text with an external command](media/check-with-external-command.gif)
+
+### Notebook operations
+
+![Set the notebook kernel](media/set-notebook-kernel.gif)
+
+![Execute notebook cells](media/execute-notebook.gif)
+
+![Update notebook metadata](media/update-notebook-metadata.gif)
+
+### Git and advanced commands
+
+![Run Jupytext against staged notebooks](media/run-pre-commit-workflow.gif)
+
+![Run Jupytext with custom arguments](media/run-advanced-jupytext-command.gif)
 
 ## Safety
 

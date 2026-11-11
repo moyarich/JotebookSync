@@ -1,3 +1,7 @@
+import OverwriteFromCurrentFileDemo from "../../../media/overwrite-from-current-file.gif";
+import SyncNewestPairedFileDemo from "../../../media/sync-newest-paired-file.gif";
+import ReviewPairFreshnessDemo from "../../../media/review-pair-freshness.gif";
+
 # Sync and Review Freshness
 
 JotebookSync supports automatic synchronization and explicit source-of-truth workflows.
@@ -12,11 +16,15 @@ Use **Overwrite Paired Files from This File…** when the current file should be
 
 Before replacing other representations, JotebookSync checks modification times and warns when a destination is newer.
 
+<img src={OverwriteFromCurrentFileDemo} alt="Select a source file and overwrite its paired representations" loading="lazy" />
+
 ## Sync from the newest pair member
 
 Use **Sync All from Newest Paired File…** when the most recently modified member should win.
 
 This is useful when you know the pair is valid but are not sure which file was edited last.
+
+<img src={SyncNewestPairedFileDemo} alt="Sync all representations from the newest paired file" loading="lazy" />
 
 ## Review Pair Freshness
 
@@ -30,6 +38,8 @@ This is useful when you know the pair is valid but are not sure which file was e
 - open-file actions;
 - targeted replacement actions;
 - refresh support.
+
+<img src={ReviewPairFreshnessDemo} alt="Compare timestamps and open differences from the freshness report" loading="lazy" />
 
 ## Normalized diffs
 

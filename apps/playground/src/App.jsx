@@ -45,7 +45,7 @@ function PlaygroundShell({ page, children }) {
     return () => cancelAnimationFrame(frame);
   }, [pathname, hash]);
   useEffect(() => {
-    document.title = `${page?.title ?? "Page not found"} | MoyaForge`;
+    document.title = `${page?.title ?? "Page not found"} | JotebookSync`;
   }, [page]);
   const groups = useMemo(
     () => buildDocumentationGroups(routes, registry.sources),
@@ -55,11 +55,15 @@ function PlaygroundShell({ page, children }) {
     () =>
       routes
         .filter((item) => item.navigation === "visible")
+        .sort((left, right) => {
+          const order = (page) => page.file.replace(/(^|\/)page\.mdx?$/, "$1");
+          return order(left).localeCompare(order(right), "en", { numeric: true });
+        })
         .map((item) => ({
           path: item.path,
           label: item.label ?? item.title,
           source: item.source,
-          sourcePath: item.sourcePath,
+          sourcePath: `packages/JotebookSync/docs/${item.file}`,
         })),
     [],
   );
@@ -91,11 +95,11 @@ function PlaygroundShell({ page, children }) {
     : null;
   return (
     <DocumentationSite
-      title="MoyaForge"
+      title="JotebookSync"
       pages={visiblePages}
       currentPath={page?.path}
       onNavigate={navigate}
-      repository="https://github.com/moyarich/moyaforge"
+      repository="https://github.com/moyarich/JotebookSync"
       search={search}
       sidebar={
         <SidebarV1 header={<VersionPicker />}>

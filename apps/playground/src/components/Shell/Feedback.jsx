@@ -1,8 +1,8 @@
 export function Feedback({ page }) {
-  const issue = new URL("https://github.com/moyarich/moyaforge/issues/new");
+  const issue = new URL("https://github.com/moyarich/JotebookSync/issues/new");
   issue.searchParams.set(
     "title",
-    `Documentation feedback: ${page?.title ?? "MoyaForge"}`,
+    `Documentation feedback: ${page?.title ?? "JotebookSync"}`,
   );
   issue.searchParams.set(
     "body",

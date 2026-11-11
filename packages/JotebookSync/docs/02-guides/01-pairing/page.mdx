@@ -1,3 +1,8 @@
+import PairedFilesContextMenuDemo from "../../../media/paired-files-context-menu.gif";
+import RemoveFileFromPairDemo from "../../../media/remove-file-from-pair.gif";
+import InspectAndRemovePairingDemo from "../../../media/inspect-and-remove-pairing.gif";
+import ExplorerContextMenuDemo from "../../../media/explorer-context-menu.gif";
+
 # Configure Paired Files
 
 JotebookSync uses Jupytext pairing metadata to connect an `.ipynb` notebook with one or more text representations.
@@ -18,6 +23,8 @@ The setup page supports:
 
 JotebookSync does not rely on a fixed list of languages. Available formats come from the active Jupytext installation.
 
+<img src={PairedFilesContextMenuDemo} alt="Open pair configuration from the Paired Files context menu" loading="lazy" />
+
 ## Existing filenames
 
 When editing an existing pair, JotebookSync preserves the existing paired filenames unless you explicitly change a suffix.
@@ -28,12 +35,18 @@ Use **Remove File from Pair…** to detach one representation while keeping the 
 
 The file is not deleted. Only its participation in the pair is removed.
 
+<img src={RemoveFileFromPairDemo} alt="Detach the Python file while leaving the other representations paired" loading="lazy" />
+
 ## Remove the full pairing
 
 Use **Remove Pairing…** to clear Jupytext pairing metadata.
 
 JotebookSync asks for confirmation by default because this changes synchronization behavior.
 
+<img src={InspectAndRemovePairingDemo} alt="Inspect paired paths and remove the pairing" loading="lazy" />
+
 ## Open the paired notebook
 
 From a paired text file, use **Open Paired Notebook** to open its associated `.ipynb` representation directly.
+
+<img src={ExplorerContextMenuDemo} alt="Open the paired notebook from the Explorer context menu" loading="lazy" />

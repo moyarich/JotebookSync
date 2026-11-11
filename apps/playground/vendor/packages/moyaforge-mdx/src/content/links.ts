@@ -87,7 +87,11 @@ export function validateInternalLinks(
                 path
                   .replace(/\/(?:page\.mdx?|index\.html?)$/, "")
                   .replace(/\/$/, "") || "/";
-              const target = registry.byPath.get(path);
+              const sourceFile = clean && !clean.startsWith("/") && /\.mdx?$/i.test(clean)
+                ? posix.join(posix.dirname(document.file), clean)
+                : undefined;
+              const target = (sourceFile && bySourceFile.get(`${document.source}/${sourceFile}`))
+                || registry.byPath.get(path);
               if (!target)
                 diagnostics.push({ file: key, href, reason: "missing-page" });
               else if (

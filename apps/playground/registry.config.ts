@@ -9,13 +9,5 @@ export default {
       pageFiles: "all",
       navigation: { label: "Guide", order: 1 },
     },
-    packages: {
-      base: "../../packages",
-      include: ["*/README.md", "**/page.md", "**/page.mdx"],
-      pageFiles: "all",
-      exclude: ["**/node_modules/**", "**/dist/**"],
-      metadata: ["*/package.json"],
-      navigation: { label: "Packages", order: 2 },
-    },
   },
 } as const satisfies RegistryConfiguration;

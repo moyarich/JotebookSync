@@ -1,4 +1,4 @@
-import { version } from "../../../vendor/packages/moyaforge/package.json";
+import { version } from "../../../../../packages/JotebookSync/package.json";
 
 export function VersionPicker({
   versions = [{ label: `v${version} (current)`, value: version }],

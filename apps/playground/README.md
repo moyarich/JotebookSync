@@ -1,6 +1,6 @@
 # JotebookSync documentation playground
 
-This MoyaForge app renders the JotebookSync guides and the MoyaForge UI examples.
+This app renders the JotebookSync guides and command reference using MoyaForge.
 
 From the repository root, run `npm ci` and `npm run build:playground`.
 Run `npm --prefix apps/playground run dev` to start the development server.
