@@ -9,6 +9,11 @@ JotebookSync uses [Semantic Versioning](https://semver.org/).
 
 No user-facing changes yet.
 
+## [0.1.1]
+
+- Include runtime dependencies so the extension starts after installation.
+- Fix the production build for the extension’s webview panels.
+
 ## [0.1.0] - 2026-09-08
 
 JotebookSync makes Jupyter notebooks easier to manage in real development workflows.
