@@ -1,0 +1,39 @@
+---
+title: Monaco editor
+label: Monaco editor
+description: Advanced Preview example showing monaco editor.
+---
+
+import MonacoPreviewExample from "../monaco-preview/MonacoPreviewExample.tsx";
+
+# Monaco editor
+
+## Installation
+
+Install the parent `preview` component and its example-specific dependencies. See [Preview installation](/ui/components/preview#installation).
+
+## Install Monaco in the playground
+
+The real Monaco editor is an optional dependency of the consuming playground, not of `Preview` itself:
+
+```bash
+npm install --workspace @moyarich/moyaforge-playground @monaco-editor/react monaco-editor
+```
+
+`MonacoCodeGroup` imports `@monaco-editor/react` and `monaco-editor` provides the editor engine.
+
+## Usage
+
+This example composes `Preview` slots with a Monaco-backed source panel.
+
+## Examples
+
+### Monaco editor
+
+<MonacoPreviewExample />
+
+This example uses the full Monaco editor, supplied by `@monaco-editor/react`, with TSX and CSS tabs. Editing source does not execute or compile it.
+
+## Styling
+
+The example styles live alongside its TSX source; use the `--mf-preview-*` variables for the outer preview frame.

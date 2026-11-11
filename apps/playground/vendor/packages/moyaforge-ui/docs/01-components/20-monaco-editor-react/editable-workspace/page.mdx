@@ -1,0 +1,42 @@
+---
+title: Editable workspace
+label: Editable workspace
+description: Complete editable multi-file workspace example.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../../src/components/CodePreview/CodePreview.tsx";
+import MultiFileEditor from "../real-editor/Example.tsx";
+import editorSource from "../real-editor/Example.tsx?raw";
+import setupSource from "../setup.ts?raw";
+
+# Editable workspace
+
+## Installation
+
+Install the parent Monaco editor component and its runtime dependencies. See [Installation](/ui/components/monaco-editor-react#installation).
+
+## Usage
+
+Load the setup module before mounting the editor, and provide an array of named files.
+
+## Examples
+
+### Editable workspace
+
+<CodePreview
+  title="Editable workspace"
+  files={[
+    { label: "Example.tsx", code: editorSource },
+    { label: "setup.ts", code: setupSource },
+  ]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <MultiFileEditor />
+</CodePreview>
+
+## Styling
+
+Use `className` and the public `--monaco-*` variables to style the editor.

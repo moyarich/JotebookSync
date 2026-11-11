@@ -1,0 +1,44 @@
+---
+title: Edit Page Link
+label: Edit Page Link
+description: Live Edit Page Link component example from canonical MoyaForge UI source.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Edit Page Link
+
+This component is installed individually from MoyaForge's source registry and rendered here directly using the canonical UI component.
+
+## Installation
+
+Install the `edit-page-link` registry item using the MoyaForge CLI. The selected source and required styles are copied into your application.
+
+[UI Components](/ui)
+
+## Usage
+
+```tsx
+<EditPageLink repository="moyarich/moyaforge" path="docs/page.mdx" />
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Edit Page Link"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+The installed component includes its source-owned CSS. Customize its styles in your application using scoped CSS selectors or the component's documented CSS variables. The example preview frame can be customized separately with `--mf-preview-border` and `--mf-preview-radius`.

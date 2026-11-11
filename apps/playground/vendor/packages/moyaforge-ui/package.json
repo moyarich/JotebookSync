@@ -1,0 +1,35 @@
+{
+  "name": "@moyarich/moyaforge-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MoyaForge components distributed",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run tests",
+    "registry:check": "node ../../scripts/build-registry.mjs --check",
+    "storybook": "storybook dev -p 6006 -c .storybook",
+    "test:storybook": "storybook build -c .storybook -o ../../.storybook-static"
+  },
+  "license": "MIT",
+  "registryDependencies": {
+    "lucide-react": "^1.56.0",
+    "@monaco-editor/react": ">=4",
+    "monaco-editor": "^0.52.2",
+    "@typefox/monaco-editor-react": "~8.0.2",
+    "monaco-languageclient": "~11.0.2",
+    "@moyarich/moyaforge-mdx": "^0.1.0",
+    "react": ">=18",
+    "react-router-dom": "^7.18.4",
+    "@codingame/monaco-vscode-editor-api": "^37.6.1",
+    "shiki": "^4.5.0"
+  },
+  "devDependencies": {
+    "@storybook/react-vite": "^10.0.0",
+    "storybook": "^10.0.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.4",
+    "typescript": "^7.0.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}

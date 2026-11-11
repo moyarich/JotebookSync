@@ -17,7 +17,7 @@ on:
         default: all
         options:
           - all
-          - packages/example
+          - packages/JotebookSync
       target-branch:
         description: Release target branch
         required: true

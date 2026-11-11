@@ -1,0 +1,51 @@
+---
+title: Docs Shell Wide
+label: Docs Shell Wide
+description: Canonical Docs Shell Wide example in the MoyaForge component gallery.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Docs Shell Wide
+
+Navigation, toolbar, inspector, and footer are optional independent slots.
+
+## Installation
+
+Install `docs-shell-wide` from the MoyaForge component registry to obtain editable source and related styles. UI remains separate from the headless framework package.
+
+[All UI components](/ui)
+
+## Usage
+
+```tsx
+<DocsShellWide
+  title="Workspace layout"
+  navigationItems={[{ label: "Overview", href: "/ui" }]}
+  inspector={<p>Inspector panel</p>}
+  toolbar={<span>Workspace tools</span>}
+>
+  <p>Wide workspace content.</p>
+</DocsShellWide>
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Docs Shell Wide"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+Style the installed component using its source-owned CSS and public theme variables. The live example frame has separate `--mf-preview-border` and `--mf-preview-radius` overrides.

@@ -123,11 +123,11 @@ jobs:
           set -euo pipefail
 
           package_json="$(
-            gh api "repos/$GH_REPO/contents/package.json?ref=main" --jq '.content' |
+            gh api "repos/$GH_REPO/contents/packages/JotebookSync/package.json?ref=main" --jq '.content' |
               base64 --decode
           )"
           changelog="$(
-            gh api "repos/$GH_REPO/contents/CHANGELOG.md?ref=main" --jq '.content' |
+            gh api "repos/$GH_REPO/contents/packages/JotebookSync/CHANGELOG.md?ref=main" --jq '.content' |
               base64 --decode
           )"
 

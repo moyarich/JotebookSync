@@ -1,0 +1,16 @@
+{
+  "extends": "../../packages/JotebookSync/tsconfig.webview.json",
+  "compilerOptions": {
+    "types": [
+      "vite/client",
+      "react",
+      "react-dom"
+    ],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../../packages/JotebookSync/src/webview-ui/**/*.ts"
+  ]
+}

@@ -22,10 +22,10 @@ on:
           - checkout:upstream;branch:main
           - registry:npm:latest
       include-root-package:
-        description: Also draft releases for the root package (such as a VS Code extension)
+        description: Also consider the root package when discovering release targets
         type: boolean
         required: true
-        default: true
+        default: false
       package:
         description: Select a publishable workspace package
         required: true
@@ -33,7 +33,7 @@ on:
         default: all
         options:
           - all
-          - packages/example
+          - packages/JotebookSync
       version-mode:
         description: Version mode
         required: true
@@ -96,7 +96,7 @@ jobs:
     uses: moyarich/reusable-workflows/.github/workflows/reusable_discover-packages.yml@main
     with:
       packages-directory: packages
-      use-workspaces: true
+      use-workspaces: false
       include-root-package: ${{ inputs.include-root-package }}
       require-publish-config: false
       workspace-tools-source: ${{ inputs.workspace-tools-source || 'auto' }}

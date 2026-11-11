@@ -1,0 +1,19 @@
+[data-moyaforge-toc] {
+  --_toc-color: var(--toc-color, inherit);
+  --_toc-gap: var(--toc-gap, 0.25rem);
+  --_toc-indent: var(--toc-indent, 1rem);
+
+  color: var(--_toc-color);
+}
+
+[data-moyaforge-toc] ul {
+  display: grid;
+  gap: var(--_toc-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-moyaforge-toc] [data-level="3"] {
+  margin-left: var(--_toc-indent);
+}

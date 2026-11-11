@@ -7,7 +7,7 @@ with readable source files, keep representations synchronized, review
 differences before overwriting files, and manage notebook workflows without
 leaving the editor.
 
-![Choose notebook representations in the guided pair setup](media/setup-paired-files.gif)
+![Choose notebook representations in the guided pair setup](packages/JotebookSync/media/setup-paired-files.gif)
 
 ## Install
 
@@ -82,9 +82,9 @@ When you want explicit control, use:
 - **Overwrite Paired Files from This File…** to make the selected file the
   source of truth.
 
-![Synchronize every representation from the newest paired file](media/sync-newest-paired-file.gif)
+![Synchronize every representation from the newest paired file](packages/JotebookSync/media/sync-newest-paired-file.gif)
 
-![Explicitly replace paired files from the selected source](media/overwrite-from-current-file.gif)
+![Explicitly replace paired files from the selected source](packages/JotebookSync/media/overwrite-from-current-file.gif)
 
 ## Review before you overwrite
 
@@ -98,19 +98,19 @@ Normalized diffs convert both sides to a comparable Jupytext representation
 first, so you review notebook content instead of unrelated serialization
 differences.
 
-![Review and compare the files in a pair before overwriting anything](media/review-pair-freshness.gif)
+![Review and compare the files in a pair before overwriting anything](packages/JotebookSync/media/review-pair-freshness.gif)
 
 For additional confidence, you can test whether a representation survives
 conversion to another format and back.
 
-![Test a round-trip conversion from inside VS Code](media/test-round-trip-conversion.gif)
+![Test a round-trip conversion from inside VS Code](packages/JotebookSync/media/test-round-trip-conversion.gif)
 
 ## Use the format that fits your workflow
 
 Choose a discovered format in the guided setup page or enter any Jupytext format
 code supported by your environment.
 
-![See formats supported by the active Jupytext environment](media/show-available-formats.gif)
+![See formats supported by the active Jupytext environment](packages/JotebookSync/media/show-available-formats.gif)
 
 Need a one-time representation without creating a pair? Use **Convert File to
 Another Format…**.
@@ -118,19 +118,19 @@ Another Format…**.
 The conversion page lets you choose the target format, preview the destination
 filename, and create the file without changing pairing metadata.
 
-![Convert a notebook to another Jupytext format](media/convert-file-format.gif)
+![Convert a notebook to another Jupytext format](packages/JotebookSync/media/convert-file-format.gif)
 
 ## Create or update notebooks from text
 
 Use **Create Notebook from Text File…** to create an independent `.ipynb`
 notebook from a supported text representation.
 
-![Create an independent notebook from a text notebook](media/create-notebook-from-text.gif)
+![Create an independent notebook from a text notebook](packages/JotebookSync/media/create-notebook-from-text.gif)
 
 Use **Update Existing Notebook from Text File…** to update notebook inputs and
 metadata while preserving saved cell outputs.
 
-![Update notebook inputs while preserving existing outputs](media/update-existing-notebook.gif)
+![Update notebook inputs while preserving existing outputs](packages/JotebookSync/media/update-existing-notebook.gif)
 
 ## Configure an entire project
 
@@ -143,7 +143,7 @@ Configuration…** later to configure existing notebooks.
 Jupytext folder mappings are supported, so notebook and text representations do
 not have to live in the same directory.
 
-![Create and apply a project-wide Jupytext configuration](media/project-pairing-configuration.gif)
+![Create and apply a project-wide Jupytext configuration](packages/JotebookSync/media/project-pairing-configuration.gif)
 
 ## Manage every pair from Explorer
 
@@ -162,9 +162,9 @@ From the view you can:
 
 Pair removal changes Jupytext pairing metadata; it does not delete your files.
 
-![Open the notebook associated with a paired text file](media/open-paired-notebook.gif)
+![Open the notebook associated with a paired text file](packages/JotebookSync/media/open-paired-notebook.gif)
 
-![Inspect a pair and remove its pairing metadata](media/inspect-and-remove-pairing.gif)
+![Inspect a pair and remove its pairing metadata](packages/JotebookSync/media/inspect-and-remove-pairing.gif)
 
 ## Advanced Jupytext tools
 
@@ -313,8 +313,20 @@ endorsed by the Jupytext project.
 ## Documentation
 
 More detailed guides and command/reference documentation are available in
-[`docs/`](docs/page.mdx).
+[`docs/`](packages/JotebookSync/docs/page.mdx).
 
 ## License
 
 [MIT](LICENSE)
+
+
+## Repository layout
+
+- [VS Code extension](packages/JotebookSync/) contains the extension, VSIX build,
+  and demo recorder.
+- [Documentation playground](apps/playground/) builds the MoyaForge documentation site.
+- [Webview previews](apps/previews/) previews the extension webviews.
+
+Run `npm ci` at the root to install the extension and both apps. Use `npm run dev:extension`
+for the Extension Development Host and `npm run dev` for the webview previews.
+Run `npm run build:playground` and `npm run build:previews` to build the two apps.

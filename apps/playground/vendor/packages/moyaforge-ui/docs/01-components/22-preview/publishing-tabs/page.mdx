@@ -1,0 +1,29 @@
+---
+title: Publishing tabs
+label: Publishing tabs
+description: Advanced Preview example showing publishing tabs.
+---
+
+import PublishTabsPreview from "../publish-tabs/PublishTabsPreview.tsx";
+
+# Publishing tabs
+
+## Installation
+
+Install the parent `preview` component and its example-specific dependencies. See [Preview installation](/ui/components/preview#installation).
+
+## Usage
+
+This example composes `Preview` slots with a Monaco-backed source panel.
+
+## Examples
+
+### Publishing tabs
+
+<PublishTabsPreview />
+
+The editable Monaco file tabs demonstrate npm and GitHub Packages dry-run commands with `MonacoCodeGroup`. `PreviewSource asChild` controls the editor panel visibility. Editing the example does not execute the commands.
+
+## Styling
+
+The example styles live alongside its TSX source; use the `--mf-preview-*` variables for the outer preview frame.

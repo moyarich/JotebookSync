@@ -1,0 +1,24 @@
+.mf-copy-button-input-example {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  max-width: 100%;
+}
+.mf-copy-button-input-example input {
+  --_copy-input-border: var(
+    --copy-input-border,
+    color-mix(in srgb, currentColor 14%, transparent)
+  );
+  --_copy-input-radius: var(--copy-input-radius, 0.5rem);
+  --_copy-input-background: var(--copy-input-background, transparent);
+  width: min(17rem, 100%);
+  min-width: 0;
+  border: 1px solid var(--_copy-input-border);
+  border-radius: var(--_copy-input-radius);
+  background: var(--_copy-input-background);
+  color: inherit;
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+}

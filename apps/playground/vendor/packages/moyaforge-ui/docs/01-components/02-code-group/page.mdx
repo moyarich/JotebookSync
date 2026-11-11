@@ -1,0 +1,61 @@
+---
+title: Code Group
+label: Code Group
+order: 2
+description: Switch between npm and pnpm command examples.
+---
+
+# Code Group
+
+Switch between npm and pnpm command examples. This live example uses the canonical MoyaForge UI source and is rendered by the playground's MDX provider.
+
+## Installation
+
+Install the `code-group` component from the MoyaForge component registry. The selected source and CSS are copied into your application; they are not included in the framework package.
+
+[Browse all UI components](/ui)
+
+The directive mapping is configured through `createMdxOptions({ directiveComponents: { "code-group": { component: "CodeGroup", childType: "tab", childComponent: "CodeTab" } } })`. Renderers can be replaced through `MDXProvider` without changing the Markdown.
+
+## Usage
+
+```tsx
+<CodeGroup label="Package managers">
+  <CodeTab label="npm">
+    <pre>npm install my-package</pre>
+  </CodeTab>
+  <CodeTab label="pnpm">
+    <pre>pnpm add my-package</pre>
+  </CodeTab>
+</CodeGroup>
+```
+
+## Examples
+
+### Default
+
+The playground maps `code-group` and nested `tab` directives to the reusable React `CodeGroup` and `CodeTab` components.
+
+:::: code-group Package managers
+
+::: tab npm
+
+```bash
+npm install example-package
+```
+
+:::
+
+::: tab pnpm
+
+```bash
+pnpm add example-package
+```
+
+:::
+
+::::
+
+## Styling
+
+The installed component includes its source-owned CSS. Customize its styles in your application using scoped CSS selectors or the component's documented CSS variables. The example preview frame can be customized separately with `--mf-preview-border` and `--mf-preview-radius`.

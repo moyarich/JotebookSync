@@ -1,0 +1,53 @@
+:root {
+  font-family: "Inter Variable", system-ui, sans-serif;
+  font-synthesis: none;
+}
+body {
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+pre {
+  tab-size: 2;
+}
+.playground-version-picker {
+  --_version-color: var(--version-picker-color, var(--_mf-text, #303038));
+  --_version-background: var(--version-picker-background, var(--_mf-bg, #fff));
+  --_version-border: var(
+    --version-picker-border-color,
+    var(--_mf-line, #e9e9ed)
+  );
+  display: grid;
+  gap: 8px;
+  margin-bottom: 28px;
+  color: var(--_version-color);
+  font-size: 13px;
+}
+.playground-version-picker select {
+  width: 100%;
+  border: 1px solid var(--_version-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--_version-color);
+  background: var(--_version-background);
+  opacity: 1;
+}
+.playground-feedback {
+  --_feedback-color: var(--feedback-color, var(--_mf-muted, #73737c));
+  --_feedback-accent: var(--feedback-accent, var(--_mf-accent, #e35454));
+  color: var(--_feedback-color);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.playground-feedback strong {
+  font-weight: 600;
+}
+.playground-feedback p {
+  margin: 8px 0;
+}
+.playground-feedback a {
+  color: var(--_feedback-accent);
+}

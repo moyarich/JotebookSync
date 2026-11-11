@@ -1,0 +1,66 @@
+[data-moyaforge-doc-outline] {
+  --_doc-outline-top: var(--doc-outline-top, 5rem);
+  --_doc-outline-max-height: var(--doc-outline-max-height, calc(100vh - 6rem));
+  --_doc-outline-title-font-size: var(--doc-outline-title-font-size, 0.8rem);
+  --_doc-outline-title-font-weight: var(--doc-outline-title-font-weight, 700);
+  --_doc-outline-border-width: var(--doc-outline-border-width, 1px);
+  --_doc-outline-border-color: var(--doc-outline-border-color, #e5e7eb);
+  --_doc-outline-marker-width: var(--doc-outline-marker-width, 2px);
+  --_doc-outline-marker-color: var(--doc-outline-marker-color, currentColor);
+  --_doc-outline-marker-inset: var(--doc-outline-marker-inset, 0.1rem);
+  --_doc-outline-link-padding: var(--doc-outline-link-padding, 0.35rem 0.5rem);
+  --_doc-outline-level-indent: var(--doc-outline-level-indent, 1rem);
+  --_doc-outline-link-opacity: var(--doc-outline-link-opacity, 0.75);
+  --_doc-outline-active-font-weight: var(--doc-outline-active-font-weight, 700);
+  --_doc-outline-marker-offset: calc(
+    0px - var(--_doc-outline-border-width) -
+      (var(--_doc-outline-marker-width) - var(--_doc-outline-border-width)) / 2
+  );
+
+  position: sticky;
+  top: var(--_doc-outline-top);
+  align-self: start;
+  max-height: var(--_doc-outline-max-height);
+  overflow: auto;
+  border-left: var(--_doc-outline-border-width) solid
+    var(--_doc-outline-border-color);
+}
+
+[data-moyaforge-doc-outline-title] {
+  font-size: var(--_doc-outline-title-font-size);
+  font-weight: var(--_doc-outline-title-font-weight);
+}
+
+[data-moyaforge-doc-outline] ul {
+  padding: 0;
+  list-style: none;
+}
+
+[data-moyaforge-doc-outline] a {
+  position: relative;
+  display: block;
+  padding: var(--_doc-outline-link-padding);
+  text-decoration: none;
+  color: inherit;
+  opacity: var(--_doc-outline-link-opacity);
+}
+
+[data-moyaforge-doc-outline] a[aria-current="location"] {
+  opacity: 1;
+  font-weight: var(--_doc-outline-active-font-weight);
+}
+
+[data-moyaforge-doc-outline] a[aria-current="location"]::before {
+  content: "";
+  position: absolute;
+  left: var(--_doc-outline-marker-offset);
+  top: var(--_doc-outline-marker-inset);
+  bottom: var(--_doc-outline-marker-inset);
+  width: var(--_doc-outline-marker-width);
+  border-radius: var(--_doc-outline-marker-width);
+  background: var(--_doc-outline-marker-color);
+}
+
+[data-moyaforge-doc-outline] [data-level="3"] {
+  padding-left: var(--_doc-outline-level-indent);
+}

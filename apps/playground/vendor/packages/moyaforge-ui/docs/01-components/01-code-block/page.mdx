@@ -1,0 +1,55 @@
+---
+title: Code Block
+label: Code Block
+description: Live MoyaForge CodeBlock examples with copy support and syntax highlighting.
+navigation: visible
+---
+
+# Code Block
+
+MoyaForge's source-installable `CodeBlock` renders formatted code and includes a copy action. The playground uses the canonical component from `packages/moyaforge-ui/src/components/CodeBlock/`, not a separately maintained example.
+
+## Installation
+
+Install the `code-block` registry item with the MoyaForge CLI. Its component source and CSS are copied into your application rather than bundled into `@moyarich/moyaforge`.
+
+## Usage
+
+```tsx
+import { CodeBlock } from "@/components/ui/components/CodeBlock";
+
+export function Example() {
+  return (
+    <CodeBlock>
+      <code className="language-ts">const answer = 42;</code>
+    </CodeBlock>
+  );
+}
+```
+
+For ordinary documentation code fences, register `CodeBlock` as the MDX `pre` component, as the MoyaForge playground does. Shiki highlighting is optional and happens during MDX compilation.
+
+## Examples
+
+### Default
+
+The following fenced blocks are rendered as real MoyaForge Code Blocks by the playground's MDX provider. Try copying the code.
+
+```tsx
+export function Greeting({ name }: { name: string }) {
+  return <p>Hello, {name}!</p>;
+}
+```
+
+```bash
+npm run registry:build
+npm run registry:check
+```
+
+## Related
+
+- [All MoyaForge examples](/docs/examples)
+
+## Styling
+
+The installed component includes its source-owned CSS. Customize its styles in your application using scoped CSS selectors or the component's documented CSS variables. The example preview frame can be customized separately with `--mf-preview-border` and `--mf-preview-radius`.

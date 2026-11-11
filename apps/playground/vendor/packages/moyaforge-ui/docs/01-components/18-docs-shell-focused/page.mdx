@@ -1,0 +1,51 @@
+---
+title: Docs Shell Focused
+label: Docs Shell Focused
+description: Canonical Docs Shell Focused example in the MoyaForge component gallery.
+---
+
+import {
+  CodePreview,
+  CODE_REPLACEMENTS,
+} from "../../../src/components/CodePreview/index.js";
+import Example from "./default/Example.tsx";
+import exampleSource from "./default/Example.tsx?raw";
+
+# Docs Shell Focused
+
+Use `header={null}` or `navigation={null}` to suppress those slots. Omit a prop to use its default.
+
+## Installation
+
+Install `docs-shell-focused` from the MoyaForge component registry to obtain editable source and related styles. UI remains separate from the headless framework package.
+
+[All UI components](/ui)
+
+## Usage
+
+```tsx
+<DocsShellFocused
+  title="Focused reading"
+  subtitle="A distraction-free documentation layout"
+  header={<strong>Focused shell preview</strong>}
+  navigation={null}
+>
+  <p>Reading content with independently replaceable slots.</p>
+</DocsShellFocused>
+```
+
+## Examples
+
+### Default
+
+<CodePreview
+  title="Docs Shell Focused"
+  files={[{ label: "Example.tsx", code: exampleSource }]}
+  replacements={CODE_REPLACEMENTS}
+>
+  <Example />
+</CodePreview>
+
+## Styling
+
+Style the installed component using its source-owned CSS and public theme variables. The live example frame has separate `--mf-preview-border` and `--mf-preview-radius` overrides.

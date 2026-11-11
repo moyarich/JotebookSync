@@ -1,0 +1,25 @@
+[data-moyaforge-shell-focused] {
+  --_focused-width: var(--focused-width, 48rem);
+  max-width: var(--_focused-width);
+  margin-inline: auto;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+[data-moyaforge-focused-header] {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  padding-block: 2rem;
+  border-bottom: 1px solid var(--focused-border, #e5e7eb);
+}
+[data-moyaforge-focused-header] h1 {
+  margin-block: 0.5rem;
+}
+[data-moyaforge-focused-article] {
+  padding-block: 2rem 4rem;
+  min-width: 0;
+}
+[data-moyaforge-focused-footer] {
+  border-top: 1px solid var(--focused-border, #e5e7eb);
+  padding-block: 1.5rem;
+}

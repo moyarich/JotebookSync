@@ -1,0 +1,224 @@
+---
+title: Preview
+label: Preview
+order: 22
+description: Slot-based live React previews with source viewing and copy actions.
+---
+
+import PreviewExample from "./live-preview/PreviewExample.tsx";
+import SimplePreviewExample from "./simple-preview/SimplePreviewExample.tsx";
+
+# Preview
+
+Compose an interactive preview with replaceable header, title, actions, content, source and footer slots. Each example lives in its own folder; the MDX page imports its TSX entry. The React examples reuse the counter and its styles from `counter/`.
+
+## Installation
+
+<CodeGroup label="Install Preview">
+<CodeTab label="MoyaForge CLI">
+
+```sh
+npx @moyarich/moyaforge-cli@latest add preview
+```
+
+</CodeTab>
+<CodeTab label="shadcn">
+
+```sh
+npx shadcn@latest add moyarich/moyaforge/preview
+```
+
+</CodeTab>
+</CodeGroup>
+
+The `preview` registry item includes the Preview slots, CopyButton, and their styles. The installers add the required npm dependencies:
+React, `lucide-react`, and Shiki. These preview dependencies belong to the documentation
+frame; the component being demonstrated may have its own dependencies.
+
+## Usage
+
+```mdx
+import PreviewExample from "./live-preview/PreviewExample.tsx";
+
+<PreviewExample />
+```
+
+```tsx
+import {
+  Preview,
+  PreviewHeader,
+  PreviewTitle,
+  PreviewActions,
+  PreviewCodeToggle,
+  PreviewCopyButton,
+  PreviewContent,
+  PreviewSource,
+} from "@/components/ui/components/Preview";
+import ButtonExample from "./ButtonExample";
+import source from "./ButtonExample.tsx?raw";
+
+<Preview source={source}>
+  <PreviewHeader>
+    <PreviewTitle>Button</PreviewTitle>
+    <PreviewActions>
+      <PreviewCodeToggle />
+      <PreviewCopyButton />
+    </PreviewActions>
+  </PreviewHeader>
+  <PreviewContent>
+    <ButtonExample />
+  </PreviewContent>
+  <PreviewSource code={source} language="tsx" />
+</Preview>;
+```
+
+Use `PreviewContent asChild` and `PreviewSource asChild` to compose one DOM-forwarding child, such as a custom layout or editor. `asChild` does not compile or run edited source.
+
+The `?raw` import is supported by Vite. Preview itself does not depend on Vite or MDX; other consumers can pass source strings. You can omit, reorder, or replace slots. The basic `<Preview source={source}>…</Preview>` shorthand still works.
+
+## Examples
+
+### Live example
+
+<PreviewExample />
+
+### Custom trigger and raw TSX source
+
+<SimplePreviewExample />
+
+### Advanced examples
+
+- [Monaco editor](/ui/components/preview/monaco-editor)
+- [Publishing tabs](/ui/components/preview/publishing-tabs)
+
+### Custom trigger with `asChild`
+
+Use `asChild` on the code toggle to apply its behavior to a custom button without nesting interactive elements.
+
+```tsx
+<PreviewCodeToggle asChild>
+  <button type="button" className="my-code-trigger">
+    Show source
+  </button>
+</PreviewCodeToggle>
+```
+
+The child must be a single native button or a button-like React component that forwards click handlers and ARIA attributes. For non-button elements, provide your own appropriate accessible semantics and handlers instead of using this trigger.
+
+### CodePreview
+
+Use `CodePreview` for a live demo with one or more named source files. It composes
+the standard Preview slots and uses CodeGroup for multiple files. Installing
+`code-preview` includes these components and their styles automatically.
+CodePreview does not require Monaco, MDX, or Vite.
+The `?raw` imports in this example are a Vite convenience for reading source files.
+
+<CodeGroup label="Install CodePreview">
+<CodeTab label="MoyaForge CLI">
+
+```sh
+npx @moyarich/moyaforge-cli@latest add code-preview
+```
+
+</CodeTab>
+<CodeTab label="shadcn">
+
+```sh
+npx shadcn@latest add moyarich/moyaforge/code-preview
+```
+
+</CodeTab>
+</CodeGroup>
+
+CodePreview lives in `components/CodePreview`. Its npm dependencies are React, Shiki, and
+`lucide-react`; the installers include its component dependencies automatically.
+
+```tsx
+import { CodePreview } from "@/components/ui/components/CodePreview";
+import Example from "./Example";
+import source from "./Example.tsx?raw";
+import styles from "./Example.css?raw";
+
+<CodePreview
+  title="Example"
+  files={[
+    { label: "Example.tsx", code: source },
+    { label: "Example.css", code: styles },
+  ]}
+>
+  <Example />
+</CodePreview>;
+```
+
+The first file supplies the toolbar’s copy action; each source tab also has its
+own copy control. Source files are highlighted with Shiki using their filename
+extension; use a file’s optional `language` field to override it. Unknown languages
+render as plain text. File labels must be unique. Source text is preserved by default.
+The optional `replacements` prop applies string or RegExp replacement tuples to
+all files. Repository docs can explicitly use `CODE_REPLACEMENTS` to make source
+imports portable; consuming applications can supply their own rules.
+
+### Show example styles with source tabs
+
+Keep component-specific layout and styling in the example folder. Display those
+styles alongside the TSX using `PreviewSource asChild` with a `CodeGroup`:
+
+```tsx
+import {
+  Preview,
+  PreviewHeader,
+  PreviewTitle,
+  PreviewActions,
+  PreviewCodeToggle,
+  PreviewCopyButton,
+  PreviewContent,
+  PreviewSource,
+} from "@/components/ui/components/Preview";
+import { CodeGroup, CodeTab } from "@/components/ui/components/CodeGroup";
+import Example from "./Example";
+import source from "./Example.tsx?raw";
+import styles from "./Example.css?raw";
+
+export function ExamplePreview() {
+  return (
+    <Preview title="Example" source={source}>
+      <PreviewHeader>
+        <PreviewTitle>Example</PreviewTitle>
+        <PreviewActions>
+          <PreviewCodeToggle />
+          <PreviewCopyButton />
+        </PreviewActions>
+      </PreviewHeader>
+      <PreviewContent>
+        <Example />
+      </PreviewContent>
+      <PreviewSource asChild>
+        <div>
+          <CodeGroup label="Example files">
+            <CodeTab label="Example.tsx">
+              <pre>
+                <code>{source}</code>
+              </pre>
+            </CodeTab>
+            <CodeTab label="Example.css">
+              <pre>
+                <code>{styles}</code>
+              </pre>
+            </CodeTab>
+          </CodeGroup>
+        </div>
+      </PreviewSource>
+    </Preview>
+  );
+}
+```
+
+`Example.tsx` imports `./Example.css` so the live demo and the displayed source
+use the same stylesheet. Preview supplies its own border, spacing, toolbar,
+buttons, and source-slot layout. Install `code-group` alongside `preview` when
+using this optional composition; Preview does not require CodeGroup itself.
+
+## Styling
+
+Use `--mf-preview-background`, `--mf-preview-border`, `--mf-preview-radius`,
+`--mf-preview-padding`, and `--mf-preview-margin` in application CSS.

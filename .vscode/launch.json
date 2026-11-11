@@ -10,10 +10,10 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/JotebookSync",
         "--inspect-extensions=9333"
       ],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "outFiles": ["${workspaceFolder}/packages/JotebookSync/out/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     }
   ]

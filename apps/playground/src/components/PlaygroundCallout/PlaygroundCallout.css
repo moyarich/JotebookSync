@@ -1,0 +1,14 @@
+[data-callout="playground"] {
+  --_callout-background: var(--callout-background, transparent);
+  --_callout-color: var(--callout-color, inherit);
+  --_callout-border-color: var(--callout-border-color, currentColor);
+  --_callout-border-width: var(--callout-border-width, 0);
+  --_callout-border-radius: var(--callout-border-radius, 0);
+  --_callout-padding: var(--callout-padding, 0);
+
+  background: var(--_callout-background);
+  color: var(--_callout-color);
+  border: var(--_callout-border-width) solid var(--_callout-border-color);
+  border-radius: var(--_callout-border-radius);
+  padding: var(--_callout-padding);
+}
