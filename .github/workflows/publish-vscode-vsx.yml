@@ -7,6 +7,10 @@ run-name: >-
 on:
   workflow_dispatch:
     inputs:
+      show-input-summary:
+        description: Show workflow input parameters
+        type: boolean
+        default: true
       package:
         description: VS Code extension directory (one extension per run)
         required: true
@@ -44,6 +48,7 @@ permissions: {}
 
 jobs:
   dispatch-input-summary:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.show-input-summary }}
     name: "job: Workflow parameters"
     permissions:
       contents: read
@@ -51,6 +56,7 @@ jobs:
     with:
       parameters-json: ${{ github.event_name == 'workflow_dispatch' &&
         toJSON(inputs) || '{}' }}
+      exclude-inputs: '["show-input-summary"]'
       heading: "vscode-publish · Run parameters"
 
   publish:
