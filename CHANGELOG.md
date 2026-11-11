@@ -11,8 +11,20 @@ No user-facing changes yet.
 
 ## [0.1.1]
 
-- Include runtime dependencies so the extension starts after installation.
-- Fix the production build for the extension’s webview panels.
+This update improves JotebookSync's reliability when you install and use it in VS Code.
+
+### What's improved
+
+- **More reliable startup:** The extension now includes the dependencies it needs to start after installation, so you can get to your notebook workflows without extra setup.
+- **Working setup and review panels:** Fixed the production build for the in-editor panels used to configure paired files, review their freshness, and convert notebook formats.
+
+### Getting started
+
+Install or update **JotebookSync** from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=moyarich.jotebooksync). You also need the Microsoft Python and Jupyter extensions, plus Python with Jupytext available in your selected environment. If Jupytext is missing, JotebookSync can guide you through installing it.
+
+After updating, open the Command Palette and search for **JotebookSync**, or right-click a notebook and select **JotebookSync → Configure Paired Files…**.
+
+For an overview of pairing, synchronization, freshness reviews, and conversions, see the [getting-started guide](https://github.com/moyarich/JotebookSync#readme).
 
 ## [0.1.0] - 2026-09-08
 
