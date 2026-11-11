@@ -478,7 +478,7 @@
     "demo:gif": "node ./scripts/demo/create-readme-gif.mjs",
     "pretest": "npm run compile && npm run compile:tests && npm run lint",
     "lint": "eslint src/extension src/webview-ui previews/src test scripts/demo",
-    "test": "npm run test:webviews && vscode-test",
+    "test": "npm run test:webviews && node scripts/test-vscode.mjs",
     "test:webviews": "tsc -p tsconfig.webview-tests.json && vitest run test/webviews",
     "zip": "npm run compile && vite build --mode zip",
     "package": "npm run compile && npx vsce package --allow-missing-repository --no-rewrite-relative-links",
