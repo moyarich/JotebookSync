@@ -14,9 +14,10 @@ on save and show what changed before you overwrite a representation.
 3. Choose a text format and create the pair.
    If Jupytext is missing, follow the extension’s prompt to install it in your Python environment.
 
-
 ## Documentation
 
-See the [JotebookSync guides and command reference](https://moyarich.github.io/JotebookSync/).
+See our documentation for more information on using the VS Code extension.
+[JotebookSync guides and command reference](https://moyarich.github.io/JotebookSync/).
+
 See the [extension README](packages/JotebookSync/README.md)
 [MIT license](packages/JotebookSync/LICENSE)

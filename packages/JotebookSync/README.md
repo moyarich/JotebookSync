@@ -9,6 +9,11 @@ leaving the editor.
 
 ![Choose notebook representations in the guided pair setup](media/setup-paired-files.gif)
 
+## Documentation
+
+See our documentation for more information on using the VS Code extension.
+[JotebookSync guides and command reference](https://moyarich.github.io/JotebookSync/).
+
 ## Install
 
 Install **JotebookSync** from the VS Code Extensions view or from the
@@ -325,7 +330,6 @@ webview development and does not register commands in VS Code. If commands
 remain unavailable, open **Developer: Show Running Extensions** to check whether
 JotebookSync activated, and inspect the Extension Host output for activation
 errors.
-
 
 **A format is missing:** Run **JotebookSync: Refresh Available Formats** after
 changing Python environments or installing a dependency.
